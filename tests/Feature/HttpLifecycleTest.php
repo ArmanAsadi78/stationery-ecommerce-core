@@ -80,4 +80,41 @@ class HttpLifecycleTest extends TestCase
         $this->assertStringContainsString('ثبت نهایی سفارش', $body);
         $this->assertStringContainsString('خلاصه فاکتور خرید', $body);
     }
+
+    public function test_ajax_coupon_apply_and_remove(): void
+    {
+        \App\Core\Session::start();
+        $csrfToken = \App\Core\Session::csrfToken();
+        $cartService = new \App\Services\CartService();
+        $cartService->add(6, null, 2);
+
+        // Apply Coupon via AJAX
+        $applyBody = $this->makeRequest('POST', '/checkout/apply-coupon', [
+            'coupon_code' => 'WELCOME10',
+            '_csrf_token' => $csrfToken,
+        ], [
+            'Accept' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ]);
+
+        $applyJson = json_decode($applyBody, true);
+        $this->assertIsArray($applyJson);
+        $this->assertTrue($applyJson['success'] ?? false);
+        $this->assertSame('WELCOME10', $applyJson['coupon_code'] ?? null);
+        $this->assertArrayHasKey('formatted_discount', $applyJson);
+        $this->assertArrayHasKey('formatted_payable', $applyJson);
+
+        // Remove Coupon via AJAX
+        $removeBody = $this->makeRequest('POST', '/checkout/remove-coupon', [
+            '_csrf_token' => $csrfToken,
+        ], [
+            'Accept' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ]);
+
+        $removeJson = json_decode($removeBody, true);
+        $this->assertIsArray($removeJson);
+        $this->assertTrue($removeJson['success'] ?? false);
+        $this->assertSame(0.0, (float) ($removeJson['discount_amount'] ?? -1));
+    }
 }

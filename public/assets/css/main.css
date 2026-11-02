@@ -1508,6 +1508,64 @@ button, input, select {
   margin-top: 4px;
 }
 
+/* Persian Form Custom Validation Styles */
+.form-input.is-invalid,
+.form-select.is-invalid,
+.form-textarea.is-invalid {
+  border-color: #f43f5e !important;
+  background-color: #fff1f2 !important;
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2) !important;
+}
+
+.field-error {
+  display: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e11d48;
+  margin-top: 6px;
+  align-items: center;
+  gap: 4px;
+  animation: fadeIn 0.2s ease;
+}
+
+.field-error.visible {
+  display: flex;
+}
+
+.field-error::before {
+  content: '⚠️';
+  font-size: 13px;
+}
+
+/* Coupon Feedback Box */
+.coupon-message-box {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  display: none;
+  animation: fadeIn 0.2s ease;
+}
+
+.coupon-message-box.visible {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.coupon-message-box.error {
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+}
+
+.coupon-message-box.success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
 /* Payment Method Card */
 .payment-method-selector {
   margin-top: 24px;

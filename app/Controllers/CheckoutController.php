@@ -72,6 +72,13 @@ class CheckoutController
             'همدان', 'کرمانشاه', 'آذربایجان غربی', 'قزوین', 'مرکزی', 'بوشهر'
         ];
 
+        /** @var mixed $oldInput */
+        $oldInput = Session::get('_old_input', []);
+        Session::remove('_old_input');
+        if (!is_array($oldInput)) {
+            $oldInput = [];
+        }
+
         $html = View::render('checkout/index', [
             'page_title' => 'تسویه حساب و تکمیل سفارش - فروشگاه تحریرچی',
             'cart' => $cartSummary,
@@ -83,6 +90,7 @@ class CheckoutController
             'payable_total' => $payableTotal,
             'provinces' => $provinces,
             'free_shipping_threshold' => OrderService::FREE_SHIPPING_THRESHOLD,
+            'old' => $oldInput,
         ]);
 
         return Response::html($html);
@@ -98,7 +106,7 @@ class CheckoutController
         $csrfToken = (string) ($request->input('_csrf_token') ?? $request->getHeader('X-CSRF-Token'));
         if (!Session::validateCsrf($csrfToken)) {
             if ($request->isAjax()) {
-                return Response::json(['success' => false, 'message' => 'توکن امنیتی نامعتبر است.'], 403);
+                return Response::json(['success' => false, 'message' => 'توکن امنیتی نامعتبر است. لطفاً صفحه را رفرش نمایید.'], 403);
             }
             Session::setFlash('error', 'توکن امنیتی نامعتبر است.');
             return Response::redirect(url('/checkout'));
@@ -117,16 +125,28 @@ class CheckoutController
             return Response::redirect(url('/checkout'));
         }
 
+        $discountAmount = (float) $validation['discount_amount'];
+        $shippingCost = $this->orderService->calculateShippingCost($subtotal);
+        $payableTotal = max(0.0, ($subtotal - $discountAmount) + $shippingCost);
+
         Session::set('_applied_coupon', [
             'code' => strtoupper($code),
-            'discount_amount' => $validation['discount_amount'],
+            'discount_amount' => $discountAmount,
         ]);
 
         if ($request->isAjax()) {
             return Response::json([
                 'success' => true,
                 'message' => $validation['message'],
-                'discount_amount' => $validation['discount_amount'],
+                'coupon_code' => strtoupper($code),
+                'discount_amount' => $discountAmount,
+                'formatted_discount' => format_price($discountAmount),
+                'subtotal' => $subtotal,
+                'formatted_subtotal' => format_price($subtotal),
+                'shipping_cost' => $shippingCost,
+                'formatted_shipping' => $shippingCost == 0 ? 'رایگان' : format_price($shippingCost),
+                'payable_total' => $payableTotal,
+                'formatted_payable' => format_price($payableTotal),
             ]);
         }
 
@@ -141,10 +161,34 @@ class CheckoutController
      */
     public function removeCoupon(Request $request, array $vars = []): Response
     {
+        $csrfToken = (string) ($request->input('_csrf_token') ?? $request->getHeader('X-CSRF-Token'));
+        if (!Session::validateCsrf($csrfToken)) {
+            if ($request->isAjax()) {
+                return Response::json(['success' => false, 'message' => 'توکن امنیتی نامعتبر است.'], 403);
+            }
+            Session::setFlash('error', 'توکن امنیتی نامعتبر است.');
+            return Response::redirect(url('/checkout'));
+        }
+
         Session::remove('_applied_coupon');
 
+        $subtotal = $this->cartService->getSubtotal();
+        $shippingCost = $this->orderService->calculateShippingCost($subtotal);
+        $payableTotal = max(0.0, $subtotal + $shippingCost);
+
         if ($request->isAjax()) {
-            return Response::json(['success' => true, 'message' => 'کد تخفیف حذف شد.']);
+            return Response::json([
+                'success' => true,
+                'message' => 'کد تخفیف از فاکتور حذف گردید.',
+                'subtotal' => $subtotal,
+                'formatted_subtotal' => format_price($subtotal),
+                'discount_amount' => 0.0,
+                'formatted_discount' => format_price(0),
+                'shipping_cost' => $shippingCost,
+                'formatted_shipping' => $shippingCost == 0 ? 'رایگان' : format_price($shippingCost),
+                'payable_total' => $payableTotal,
+                'formatted_payable' => format_price($payableTotal),
+            ]);
         }
 
         Session::setFlash('info', 'کد تخفیف از فاکتور حذف گردید.');
@@ -164,7 +208,7 @@ class CheckoutController
             return Response::redirect(url('/checkout'));
         }
 
-        // Form Validation
+        // Form Validation & Normalization
         $name = trim((string) $request->input('recipient_name', ''));
         $phone = trim((string) $request->input('recipient_phone', ''));
         $province = trim((string) $request->input('shipping_province', ''));
@@ -173,13 +217,30 @@ class CheckoutController
         $address = trim((string) $request->input('shipping_address', ''));
         $notes = trim((string) $request->input('customer_notes', ''));
 
+        // Normalize Persian/Arabic digits to English
+        $digitsFa = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+        $digitsEn = ['0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9'];
+        $phone = str_replace($digitsFa, $digitsEn, $phone);
+        $postalCode = str_replace($digitsFa, $digitsEn, $postalCode);
+
+        // Store old inputs in session so user never loses them
+        Session::set('_old_input', [
+            'recipient_name' => $name,
+            'recipient_phone' => $phone,
+            'shipping_province' => $province,
+            'shipping_city' => $city,
+            'shipping_postal_code' => $postalCode,
+            'shipping_address' => $address,
+            'customer_notes' => $notes,
+        ]);
+
         if (mb_strlen($name) < 3) {
-            Session::setFlash('error', 'نام و نام‌خانوادگی گیرنده باید حداقل ۳ کاراکتر باشد.');
+            Session::setFlash('error', 'نام و نام‌خانوادگی تحویل‌گیرنده باید حداقل ۳ حرف باشد.');
             return Response::redirect(url('/checkout'));
         }
 
         if (!preg_match('/^09[0-9]{9}$/', $phone)) {
-            Session::setFlash('error', 'شماره موبایل وارد شده معتبر نیست (فرمت صحیح: ۰۹۱۲۳۴۵۶۷۸۹).');
+            Session::setFlash('error', 'شماره موبایل باید ۱۱ رقم بوده و با ۰۹ شروع شود (مثال: ۰۹۱۲۳۴۵۶۷۸۹).');
             return Response::redirect(url('/checkout'));
         }
 
@@ -189,12 +250,12 @@ class CheckoutController
         }
 
         if (!preg_match('/^[0-9]{10}$/', $postalCode)) {
-            Session::setFlash('error', 'کد پستی باید دقیقاً یک عدد ۱۰ رقمی باشد.');
+            Session::setFlash('error', 'کد پستی باید یک عدد ۱۰ رقمی معتبر باشد.');
             return Response::redirect(url('/checkout'));
         }
 
         if (mb_strlen($address) < 8) {
-            Session::setFlash('error', 'آدرس دقیق پستی باید حداقل ۸ کاراکتر باشد.');
+            Session::setFlash('error', 'آدرس دقیق پستی باید شامل مشخصات کامل (حداقل ۸ کاراکتر) باشد.');
             return Response::redirect(url('/checkout'));
         }
 
@@ -220,8 +281,9 @@ class CheckoutController
                 'customer_notes' => $notes !== '' ? $notes : null,
             ], $cartItems, $couponCode);
 
-            // Clear coupon session
+            // Clear coupon & old input session
             Session::remove('_applied_coupon');
+            Session::remove('_old_input');
 
             // Initialize Payment (Phase 1)
             $paymentResult = $this->paymentService->requestPayment(

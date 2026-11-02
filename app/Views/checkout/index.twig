@@ -45,7 +45,7 @@
     <div class="checkout-grid">
         {# Left / Shipping Details Form #}
         <div class="checkout-form-col">
-            <form action="{{ url('checkout/process') }}" method="POST" id="checkoutForm" class="checkout-card">
+            <form action="{{ url('checkout/process') }}" method="POST" id="checkoutForm" class="checkout-card" novalidate>
                 {{ csrf_field() }}
 
                 <div class="card-section-header">
@@ -59,12 +59,14 @@
                 <div class="form-row-2">
                     <div class="form-group">
                         <label for="recipient_name">نام و نام‌خانوادگی تحویل‌گیرنده <span class="required">*</span></label>
-                        <input type="text" id="recipient_name" name="recipient_name" class="form-input" placeholder="مثال: علی رضایی" required value="{{ auth_user.name ?? '' }}">
+                        <input type="text" id="recipient_name" name="recipient_name" class="form-input" placeholder="مثال: علی رضایی" value="{{ old.recipient_name ?? auth_user.name ?? '' }}">
+                        <div class="field-error" id="error_recipient_name"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="recipient_phone">شماره تلفن همراه <span class="required">*</span></label>
-                        <input type="tel" id="recipient_phone" name="recipient_phone" class="form-input" placeholder="مثال: ۰۹۱۲۳۴۵۶۷۸۹" pattern="^09[0-9]{9}$" required value="{{ auth_user.phone ?? '' }}">
+                        <input type="tel" id="recipient_phone" name="recipient_phone" class="form-input" placeholder="مثال: ۰۹۱۲۳۴۵۶۷۸۹" maxlength="11" value="{{ old.recipient_phone ?? auth_user.phone ?? '' }}">
+                        <div class="field-error" id="error_recipient_phone"></div>
                         <span class="input-hint">جهت هماهنگی تحویل سفارش و پیامک کد رهگیری پستی</span>
                     </div>
                 </div>
@@ -72,33 +74,38 @@
                 <div class="form-row-3">
                     <div class="form-group">
                         <label for="shipping_province">استان <span class="required">*</span></label>
-                        <select id="shipping_province" name="shipping_province" class="form-select" required>
+                        <select id="shipping_province" name="shipping_province" class="form-select">
                             <option value="">انتخاب استان...</option>
                             {% for prov in provinces %}
-                                <option value="{{ prov }}" {% if prov == 'تهران' %}selected{% endif %}>{{ prov }}</option>
+                                {% set selectedProv = old.shipping_province ?? 'تهران' %}
+                                <option value="{{ prov }}" {% if prov == selectedProv %}selected{% endif %}>{{ prov }}</option>
                             {% endfor %}
                         </select>
+                        <div class="field-error" id="error_shipping_province"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="shipping_city">شهر <span class="required">*</span></label>
-                        <input type="text" id="shipping_city" name="shipping_city" class="form-input" placeholder="مثال: تهران" value="تهران" required>
+                        <input type="text" id="shipping_city" name="shipping_city" class="form-input" placeholder="مثال: تهران" value="{{ old.shipping_city ?? 'تهران' }}">
+                        <div class="field-error" id="error_shipping_city"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="shipping_postal_code">کد پستی ۱۰ رقمی <span class="required">*</span></label>
-                        <input type="text" id="shipping_postal_code" name="shipping_postal_code" class="form-input" placeholder="۱۰ رقم بدون خط تیره" pattern="^[0-9]{10}$" maxlength="10" required>
+                        <input type="text" id="shipping_postal_code" name="shipping_postal_code" class="form-input" placeholder="۱۰ رقم بدون خط تیره" maxlength="10" value="{{ old.shipping_postal_code ?? '' }}">
+                        <div class="field-error" id="error_shipping_postal_code"></div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="shipping_address">آدرس کامل پستی <span class="required">*</span></label>
-                    <textarea id="shipping_address" name="shipping_address" rows="3" class="form-textarea" placeholder="خیابان، کوچه، پلاک، واحد..." required></textarea>
+                    <textarea id="shipping_address" name="shipping_address" rows="3" class="form-textarea" placeholder="خیابان، کوچه، پلاک، واحد...">{{ old.shipping_address ?? '' }}</textarea>
+                    <div class="field-error" id="error_shipping_address"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="customer_notes">توضیحات یا یادداشت سفارش (اختیاری)</label>
-                    <textarea id="customer_notes" name="customer_notes" rows="2" class="form-textarea" placeholder="هرگونه نکته خاص برای بسته‌بندی یا زمان تحویل..."></textarea>
+                    <textarea id="customer_notes" name="customer_notes" rows="2" class="form-textarea" placeholder="هرگونه نکته خاص برای بسته‌بندی یا زمان تحویل...">{{ old.customer_notes ?? '' }}</textarea>
                 </div>
 
                 <div class="payment-method-selector">
@@ -157,57 +164,54 @@
                     {% endfor %}
                 </div>
 
-                {# Coupon Box #}
-                <div class="coupon-box-section">
+                {# Coupon Box with AJAX interaction #}
+                <div id="couponSection" class="coupon-box-section">
                     {% if coupon_code %}
-                        <div class="applied-coupon-pill">
+                        <div class="applied-coupon-pill" id="appliedCouponPill">
                             <div class="coupon-info">
                                 <span class="coupon-tag-icon">🏷️</span>
-                                <span>کد تخفیف: <strong>{{ coupon_code }}</strong></span>
-                                <span class="discount-badge">-{{ discount_amount|price }}</span>
+                                <span>کد تخفیف: <strong id="appliedCouponCodeText">{{ coupon_code }}</strong></span>
+                                <span class="discount-badge" id="appliedCouponBadge">-{{ discount_amount|price }}</span>
                             </div>
-                            <form action="{{ url('checkout/remove-coupon') }}" method="POST">
-                                {{ csrf_field() }}
-                                <button type="submit" class="btn-remove-coupon" title="حذف کد تخفیف">✕</button>
-                            </form>
+                            <button type="button" id="btnRemoveCoupon" class="btn-remove-coupon" title="حذف کد تخفیف">✕</button>
                         </div>
                     {% else %}
-                        <form action="{{ url('checkout/apply-coupon') }}" method="POST" class="coupon-form">
-                            {{ csrf_field() }}
+                        <form id="applyCouponForm" class="coupon-form" novalidate>
                             <div class="coupon-input-group">
-                                <input type="text" name="coupon_code" class="form-input coupon-input" placeholder="کد تخفیف (مثال: WELCOME10)" required>
-                                <button type="submit" class="btn-secondary btn-apply-coupon">اعمال کد</button>
+                                <input type="text" id="couponCodeInput" name="coupon_code" class="form-input coupon-input" placeholder="کد تخفیف (مثال: WELCOME10)" autocomplete="off">
+                                <button type="submit" id="btnApplyCoupon" class="btn-secondary btn-apply-coupon">اعمال کد</button>
                             </div>
                         </form>
                     {% endif %}
+                    <div id="couponMessageBox" class="coupon-message-box"></div>
                 </div>
 
                 {# Totals Calculation #}
                 <div class="order-totals-breakdown">
                     <div class="total-row">
                         <span>مجموع اقلام:</span>
-                        <span>{{ subtotal|price }}</span>
+                        <span id="breakdownSubtotal">{{ subtotal|price }}</span>
                     </div>
 
-                    {% if discount_amount > 0 %}
-                        <div class="total-row discount-row">
-                            <span>تخفیف اعمال‌شده:</span>
-                            <span class="discount-val">- {{ discount_amount|price }}</span>
-                        </div>
-                    {% endif %}
+                    <div class="total-row discount-row" id="discountRow" style="{% if not discount_amount or discount_amount == 0 %}display:none;{% endif %}">
+                        <span>تخفیف اعمال‌شده:</span>
+                        <span class="discount-val" id="breakdownDiscount">- {{ discount_amount|price }}</span>
+                    </div>
 
                     <div class="total-row">
                         <span>هزینه بسته‌بندی و ارسال:</span>
-                        {% if shipping_cost == 0 %}
-                            <span class="shipping-free">رایگان (سفارش بالای ۵۰۰ هزار تومان)</span>
-                        {% else %}
-                            <span>{{ shipping_cost|price }}</span>
-                        {% endif %}
+                        <span id="breakdownShipping">
+                            {% if shipping_cost == 0 %}
+                                <span class="shipping-free">رایگان (سفارش بالای ۵۰۰ هزار تومان)</span>
+                            {% else %}
+                                {{ shipping_cost|price }}
+                            {% endif %}
+                        </span>
                     </div>
 
                     <div class="total-row grand-total-row">
                         <span>مبلغ نهایی قابل پرداخت:</span>
-                        <span class="grand-total-amount">{{ payable_total|price }}</span>
+                        <span class="grand-total-amount" id="breakdownGrandTotal">{{ payable_total|price }}</span>
                     </div>
                 </div>
 
@@ -225,4 +229,349 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // -------------------------------------------------------------
+    // Helper: Normalize Persian and Arabic numerals to English
+    // -------------------------------------------------------------
+    const normalizeDigits = (val) => {
+        if (!val) return '';
+        const fa = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+        const en = ['0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9'];
+        return val.toString().replace(/./g, char => {
+            const index = fa.indexOf(char);
+            return index !== -1 ? en[index] : char;
+        });
+    };
+
+    // Helper: Retrieve CSRF Token from meta or hidden input
+    const getCsrfToken = () => {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta && meta.content) return meta.content;
+        const input = document.querySelector('input[name="_csrf_token"]');
+        return input ? input.value : '';
+    };
+
+    // Helper: Display Toast Notification
+    const showToast = (message, type = 'success') => {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <span>${type === 'success' ? '✓' : type === 'info' ? 'ℹ️' : '⚠️'}</span>
+            <div>${message}</div>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(20px)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    };
+
+    // -------------------------------------------------------------
+    // 1. Persian Client-Side Form Validation (No Native Tooltips)
+    // -------------------------------------------------------------
+    const form = document.getElementById('checkoutForm');
+    const nameInput = document.getElementById('recipient_name');
+    const phoneInput = document.getElementById('recipient_phone');
+    const provinceSelect = document.getElementById('shipping_province');
+    const cityInput = document.getElementById('shipping_city');
+    const postalCodeInput = document.getElementById('shipping_postal_code');
+    const addressInput = document.getElementById('shipping_address');
+
+    const setError = (input, errorDivId, message) => {
+        input.classList.add('is-invalid');
+        const errDiv = document.getElementById(errorDivId);
+        if (errDiv) {
+            errDiv.textContent = message;
+            errDiv.classList.add('visible');
+        }
+    };
+
+    const clearError = (input, errorDivId) => {
+        input.classList.remove('is-invalid');
+        const errDiv = document.getElementById(errorDivId);
+        if (errDiv) {
+            errDiv.textContent = '';
+            errDiv.classList.remove('visible');
+        }
+    };
+
+    // Real-time input listeners to clear errors on typing
+    nameInput.addEventListener('input', () => clearError(nameInput, 'error_recipient_name'));
+    phoneInput.addEventListener('input', () => {
+        phoneInput.value = normalizeDigits(phoneInput.value);
+        clearError(phoneInput, 'error_recipient_phone');
+    });
+    provinceSelect.addEventListener('change', () => clearError(provinceSelect, 'error_shipping_province'));
+    cityInput.addEventListener('input', () => clearError(cityInput, 'error_shipping_city'));
+    postalCodeInput.addEventListener('input', () => {
+        postalCodeInput.value = normalizeDigits(postalCodeInput.value);
+        clearError(postalCodeInput, 'error_shipping_postal_code');
+    });
+    addressInput.addEventListener('input', () => clearError(addressInput, 'error_shipping_address'));
+
+    form.addEventListener('submit', (e) => {
+        let isValid = true;
+        let firstInvalid = null;
+
+        // 1. Recipient Name Validation
+        const nameVal = nameInput.value.trim();
+        if (nameVal === '') {
+            setError(nameInput, 'error_recipient_name', 'لطفاً نام و نام‌خانوادگی گیرنده را وارد نمایید.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = nameInput;
+        } else if (nameVal.length < 3) {
+            setError(nameInput, 'error_recipient_name', 'نام و نام‌خانوادگی باید حداقل ۳ حرف باشد.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = nameInput;
+        } else {
+            clearError(nameInput, 'error_recipient_name');
+        }
+
+        // 2. Mobile Phone Validation
+        const phoneVal = normalizeDigits(phoneInput.value.trim());
+        if (phoneVal === '') {
+            setError(phoneInput, 'error_recipient_phone', 'لطفاً شماره تلفن همراه را وارد کنید.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = phoneInput;
+        } else if (!/^09\d{9}$/.test(phoneVal)) {
+            setError(phoneInput, 'error_recipient_phone', 'شماره موبایل باید ۱۱ رقم بوده و با ۰۹ شروع شود (مثال: ۰۹۱۲۳۴۵۶۷۸۹).');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = phoneInput;
+        } else {
+            clearError(phoneInput, 'error_recipient_phone');
+        }
+
+        // 3. Province Validation
+        if (provinceSelect.value === '') {
+            setError(provinceSelect, 'error_shipping_province', 'لطفاً استان محل تحویل را انتخاب نمایید.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = provinceSelect;
+        } else {
+            clearError(provinceSelect, 'error_shipping_province');
+        }
+
+        // 4. City Validation
+        if (cityInput.value.trim() === '') {
+            setError(cityInput, 'error_shipping_city', 'لطفاً شهر محل تحویل را وارد نمایید.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = cityInput;
+        } else {
+            clearError(cityInput, 'error_shipping_city');
+        }
+
+        // 5. Postal Code Validation
+        const postalVal = normalizeDigits(postalCodeInput.value.trim());
+        if (postalVal === '') {
+            setError(postalCodeInput, 'error_shipping_postal_code', 'لطفاً کد پستی ۱۰ رقمی را وارد نمایید.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = postalCodeInput;
+        } else if (!/^\d{10}$/.test(postalVal)) {
+            setError(postalCodeInput, 'error_shipping_postal_code', 'کد پستی باید دقیقاً یک عدد ۱۰ رقمی بدون خط تیره باشد.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = postalCodeInput;
+        } else {
+            clearError(postalCodeInput, 'error_shipping_postal_code');
+        }
+
+        // 6. Address Validation
+        const addressVal = addressInput.value.trim();
+        if (addressVal === '') {
+            setError(addressInput, 'error_shipping_address', 'لطفاً نشانی کامل پستی را وارد نمایید.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = addressInput;
+        } else if (addressVal.length < 8) {
+            setError(addressInput, 'error_shipping_address', 'نشانی پستی باید شامل مشخصات کامل (حداقل ۸ کاراکتر) باشد.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = addressInput;
+        } else {
+            clearError(addressInput, 'error_shipping_address');
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
+            }
+            return false;
+        }
+
+        // Submit Button Loading state
+        const submitBtn = document.getElementById('btnSubmitOrder');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+            submitBtn.innerHTML = `
+                <span class="loading-spinner">⌛</span>
+                در حال ثبت سفارش و انتقال به درگاه بانکی...
+            `;
+        }
+    });
+
+    // -------------------------------------------------------------
+    // 2. AJAX Coupon Handling (No Page Reload)
+    // -------------------------------------------------------------
+    const couponSection = document.getElementById('couponSection');
+    const couponMessageBox = document.getElementById('couponMessageBox');
+    const discountRow = document.getElementById('discountRow');
+    const breakdownDiscount = document.getElementById('breakdownDiscount');
+    const breakdownShipping = document.getElementById('breakdownShipping');
+    const breakdownGrandTotal = document.getElementById('breakdownGrandTotal');
+
+    const showCouponMessage = (msg, type = 'error') => {
+        if (!couponMessageBox) return;
+        couponMessageBox.className = `coupon-message-box visible ${type}`;
+        couponMessageBox.innerHTML = `<span>${type === 'error' ? '⚠️' : '✓'}</span><span>${msg}</span>`;
+    };
+
+    const clearCouponMessage = () => {
+        if (!couponMessageBox) return;
+        couponMessageBox.className = 'coupon-message-box';
+        couponMessageBox.innerHTML = '';
+    };
+
+    const updateInvoiceBreakdown = (data) => {
+        if (data.discount_amount && data.discount_amount > 0) {
+            if (discountRow) discountRow.style.display = 'flex';
+            if (breakdownDiscount) breakdownDiscount.textContent = `- ${data.formatted_discount}`;
+        } else {
+            if (discountRow) discountRow.style.display = 'none';
+        }
+
+        if (breakdownShipping && data.formatted_shipping) {
+            if (data.shipping_cost === 0) {
+                breakdownShipping.innerHTML = '<span class="shipping-free">رایگان (سفارش بالای ۵۰۰ هزار تومان)</span>';
+            } else {
+                breakdownShipping.textContent = data.formatted_shipping;
+            }
+        }
+
+        if (breakdownGrandTotal && data.formatted_payable) {
+            breakdownGrandTotal.textContent = data.formatted_payable;
+        }
+    };
+
+    const bindCouponEvents = () => {
+        const applyForm = document.getElementById('applyCouponForm');
+        const removeBtn = document.getElementById('btnRemoveCoupon');
+
+        if (applyForm) {
+            applyForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                clearCouponMessage();
+
+                const codeInput = document.getElementById('couponCodeInput');
+                const applyBtn = document.getElementById('btnApplyCoupon');
+                const code = codeInput ? codeInput.value.trim() : '';
+
+                if (!code) {
+                    showCouponMessage('لطفاً کد تخفیف را وارد فرمایید.', 'error');
+                    return;
+                }
+
+                if (applyBtn) {
+                    applyBtn.disabled = true;
+                    applyBtn.textContent = 'بررسی...';
+                }
+
+                try {
+                    const res = await fetch("{{ url('checkout/apply-coupon') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            coupon_code: code,
+                            _csrf_token: getCsrfToken()
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok && data.success) {
+                        // Render applied coupon pill
+                        couponSection.innerHTML = `
+                            <div class="applied-coupon-pill" id="appliedCouponPill">
+                                <div class="coupon-info">
+                                    <span class="coupon-tag-icon">🏷️</span>
+                                    <span>کد تخفیف: <strong id="appliedCouponCodeText">${data.coupon_code}</strong></span>
+                                    <span class="discount-badge" id="appliedCouponBadge">-${data.formatted_discount}</span>
+                                </div>
+                                <button type="button" id="btnRemoveCoupon" class="btn-remove-coupon" title="حذف کد تخفیف">✕</button>
+                            </div>
+                            <div id="couponMessageBox" class="coupon-message-box"></div>
+                        `;
+                        updateInvoiceBreakdown(data);
+                        showToast(data.message, 'success');
+                        bindCouponEvents();
+                    } else {
+                        showCouponMessage(data.message || 'کد تخفیف معتبر نیست.', 'error');
+                        showToast(data.message || 'کد تخفیف معتبر نیست.', 'error');
+                    }
+                } catch (err) {
+                    showCouponMessage('خطا در برقراری ارتباط با سرور. لطفاً دوباره تلاش نمایید.', 'error');
+                } finally {
+                    if (applyBtn) {
+                        applyBtn.disabled = false;
+                        applyBtn.textContent = 'اعمال کد';
+                    }
+                }
+            });
+        }
+
+        if (removeBtn) {
+            removeBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                clearCouponMessage();
+
+                try {
+                    const res = await fetch("{{ url('checkout/remove-coupon') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            _csrf_token: getCsrfToken()
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok && data.success) {
+                        // Render coupon form back
+                        couponSection.innerHTML = `
+                            <form id="applyCouponForm" class="coupon-form" novalidate>
+                                <div class="coupon-input-group">
+                                    <input type="text" id="couponCodeInput" name="coupon_code" class="form-input coupon-input" placeholder="کد تخفیف (مثال: WELCOME10)" autocomplete="off">
+                                    <button type="submit" id="btnApplyCoupon" class="btn-secondary btn-apply-coupon">اعمال کد</button>
+                                </div>
+                            </form>
+                            <div id="couponMessageBox" class="coupon-message-box"></div>
+                        `;
+                        updateInvoiceBreakdown(data);
+                        showToast(data.message, 'info');
+                        bindCouponEvents();
+                    }
+                } catch (err) {
+                    showToast('خطا در حذف کد تخفیف.', 'error');
+                }
+            });
+        }
+    };
+
+    bindCouponEvents();
+});
+</script>
 {% endblock %}
