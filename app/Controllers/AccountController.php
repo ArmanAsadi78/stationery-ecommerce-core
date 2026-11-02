@@ -173,7 +173,7 @@ class AccountController
         // Fetch Payment Record
         /** @var array<string, mixed>|null $payment */
         $payment = $this->db->fetch(
-            "SELECT `id`, `tracking_number`, `gateway_name`, `status`, `paid_at`, `created_at` 
+            "SELECT `id`, `reference_id`, `gateway`, `status`, `created_at` 
              FROM `payments` 
              WHERE `order_id` = :order_id 
              ORDER BY `id` DESC LIMIT 1",

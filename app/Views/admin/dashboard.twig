@@ -1,0 +1,164 @@
+{% extends 'admin/layout.twig' %}
+
+{% block admin_content %}
+<div class="admin-dashboard-view">
+    <div class="admin-page-title-row">
+        <div>
+            <h2>داشبورد آمار و شاخص‌های کلیدی (KPIs)</h2>
+            <p>گزارش لحظه‌ای از فروش، چرخه سفارش‌ها و موجودی انبار فروشگاه تحریرچی.</p>
+        </div>
+        <a href="{{ url('admin/orders') }}" class="btn-admin-action">📦 مدیریت سفارش‌ها</a>
+    </div>
+
+    <!-- Metrics Grid -->
+    <div class="admin-metrics-grid">
+        <div class="metric-card card-revenue">
+            <div class="metric-icon-box">💰</div>
+            <div class="metric-data">
+                <span class="metric-lbl">کل درآمد ناخالص</span>
+                <strong class="metric-val">{{ metrics.total_revenue|price }} تومان</strong>
+                <small class="metric-hint">سفارش‌های موفق و در جریان</small>
+            </div>
+        </div>
+
+        <div class="metric-card card-orders">
+            <div class="metric-icon-box">📦</div>
+            <div class="metric-data">
+                <span class="metric-lbl">کل سفارش‌ها</span>
+                <strong class="metric-val">{{ metrics.total_orders|fa_num }} سفارش</strong>
+                <small class="metric-hint">ثبت‌شده در دیتابیس</small>
+            </div>
+        </div>
+
+        <div class="metric-card card-pending">
+            <div class="metric-icon-box">⏳</div>
+            <div class="metric-data">
+                <span class="metric-lbl">نیازمند پردازش و ارسال</span>
+                <strong class="metric-val text-amber">{{ metrics.pending_orders|fa_num }} سفارش</strong>
+                <small class="metric-hint">اقدام سریع انبارداری</small>
+            </div>
+        </div>
+
+        <div class="metric-card card-customers">
+            <div class="metric-icon-box">👥</div>
+            <div class="metric-data">
+                <span class="metric-lbl">مشتریان ثبت‌نام‌شده</span>
+                <strong class="metric-val">{{ metrics.total_customers|fa_num }} کاربر</strong>
+                <small class="metric-hint">حساب‌های فعال کاربری</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two-Column Section: Low Stock Warning + Recent Orders -->
+    <div class="admin-grid-2">
+        <!-- Recent Orders -->
+        <div class="admin-panel-card">
+            <div class="panel-card-head">
+                <h3>📦 آخرین سفارش‌های ثبت‌شده</h3>
+                <a href="{{ url('admin/orders') }}" class="panel-more-link">مشاهده همه سفارش‌ها ←</a>
+            </div>
+
+            {% if recent_orders is empty %}
+                <div class="admin-empty-state">
+                    <p>هنوز سفارشی در سامانه ثبت نشده است.</p>
+                </div>
+            {% else %}
+                <div class="admin-table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>شماره سفارش</th>
+                                <th>خریدار</th>
+                                <th>مبلغ کل</th>
+                                <th>وضعیت</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ord in recent_orders %}
+                                <tr>
+                                    <td>
+                                        <strong class="dir-ltr text-rose">#{{ ord.order_number }}</strong>
+                                    </td>
+                                    <td>
+                                        <span>{{ ord.recipient_name }}</span>
+                                        {% if ord.customer_email %}
+                                            <small class="block-sub dir-ltr">{{ ord.customer_email }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ ord.total_amount|price }} تومان</strong>
+                                    </td>
+                                    <td>
+                                        {% if ord.status == 'delivered' %}
+                                            <span class="admin-badge badge-green">تحویل شده</span>
+                                        {% elseif ord.status == 'shipped' %}
+                                            <span class="admin-badge badge-blue">ارسال شده</span>
+                                        {% elseif ord.status == 'processing' %}
+                                            <span class="admin-badge badge-amber">در حال پردازش</span>
+                                        {% elseif ord.status == 'cancelled' %}
+                                            <span class="admin-badge badge-red">لغو شده</span>
+                                        {% else %}
+                                            <span class="admin-badge badge-gray">در انتظار پرداخت</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url('admin/orders/' ~ ord.id) }}" class="btn-admin-sm">جزئیات</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="admin-panel-card">
+            <div class="panel-card-head">
+                <h3>⚠️ هشدار موجودی انبار (کالاهای کم‌یاب)</h3>
+                <span class="admin-badge badge-amber">موجودی کمتر از ۵ عدد</span>
+            </div>
+
+            {% if low_stock_items is empty %}
+                <div class="admin-empty-state">
+                    <p>✓ تمامی محصولات موجودی کافی دارند.</p>
+                </div>
+            {% else %}
+                <div class="admin-table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>کالا</th>
+                                <th>کد SKU</th>
+                                <th>موجودی</th>
+                                <th>قیمت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in low_stock_items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.title }}</strong>
+                                    </td>
+                                    <td>
+                                        <code class="dir-ltr">{{ item.sku }}</code>
+                                    </td>
+                                    <td>
+                                        {% if item.stock_quantity == 0 %}
+                                            <span class="admin-badge badge-red">ناموجود (۰)</span>
+                                        {% else %}
+                                            <span class="admin-badge badge-amber">{{ item.stock_quantity|fa_num }} عدد</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.price|price }} تومان</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

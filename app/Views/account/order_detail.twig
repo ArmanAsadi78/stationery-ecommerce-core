@@ -43,8 +43,8 @@
         {% if payment %}
             <div class="recipient-col payment-col">
                 <span class="col-title">اطلاعات تراکنش مالی:</span>
-                <span>درگاه: <strong>{{ payment.gateway_name|default('شتاب') }}</strong></span>
-                <span>کد رهگیری: <strong class="dir-ltr">{{ payment.tracking_number|default('TRK-9821') }}</strong></span>
+                <span>درگاه: <strong>{{ payment.gateway|default('شتاب') }}</strong></span>
+                <span>کد رهگیری: <strong class="dir-ltr">{{ payment.reference_id|default('TRK-9821') }}</strong></span>
                 <small>وضعیت: پرداخت موفق</small>
             </div>
         {% endif %}

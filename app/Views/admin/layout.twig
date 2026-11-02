@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title|default('پنل مدیریت | تحریرچی') }}</title>
+    
+    <!-- Vazirmatn Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Admin Core Stylesheet -->
+    <link rel="stylesheet" href="{{ asset('css/main.css') }}">
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <div class="admin-brand">
+                <span class="brand-spark">⚡</span>
+                <div class="brand-text">
+                    <strong>تحریرچی</strong>
+                    <small>پنل مدیریت و انبارداری</small>
+                </div>
+            </div>
+
+            <nav class="admin-nav" aria-label="منوی ادمین">
+                <span class="nav-section-title">مدیریت فروشگاه</span>
+                <a href="{{ url('admin/dashboard') }}" class="admin-nav-item {% if active_menu == 'dashboard' %}active{% endif %}">
+                    <span class="admin-nav-icon">📊</span>
+                    <span>داشبورد و آمار کل</span>
+                </a>
+                <a href="{{ url('admin/orders') }}" class="admin-nav-item {% if active_menu == 'orders' %}active{% endif %}">
+                    <span class="admin-nav-icon">📦</span>
+                    <span>مدیریت سفارش‌ها</span>
+                </a>
+
+                <span class="nav-section-title">دسترسی‌های سریع</span>
+                <a href="{{ url('products') }}" target="_blank" class="admin-nav-item">
+                    <span class="admin-nav-icon">🛍️</span>
+                    <span>مشاهده سایت فروشگاه</span>
+                </a>
+
+                <form action="{{ url('admin/logout') }}" method="POST" class="admin-logout-form">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="admin-nav-item admin-nav-logout">
+                        <span class="admin-nav-icon">🚪</span>
+                        <span>خروج از حساب مدیریت</span>
+                    </button>
+                </form>
+            </nav>
+
+            <div class="admin-sidebar-footer">
+                <div class="admin-user-pill">
+                    <div class="admin-avatar">
+                        <span>{{ admin_user.full_name|slice(0, 1)|default('A') }}</span>
+                    </div>
+                    <div class="admin-meta">
+                        <strong>{{ admin_user.full_name|default('مدیر ارشد') }}</strong>
+                        <small>دسترسی ادمین کل</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <div class="admin-main-wrap">
+            <!-- Top Bar -->
+            <header class="admin-topbar">
+                <div class="admin-topbar-breadcrumb">
+                    <a href="{{ url('admin/dashboard') }}">مدیریت</a> /
+                    <span class="current">{{ page_title }}</span>
+                </div>
+                <div class="admin-topbar-actions">
+                    <span class="admin-live-badge">🟢 سرور آنلاین (PHP 8.4)</span>
+                    <a href="{{ url('/') }}" target="_blank" class="btn-visit-store">مشاهده آنلاین فروشگاه ↗</a>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="admin-content-area">
+                {% if flash_success %}
+                    <div class="auth-alert success" style="margin-bottom: 24px;">
+                        <span>✓ {{ flash_success }}</span>
+                    </div>
+                {% endif %}
+
+                {% if flash_error %}
+                    <div class="auth-alert error" style="margin-bottom: 24px;">
+                        <span>✕ {{ flash_error }}</span>
+                    </div>
+                {% endif %}
+
+                {% block admin_content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

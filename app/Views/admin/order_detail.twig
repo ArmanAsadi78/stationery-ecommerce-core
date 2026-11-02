@@ -1,0 +1,182 @@
+{% extends 'admin/layout.twig' %}
+
+{% block admin_content %}
+<div class="admin-order-detail-view">
+    <div class="admin-page-title-row">
+        <div>
+            <div class="back-nav-row">
+                <a href="{{ url('admin/orders') }}" class="admin-back-link">← بازگشت به لیست سفارش‌ها</a>
+                <span class="admin-order-id-tag dir-ltr">#{{ order.order_number }}</span>
+            </div>
+            <h2>مدیریت سفارش #{{ order.order_number }}</h2>
+            <p>مشاهده جزئیات سفارش، تایید مالی، تغییر وضعیت و درج کد رهگیری پستی مرسوله.</p>
+        </div>
+        <button type="button" class="btn-admin-print" onclick="window.print()">
+            🖨️ چاپ فاکتور سفارش
+        </button>
+    </div>
+
+    <!-- 2 Columns: Details + Status Management Form -->
+    <div class="admin-order-grid">
+        <!-- Left Column: Order Content & Items -->
+        <div class="admin-order-left">
+            <!-- Customer & Shipping Box -->
+            <div class="admin-panel-card mb-4">
+                <h3 class="panel-card-subtitle">📍 اطلاعات گیرنده و مقصد ارسال</h3>
+                <div class="admin-shipping-grid">
+                    <div>
+                        <span class="lbl-small">نام و نام‌خانوادگی تحویل‌گیرنده:</span>
+                        <strong>{{ order.recipient_name }}</strong>
+                    </div>
+                    <div>
+                        <span class="lbl-small">شماره تماس گیرنده:</span>
+                        <strong class="dir-ltr">📞 {{ order.recipient_phone }}</strong>
+                    </div>
+                    <div>
+                        <span class="lbl-small">استان و شهر:</span>
+                        <span>{{ order.shipping_province }}، {{ order.shipping_city }}</span>
+                    </div>
+                    <div>
+                        <span class="lbl-small">کد پستی ۱۰ رقمی:</span>
+                        <strong class="dir-ltr">{{ order.shipping_postal_code }}</strong>
+                    </div>
+                    <div class="full-width">
+                        <span class="lbl-small">نشانی دقیق پستی:</span>
+                        <p class="addr-paragraph">{{ order.shipping_address }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="admin-panel-card">
+                <h3 class="panel-card-subtitle">🛍️ اقلام خریداری‌شده</h3>
+                <div class="admin-table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>تصویر</th>
+                                <th>نام کالا و تنوع</th>
+                                <th>قیمت واحد</th>
+                                <th>تعداد</th>
+                                <th>مجموع</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for itm in items %}
+                                <tr>
+                                    <td class="col-img">
+                                        <img src="{{ itm.primary_image ? asset(itm.primary_image) : asset('images/products/schneider-one-business.webp') }}" alt="{{ itm.title }}" class="admin-item-thumb">
+                                    </td>
+                                    <td>
+                                        <strong>{{ itm.title }}</strong>
+                                        {% if itm.variant_name %}
+                                            <small class="block-sub">تنوع: {{ itm.variant_name }}</small>
+                                        {% endif %}
+                                        {% if itm.sku %}
+                                            <code class="block-sub dir-ltr">SKU: {{ itm.sku }}</code>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ itm.unit_price|price }} تومان</td>
+                                    <td>{{ itm.quantity|fa_num }} عدد</td>
+                                    <td><strong>{{ itm.total_price|price }} تومان</strong></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Financial Breakdown -->
+                <div class="admin-invoice-calc">
+                    <div class="calc-row">
+                        <span>ارزش اقلام (Subtotal):</span>
+                        <span>{{ order.subtotal|price }} تومان</span>
+                    </div>
+                    {% if order.discount_amount > 0 %}
+                        <div class="calc-row text-green">
+                            <span>تخفیف اعمال‌شده:</span>
+                            <span>- {{ order.discount_amount|price }} تومان</span>
+                        </div>
+                    {% endif %}
+                    <div class="calc-row">
+                        <span>هزینه بسته‌بندی و ارسال:</span>
+                        <span>{{ order.shipping_cost == 0 ? 'رایگان' : (order.shipping_cost|price ~ ' تومان') }}</span>
+                    </div>
+                    <div class="calc-row calc-grand-total">
+                        <strong>مبلغ کل فاکتور:</strong>
+                        <strong class="text-rose">{{ order.total_amount|price }} تومان</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Status & Tracking Code Form -->
+        <div class="admin-order-right">
+            <div class="admin-panel-card sticky-card">
+                <h3 class="panel-card-subtitle">⚡ تغییر وضعیت سفارش و رهگیری پستی</h3>
+                
+                <div class="current-status-banner">
+                    <span class="lbl-small">وضعیت فعلی سفارش:</span>
+                    <div>
+                        {% if order.status == 'delivered' %}
+                            <span class="admin-badge badge-green large">تحویل داده شده</span>
+                        {% elseif order.status == 'shipped' %}
+                            <span class="admin-badge badge-blue large">ارسال شده با پست</span>
+                        {% elseif order.status == 'processing' %}
+                            <span class="admin-badge badge-amber large">در حال پردازش / بسته‌بندی</span>
+                        {% elseif order.status == 'cancelled' %}
+                            <span class="admin-badge badge-red large">لغو شده</span>
+                        {% else %}
+                            <span class="admin-badge badge-gray large">در انتظار پرداخت</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <form action="{{ url('admin/orders/' ~ order.id ~ '/status') }}" method="POST" class="admin-status-form">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                    <div class="form-group mb-3">
+                        <label for="orderStatusSelect" class="form-label">تعیین وضعیت جدید سفارش:</label>
+                        <select name="status" id="orderStatusSelect" class="admin-select" required>
+                            <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>
+                                📦 در حال پردازش و بسته‌بندی
+                            </option>
+                            <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>
+                                🚀 تحویل شده به شرکت پست (ارسال شد)
+                            </option>
+                            <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>
+                                ✅ تحویل نهایی به خریدار
+                            </option>
+                            <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>
+                                ✕ لغو سفارش و بازگشت موجودی
+                            </option>
+                            <option value="pending_payment" {% if order.status == 'pending_payment' %}selected{% endif %}>
+                                ⏳ در انتظار پرداخت آنلاین
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="trackingCodeInput" class="form-label">کد رهگیری مرسوله پستی / یادداشت مدیر:</label>
+                        <textarea name="customer_notes" id="trackingCodeInput" rows="3" class="admin-textarea dir-ltr" placeholder="مثال: کد رهگیری تیپاکس یا پست پیشتاز: 12345678901234567890">{{ order.customer_notes|default('') }}</textarea>
+                        <small class="form-hint">این کد رهگیری برای پیگیری وضعیت مرسوله در پنل کاربری مشتری نیز نمایش داده می‌شود.</small>
+                    </div>
+
+                    <button type="submit" class="btn-admin-submit-status">
+                        💾 ذخیره وضعیت و به‌روزرسانی سفارش
+                    </button>
+                </form>
+
+                {% if payment %}
+                    <div class="admin-payment-info-box">
+                        <span class="lbl-small">اطلاعات درگاه بانکی:</span>
+                        <div class="payment-meta-row">
+                            <span>کد رهگیری شاپرک: <strong class="dir-ltr">{{ payment.reference_id|default('TRK-9821') }}</strong></span>
+                            <span>درگاه پرداخت: <strong>{{ payment.gateway|default('شتاب') }}</strong></span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

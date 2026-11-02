@@ -6,6 +6,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use App\Controllers\AccountController;
+use App\Controllers\AdminController;
 use App\Controllers\AuthController;
 use App\Controllers\CartController;
 use App\Controllers\CheckoutController;
@@ -15,6 +16,7 @@ use App\Controllers\ProductController;
 use App\Controllers\SitemapController;
 use App\Controllers\TorobApiController;
 use App\Core\Application;
+use App\Middlewares\AdminMiddleware;
 use App\Middlewares\AuthMiddleware;
 
 $app = new Application();
@@ -63,6 +65,18 @@ $router->get('/account/wishlist', [AccountController::class, 'wishlist'], [AuthM
 $router->post('/account/wishlist/toggle', [AccountController::class, 'toggleWishlist']);
 $router->get('/account/profile', [AccountController::class, 'profile'], [AuthMiddleware::class]);
 $router->post('/account/profile', [AccountController::class, 'profile'], [AuthMiddleware::class]);
+
+// Administrative Panel Routes (Protected by AdminMiddleware)
+$router->get('/admin/login', [AdminController::class, 'showLogin']);
+$router->post('/admin/login', [AdminController::class, 'login']);
+$router->get('/admin/logout', [AdminController::class, 'logout']);
+$router->post('/admin/logout', [AdminController::class, 'logout']);
+
+$router->get('/admin', [AdminController::class, 'dashboard'], [AdminMiddleware::class]);
+$router->get('/admin/dashboard', [AdminController::class, 'dashboard'], [AdminMiddleware::class]);
+$router->get('/admin/orders', [AdminController::class, 'orders'], [AdminMiddleware::class]);
+$router->get('/admin/orders/{id:[0-9]+}', [AdminController::class, 'orderDetail'], [AdminMiddleware::class]);
+$router->post('/admin/orders/{id:[0-9]+}/status', [AdminController::class, 'updateOrderStatus'], [AdminMiddleware::class]);
 
 // Search Engine Optimization & External Integrations
 $router->get('/sitemap.xml', [SitemapController::class, 'index']);

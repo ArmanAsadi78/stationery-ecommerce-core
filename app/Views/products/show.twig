@@ -1,0 +1,389 @@
+{% extends 'layouts/base.twig' %}
+
+{% block head %}
+{# Schema.org Structured Data for SEO Rich Snippets #}
+<script type="application/ld+json">
+{{ schema_json|raw }}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb Nav -->
+    <nav class="breadcrumb-nav product-breadcrumb" aria-label="راهنمای مسیر">
+        <a href="{{ url('/') }}">صفحه اصلی</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="{{ url('products') }}">محصولات</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="{{ url('products?category=' ~ product.category_slug) }}">{{ product.category_title }}</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">{{ product.title }}</span>
+    </nav>
+
+    <!-- Main Product Showcase Grid -->
+    <div class="product-showcase-grid">
+        <!-- 1. Media & Gallery (Right Column in RTL) -->
+        <div class="product-gallery-card">
+            <div class="product-main-image-frame">
+                <img id="mainProductImg" 
+                     src="{{ product.primary_image ? asset(product.primary_image) : asset('images/products/schneider-one-business.webp') }}" 
+                     alt="{{ product.title }}"
+                     class="main-zoom-image"
+                     loading="eager">
+                
+                <button type="button" class="btn-wishlist-pdp" onclick="togglePdpWishlist({{ product.id }})" aria-label="نشان کردن محصول">
+                    <span id="pdpWishHeart">🤍</span>
+                </button>
+            </div>
+
+            <!-- Gallery Thumbnails Strip -->
+            <div class="product-thumbnails-strip">
+                <button type="button" class="thumb-btn active" onclick="switchImage('{{ product.primary_image ? asset(product.primary_image) : asset('images/products/schneider-one-business.webp') }}', this)">
+                    <img src="{{ product.primary_image ? asset(product.primary_image) : asset('images/products/schneider-one-business.webp') }}" alt="{{ product.title }}">
+                </button>
+
+                {% if product.images and product.images|length > 0 %}
+                    {% for img in product.images %}
+                        <button type="button" class="thumb-btn" onclick="switchImage('{{ asset(img.image_url) }}', this)">
+                            <img src="{{ asset(img.image_url) }}" alt="{{ product.title }} - تصویر {{ loop.index }}">
+                        </button>
+                    {% endfor %}
+                {% else %}
+                    <!-- Showcase angles -->
+                    <button type="button" class="thumb-btn" onclick="switchImage('{{ asset('images/banners/hero-showcase.webp') }}', this)">
+                        <img src="{{ asset('images/banners/hero-showcase.webp') }}" alt="چیدمان تحریر">
+                    </button>
+                {% endif %}
+            </div>
+
+            <div class="pdp-trust-features">
+                <div class="trust-feat-item">
+                    <span>💎</span>
+                    <small>ضمانت ۱۰۰٪ اصالت</small>
+                </div>
+                <div class="trust-feat-item">
+                    <span>📦</span>
+                    <small>بسته‌بندی ایمن هاردباکس</small>
+                </div>
+                <div class="trust-feat-item">
+                    <span>⚡</span>
+                    <small>ارسال سریع سراسری</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Product Information & Purchase Box (Left Column in RTL) -->
+        <div class="product-info-card">
+            <div class="pdp-header-meta">
+                <div class="brand-tag-row">
+                    {% if product.brand %}
+                        <a href="{{ url('products?brand=' ~ product.brand) }}" class="pdp-brand-tag">{{ product.brand }}</a>
+                    {% endif %}
+                    <span class="pdp-sku-tag">کد کالا: <strong class="dir-ltr">{{ product.sku }}</strong></span>
+                </div>
+
+                <div class="pdp-rating-stars">
+                    <span class="stars-visual">★★★★★</span>
+                    <span class="rating-number">۴.۹</span>
+                    <span class="rating-count">(۳۸ نظر ثبت‌شده خریداران)</span>
+                </div>
+            </div>
+
+            <h1 class="pdp-title">{{ product.title }}</h1>
+
+            <div class="pdp-stock-status">
+                {% if product.stock_quantity > 0 %}
+                    <span class="stock-pill in-stock">
+                        <span class="dot-indicator"></span> موجود در انبار تحریرچی ({{ product.stock_quantity|fa_num }} عدد آماده ارسال)
+                    </span>
+                {% else %}
+                    <span class="stock-pill out-of-stock">
+                        <span class="dot-indicator"></span> در حال حاضر ناموجود
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Price Container -->
+            <div class="pdp-price-container">
+                <div class="pdp-price-row">
+                    <strong class="pdp-current-price">{{ product.price|price }} تومان</strong>
+                    {% if product.compare_at_price and product.compare_at_price > product.price %}
+                        <span class="pdp-old-price">{{ product.compare_at_price|price }}</span>
+                        {% set discountPercent = ((product.compare_at_price - product.price) / product.compare_at_price * 100)|round %}
+                        <span class="pdp-discount-pill">{{ discountPercent|fa_num }}% تخفیف</span>
+                    {% endif %}
+                </div>
+                <small class="price-guarantee-note">قیمت مصوب شرکتی با تضمین بهترین قیمت بازار</small>
+            </div>
+
+            {% if product.summary %}
+                <p class="pdp-summary-desc">{{ product.summary }}</p>
+            {% endif %}
+
+            <!-- Add to Cart Form & Variant Selection -->
+            <form id="productDetailForm" data-product-id="{{ product.id }}" class="pdp-action-form">
+                {% if product.variants and product.variants|length > 0 %}
+                    <div class="pdp-variants-wrapper">
+                        <label class="variant-group-title">
+                            انتخاب رنگ و تنوع: <strong id="selectedVariantLabel">{{ product.variants[0].attribute_value }}</strong>
+                        </label>
+                        
+                        <div class="color-swatches-grid" role="radiogroup">
+                            {% for variant in product.variants %}
+                                <label class="swatch-label">
+                                    <input type="radio" 
+                                           name="variant_id" 
+                                           value="{{ variant.id }}" 
+                                           data-name="{{ variant.attribute_value }}"
+                                           class="swatch-radio" 
+                                           {% if loop.first %}checked{% endif %}>
+                                    <span class="swatch-circle" 
+                                          style="background-color: {{ variant.color_hex|default('#1e293b') }};" 
+                                          title="{{ variant.attribute_value }}">
+                                        {% if not variant.color_hex %}
+                                            <small>{{ variant.attribute_value }}</small>
+                                        {% endif %}
+                                    </span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if product.stock_quantity > 0 %}
+                    <div class="pdp-purchase-row">
+                        <div class="pdp-quantity-stepper">
+                            <button type="button" class="stepper-btn" id="btnDetailQtyMinus" aria-label="کاهش تعداد">-</button>
+                            <input type="number" id="detailQtyInput" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}" readonly>
+                            <button type="button" class="stepper-btn" id="btnDetailQtyPlus" aria-label="افزایش تعداد">+</button>
+                        </div>
+
+                        <button type="submit" class="btn-pdp-add-to-cart" id="btnPdpAddToCart">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <span>افزودن به سبد خرید</span>
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="pdp-out-of-stock-alert">
+                        <span>این کالا در حال حاضر ناموجود است. با ثبت در علاقه‌مندی‌ها به محض موجود شدن باخبر شوید.</span>
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Tabs Navigation System (Description, Specs, Reviews) -->
+    <section class="pdp-tabs-section">
+        <div class="pdp-tabs-header" role="tablist">
+            <button type="button" class="pdp-tab-btn active" role="tab" data-tab="tab-desc" id="tabBtnDesc" aria-selected="true">
+                <span>📖 نقد و بررسی تخصصی</span>
+            </button>
+            <button type="button" class="pdp-tab-btn" role="tab" data-tab="tab-specs" id="tabBtnSpecs" aria-selected="false">
+                <span>⚙️ مشخصات فنی و ویژگی‌ها</span>
+            </button>
+            <button type="button" class="pdp-tab-btn" role="tab" data-tab="tab-reviews" id="tabBtnReviews" aria-selected="false">
+                <span>💬 نظرات کاربران (۳۸)</span>
+            </button>
+        </div>
+
+        <div class="pdp-tabs-content">
+            <!-- Tab 1: Description -->
+            <div class="tab-pane active" id="tab-desc" role="tabpanel">
+                <article class="pdp-prose">
+                    {% if product.description %}
+                        {{ product.description|raw }}
+                    {% else %}
+                        <p>این نوشت‌افزار با بالاترین استانداردهای کیفی جهانی و منطبق با ارگونومی دست طراحی شده است. حرکت روان و یکنواخت جوهر روی انواع کاغذ بدون پخش‌شدگی یا پس‌دادگی جوهر، تجربه‌ای ماندگار از نگارش و ثبت ایده‌ها برای شما رقم می‌زند.</p>
+                        <p>بدنه سبک و بادوام، گیره استیل ضدزنگ و نوک فوق‌العاده مقاوم، این محصول را به انتخابی ایده‌آل برای استفاده‌های روزمره، مهندسی، طراحی و امضای قراردادهای اداری مبدل ساخته است.</p>
+                    {% endif %}
+                </article>
+            </div>
+
+            <!-- Tab 2: Technical Specs Table -->
+            <div class="tab-pane" id="tab-specs" role="tabpanel">
+                <div class="specs-table-wrapper">
+                    <table class="specs-data-table">
+                        <tbody>
+                            <tr>
+                                <th scope="row">برند تولیدکننده</th>
+                                <td>{{ product.brand|default('اشنایدر (Schneider)') }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">دسته‌بندی تخصصی</th>
+                                <td>{{ product.category_title }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">شناسه محصول (SKU)</th>
+                                <td class="dir-ltr">{{ product.sku }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">کشور مبدا برند</th>
+                                <td>آلمان / ژاپن (اصالت ۱۰۰٪ فیزیکی)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">ضخامت و نوع نوک</th>
+                                <td>۰.۵ الی ۰.۶ میلی‌متر - ساچمه‌ای روان Ultra-Smooth</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">ویژگی‌های جوهر</th>
+                                <td>ضد آب (Document-Proof)، خشک‌شدن سریع و بدون پس‌دادگی روی کاغذ</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">نوع بسته‌بندی</th>
+                                <td>هاردباکس محافظ تحریرچی با لایه‌بندی ضربه‌گیر ویژه</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">ضمانت و پشتیبانی</th>
+                                <td>۷ روز ضمانت بازگشت بی‌قیدوشرط کالا در صورت عدم اصالت</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: Customer Reviews -->
+            <div class="tab-pane" id="tab-reviews" role="tabpanel">
+                <div class="reviews-layout-grid">
+                    <!-- Rating Summary -->
+                    <div class="reviews-summary-card">
+                        <div class="summary-score-large">۴.۹</div>
+                        <div class="stars-visual large">★★★★★</div>
+                        <p class="summary-score-text">رضایت ۹۶٪ از خریداران این محصول</p>
+                        <small>بر اساس نظرات تاییدشده مشتریان تحریرچی</small>
+                    </div>
+
+                    <!-- Verified Reviews List -->
+                    <div class="reviews-comments-list">
+                        <div class="comment-card">
+                            <div class="comment-head">
+                                <div class="comment-author-badge">
+                                    <strong>رضا کمالی</strong>
+                                    <span class="buyer-verified">✓ خریدار تاییدشده</span>
+                                </div>
+                                <span class="comment-date">۲ هفته پیش</span>
+                            </div>
+                            <div class="comment-stars">★★★★★</div>
+                            <p class="comment-body">فوق‌العاده روونه، برای جزوه‌نویسی دانشگاه گرفتم و اصلاً دستم خسته نمیشه. بسته‌بندی تحریرچی هم عالی بود، توی هاردباکس شیک با استیکر فرستاده بودن.</p>
+                        </div>
+
+                        <div class="comment-card">
+                            <div class="comment-head">
+                                <div class="comment-author-badge">
+                                    <strong>مریم سلیمانی</strong>
+                                    <span class="buyer-verified">✓ خریدار تاییدشده</span>
+                                </div>
+                                <span class="comment-date">۱ ماه پیش</span>
+                            </div>
+                            <div class="comment-stars">★★★★★</div>
+                            <p class="comment-body">اصالت کالا کاملاً مشخصه، رنگ جوهر خیلی عمیق و یکنواخته. ممنون از ارسال سریع و بسته‌بندی بی‌نقصتون.</p>
+                        </div>
+
+                        <div class="comment-card">
+                            <div class="comment-head">
+                                <div class="comment-author-badge">
+                                    <strong>پویا فراهانی</strong>
+                                    <span class="buyer-verified">✓ خریدار تاییدشده</span>
+                                </div>
+                                <span class="comment-date">۲ ماه پیش</span>
+                            </div>
+                            <div class="comment-stars">★★★★☆</div>
+                            <p class="comment-body">کیفیت قلم حرف نداره. فقط اگه رنگ‌بندی‌های بیشتری موجود کنین خیلی عالی میشه.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 1. Gallery Switcher
+function switchImage(src, btn) {
+    const mainImg = document.getElementById('mainProductImg');
+    if (mainImg) {
+        mainImg.src = src;
+    }
+    document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
+// 2. Swatch Label Updater
+document.querySelectorAll('.swatch-radio').forEach(r => {
+    r.addEventListener('change', function() {
+        const lbl = document.getElementById('selectedVariantLabel');
+        if (lbl && this.dataset.name) {
+            lbl.textContent = this.dataset.name;
+        }
+    });
+});
+
+// 3. Tabs Navigation Switcher
+document.querySelectorAll('.pdp-tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const targetTab = this.dataset.tab;
+        
+        document.querySelectorAll('.pdp-tab-btn').forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+        });
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        
+        this.classList.add('active');
+        this.setAttribute('aria-selected', 'true');
+        const pane = document.getElementById(targetTab);
+        if (pane) pane.classList.add('active');
+    });
+});
+
+// 4. Quantity Stepper
+const qtyInput = document.getElementById('detailQtyInput');
+const btnMinus = document.getElementById('btnDetailQtyMinus');
+const btnPlus = document.getElementById('btnDetailQtyPlus');
+
+if (qtyInput && btnMinus && btnPlus) {
+    btnMinus.addEventListener('click', function() {
+        let val = parseInt(qtyInput.value) || 1;
+        if (val > 1) qtyInput.value = val - 1;
+    });
+    btnPlus.addEventListener('click', function() {
+        let val = parseInt(qtyInput.value) || 1;
+        let max = parseInt(qtyInput.getAttribute('max')) || 99;
+        if (val < max) qtyInput.value = val + 1;
+    });
+}
+
+// 5. Wishlist Toggle from PDP
+function togglePdpWishlist(productId) {
+    fetch('{{ url("account/wishlist/toggle") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ product_id: productId })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.require_login) {
+            window.location.href = res.redirect;
+            return;
+        }
+        if (res.success) {
+            const heart = document.getElementById('pdpWishHeart');
+            if (heart) {
+                heart.textContent = res.in_wishlist ? '❤️' : '🤍';
+            }
+            if (typeof showToast === 'function') {
+                showToast(res.message, res.in_wishlist ? 'success' : 'info');
+            }
+        }
+    })
+    .catch(() => alert('خطا در برقراری ارتباط با سرور.'));
+}
+</script>
+{% endblock %}

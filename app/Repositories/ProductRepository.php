@@ -71,8 +71,11 @@ class ProductRepository
         }
 
         if (!empty($filters['search'])) {
-            $conditions[] = "(p.title LIKE :search OR p.summary LIKE :search OR p.brand LIKE :search)";
-            $params[':search'] = '%' . $filters['search'] . '%';
+            $conditions[] = "(p.title LIKE :search_title OR p.summary LIKE :search_summary OR p.brand LIKE :search_brand)";
+            $searchVal = '%' . $filters['search'] . '%';
+            $params[':search_title'] = $searchVal;
+            $params[':search_summary'] = $searchVal;
+            $params[':search_brand'] = $searchVal;
         }
 
         $whereClause = implode(' AND ', $conditions);

@@ -50,6 +50,14 @@ class HttpLifecycleTest extends TestCase
         $this->assertStringContainsString('دسته‌بندی‌های نوشت‌افزار', $body);
     }
 
+    public function test_catalog_search_works_without_pdo_error(): void
+    {
+        $body = $this->makeRequest('GET', '/products?q=روان‌نویس');
+
+        $this->assertStringContainsString('نتایج جستجو برای', $body);
+        $this->assertStringNotContainsString('SQLSTATE', $body);
+    }
+
     public function test_product_detail_page_includes_schema_org(): void
     {
         $body = $this->makeRequest('GET', '/products/schneider-one-business-rollerball-pen-06mm');

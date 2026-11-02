@@ -1,0 +1,119 @@
+{% extends 'admin/layout.twig' %}
+
+{% block admin_content %}
+<div class="admin-orders-view">
+    <div class="admin-page-title-row">
+        <div>
+            <h2>مدیریت سفارش‌ها و رهگیری مرسولات</h2>
+            <p>بررسی سفارش‌ها، تغییر وضعیت ارسال، چاپ فاکتور و ثبت کد رهگیری مرسولات پستی.</p>
+        </div>
+    </div>
+
+    <!-- Filters & Search Toolbar -->
+    <div class="admin-toolbar-card">
+        <!-- Status Filter Pills -->
+        <div class="admin-filter-pills">
+            <a href="{{ url('admin/orders') }}" class="admin-pill {% if current_status == '' %}active{% endif %}">
+                همه سفارش‌ها
+            </a>
+            <a href="{{ url('admin/orders?status=processing') }}" class="admin-pill {% if current_status == 'processing' %}active{% endif %}">
+                در حال پردازش / بسته‌بندی
+            </a>
+            <a href="{{ url('admin/orders?status=shipped') }}" class="admin-pill {% if current_status == 'shipped' %}active{% endif %}">
+                تحویل شده به پست (ارسال‌شده)
+            </a>
+            <a href="{{ url('admin/orders?status=delivered') }}" class="admin-pill {% if current_status == 'delivered' %}active{% endif %}">
+                تحویل نهایی به مشتری
+            </a>
+            <a href="{{ url('admin/orders?status=cancelled') }}" class="admin-pill {% if current_status == 'cancelled' %}active{% endif %}">
+                لغو شده
+            </a>
+        </div>
+
+        <!-- Search Form -->
+        <form action="{{ url('admin/orders') }}" method="GET" class="admin-search-form">
+            <input type="text" name="q" value="{{ search_query }}" placeholder="جستجوی شماره سفارش، نام یا تلفن گیرنده..." class="admin-input-search">
+            {% if current_status %}
+                <input type="hidden" name="status" value="{{ current_status }}">
+            {% endif %}
+            <button type="submit" class="btn-admin-search">🔍 جستجو</button>
+            {% if search_query %}
+                <a href="{{ url('admin/orders') }}" class="btn-clear-search">✕ پاک کردن</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Orders Table Card -->
+    <div class="admin-panel-card">
+        {% if orders is empty %}
+            <div class="admin-empty-state">
+                <div class="empty-icon">📦</div>
+                <h4>هیچ سفارشی با این شرایط پیدا نشد.</h4>
+                <p>فیلترها یا عبارت جستجو را تغییر دهید.</p>
+            </div>
+        {% else %}
+            <div class="admin-table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>شماره سفارش</th>
+                            <th>گیرنده و شماره تماس</th>
+                            <th>اقلام</th>
+                            <th>مبلغ کل</th>
+                            <th>وضعیت سفارش</th>
+                            <th>کد رهگیری پستی / یادداشت</th>
+                            <th>تاریخ ثبت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ord in orders %}
+                            <tr>
+                                <td>
+                                    <strong class="dir-ltr text-rose">#{{ ord.order_number }}</strong>
+                                </td>
+                                <td>
+                                    <strong>{{ ord.recipient_name }}</strong>
+                                    <small class="block-sub dir-ltr">📞 {{ ord.recipient_phone }}</small>
+                                </td>
+                                <td>{{ ord.items_count|fa_num }} قلم</td>
+                                <td>
+                                    <strong>{{ ord.total_amount|price }} تومان</strong>
+                                </td>
+                                <td>
+                                    {% if ord.status == 'delivered' %}
+                                        <span class="admin-badge badge-green">تحویل شده</span>
+                                    {% elseif ord.status == 'shipped' %}
+                                        <span class="admin-badge badge-blue">ارسال شده با پست</span>
+                                    {% elseif ord.status == 'processing' %}
+                                        <span class="admin-badge badge-amber">در حال پردازش</span>
+                                    {% elseif ord.status == 'cancelled' %}
+                                        <span class="admin-badge badge-red">لغو شده</span>
+                                    {% else %}
+                                        <span class="admin-badge badge-gray">در انتظار پرداخت</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if ord.customer_notes %}
+                                        <span class="tracking-snippet dir-ltr">{{ ord.customer_notes|slice(0, 30) }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="text-sm">{{ ord.created_at|slice(0, 16) }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ url('admin/orders/' ~ ord.id) }}" class="btn-admin-manage">
+                                        مدیریت و فاکتور ←
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
