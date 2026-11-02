@@ -1,0 +1,114 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb & Header -->
+    <div class="page-header-simple">
+        <nav class="breadcrumb-nav" aria-label="مسیر راهنما">
+            <a href="{{ url('/') }}">صفحه اصلی</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">درباره ما</span>
+        </nav>
+        <h1 class="page-title-main">داستان تحریرچی؛ اشتیاق به نوشتن و آفرینش</h1>
+        <p class="page-subtitle-main">ما با وسواس و عشق، زیباترین و اصیل‌ترین نوشت‌افزارهای جهان را برای شما گردآوری کرده‌ایم.</p>
+    </div>
+
+    <!-- Hero Story Card -->
+    <section class="about-hero-card">
+        <div class="about-hero-grid">
+            <div class="about-hero-text">
+                <span class="about-pill-badge">✨ مرجع تخصصی نوشت‌افزار اصیل</span>
+                <h2>از دل کاغذ تا زیباترین ایده‌ها</h2>
+                <p>
+                    فروشگاه تخصصی «تحریرچی» فعالیت خود را با هدفی روشن آغاز کرد: نجات دادن علاقه‌مندان به نوشتن، طراحان، مهندسان و دانش‌آموزان از بازار آشفته نوشت‌افزارهای غیراصل و بی‌کیفیت. ما باور داریم ابزاری که با آن می‌نویسید یا طراحی می‌کنید، امتداد مستقیم افکار و خلاقیت شماست.
+                </p>
+                <p>
+                    تحریرچی فراتر از یک فروشگاه ساده است؛ جامعه‌ای از شیفتگان کاغذ و قلم است که به بوی دفتر نو، لطافت حرکت روان‌نویس روی کاغذ ژاپنی و دقت صدم میلی‌متری اتودهای مهندسی آلمانی احترام می‌گذارند.
+                </p>
+                <div class="about-stats-row">
+                    <div class="about-stat-item">
+                        <strong class="stat-number">۱۰۰٪</strong>
+                        <span class="stat-label">تضمین اصالت فیزیکی</span>
+                    </div>
+                    <div class="about-stat-item">
+                        <strong class="stat-number">+۴۵,۰۰۰</strong>
+                        <span class="stat-label">سفارش موفق و تحویل‌شده</span>
+                    </div>
+                    <div class="about-stat-item">
+                        <strong class="stat-number">۷ روز</strong>
+                        <span class="stat-label">ضمانت بی‌قیدوشرط بازگشت</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-hero-visual">
+                <div class="about-image-frame">
+                    <img src="{{ asset('images/banners/hero-showcase.webp') }}" alt="چیدمان نوشت‌افزار تحریرچی" class="about-frame-img" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Values / Pillars Grid -->
+    <section class="about-pillars-section">
+        <div class="section-heading-centered">
+            <h2>چرا تحریرچی مورد اعتماد بیش از ۳۰ هزار کاربر است؟</h2>
+            <p>تعهدهایی که از روز نخست پایه و اساس هویت سازمانی ما بوده‌اند</p>
+        </div>
+
+        <div class="about-pillars-grid">
+            <div class="pillar-card">
+                <div class="pillar-icon-box icon-rose">
+                    <span>💎</span>
+                </div>
+                <h3>ضمانت ۱۰۰٪ اصالت فیزیکی</h3>
+                <p>
+                    تمامی محصولات تحریرچی مستقیماً از نمایندگی‌های رسمی برندهای جهانی همچون Rotring، Schneider، Faber-Castell و Panter تأمین شده و با ضمانت کتبی اصالت ارسال می‌شوند. هیچ کالای غیراورجینال یا های‌کپی جایی در قفسه‌های ما ندارد.
+                </p>
+            </div>
+
+            <div class="pillar-card">
+                <div class="pillar-icon-box icon-purple">
+                    <span>📦</span>
+                </div>
+                <h3>بسته‌بندی ایمن اقلام حساس</h3>
+                <p>
+                    نوک روان‌نویس‌ها و بدنه اتودهای ظریف در حمل‌ونقل آسیب‌پذیر هستند. مرسولات تحریرچی در هاردباکس‌های اختصاصی، چند لایه ضربه‌گیر حباب‌دار و بسته‌بندی زیبا همراه با اشانتیون استیکر و نشانک کتاب ارسال می‌شوند.
+                </p>
+            </div>
+
+            <div class="pillar-card">
+                <div class="pillar-icon-box icon-green">
+                    <span>⚡</span>
+                </div>
+                <h3>ارسال اکسپرس سراسری</h3>
+                <p>
+                    سفارش‌های ثبت‌شده در روزهای کاری ظرف کمتر از ۲۴ ساعت تحویل شرکت‌های پست پیشتاز و تیپاکس می‌گردند و کد رهگیری مرسوله بلافاصله از طریق پیامک برای خریدار ارسال می‌شود.
+                </p>
+            </div>
+
+            <div class="pillar-card">
+                <div class="pillar-icon-box icon-yellow">
+                    <span>🤝</span>
+                </div>
+                <h3>مشاوره تخصصی قلم و طراحی</h3>
+                <p>
+                    تیم کارشناسان تحریرچی به صورت اختصاصی آماده راهنمایی شما در انتخاب نوع نوک قلم، کاغذ متناسب با هر نوع جوهر، روان‌نویس‌های بدون پس‌دهی و اتودهای متناسب با ارگونومی دست شما هستند.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to action card -->
+    <section class="about-cta-card">
+        <div class="about-cta-content">
+            <h3>آماده‌اید تجربه نوشتن خود را دگرگون کنید؟</h3>
+            <p>بهترین‌های نوشت‌افزار جهان را در کاتالوگ جامع تحریرچی بررسی فرمایید.</p>
+        </div>
+        <div class="about-cta-buttons">
+            <a href="{{ url('products') }}" class="btn-about-cta">مشاهده کاتالوگ محصولات</a>
+            <a href="{{ url('contact-us') }}" class="btn-about-secondary">تماس و مشاوره تخصصی</a>
+        </div>
+    </section>
+</div>
+{% endblock %}

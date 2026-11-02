@@ -104,6 +104,24 @@ class SitemapController
             $xml .= "  </url>\n";
         }
 
+        // 5. Public Trust & Information Pages
+        $staticPages = [
+            'about-us',
+            'contact-us',
+            'faq',
+            'terms',
+        ];
+
+        foreach ($staticPages as $pageSlug) {
+            $pageUrl = url($pageSlug, true);
+            $xml .= "  <url>\n";
+            $xml .= "    <loc>" . escape_html($pageUrl) . "</loc>\n";
+            $xml .= "    <lastmod>{$now}</lastmod>\n";
+            $xml .= "    <changefreq>monthly</changefreq>\n";
+            $xml .= "    <priority>0.6</priority>\n";
+            $xml .= "  </url>\n";
+        }
+
         $xml .= '</urlset>';
 
         return $xml;

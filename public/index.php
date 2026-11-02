@@ -8,6 +8,7 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 use App\Controllers\CartController;
 use App\Controllers\CheckoutController;
 use App\Controllers\HomeController;
+use App\Controllers\PageController;
 use App\Controllers\ProductController;
 use App\Controllers\SitemapController;
 use App\Controllers\TorobApiController;
@@ -20,6 +21,13 @@ $router = $app->getRouter();
 $router->get('/', [HomeController::class, 'index']);
 $router->get('/products', [ProductController::class, 'index']);
 $router->get('/products/{slug:[^/]+}', [ProductController::class, 'show']);
+
+// Public Trust & Informational Pages
+$router->get('/about-us', [PageController::class, 'about']);
+$router->get('/contact-us', [PageController::class, 'contact']);
+$router->post('/contact-us', [PageController::class, 'submitContact']);
+$router->get('/faq', [PageController::class, 'faq']);
+$router->get('/terms', [PageController::class, 'terms']);
 
 // AJAX Drawer Cart Routes
 $router->get('/cart/data', [CartController::class, 'data']);

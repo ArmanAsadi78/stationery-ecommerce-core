@@ -1,0 +1,204 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb & Header -->
+    <div class="page-header-simple">
+        <nav class="breadcrumb-nav" aria-label="مسیر راهنما">
+            <a href="{{ url('/') }}">صفحه اصلی</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">سوالات متداول</span>
+        </nav>
+        <h1 class="page-title-main">پاسخ به پرتکرارترین پرسش‌های شما</h1>
+        <p class="page-subtitle-main">هر آنچه باید درباره ثبت سفارش، شیوه‌های ارسال، اصالت نوشت‌افزارها و ضمانت بازگشت بدانید.</p>
+    </div>
+
+    <div class="faq-page-wrapper">
+        <!-- Category 1: ثبت سفارش و پرداخت -->
+        <section class="faq-category-block">
+            <div class="faq-category-header">
+                <span class="faq-cat-icon">💳</span>
+                <h2>ثبت سفارش و شیوه‌های پرداخت</h2>
+            </div>
+
+            <div class="faq-accordion-group">
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn" aria-expanded="false">
+                        <span>چگونه می‌توانم در تحریرچی سفارش خود را ثبت کنم؟</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="faq-answer-panel">
+                        <div class="faq-answer-inner">
+                            <p>برای ثبت سفارش، کافی است کالای مورد نظر خود را پس از انتخاب تنوع رنگی یا سایز نوک به سبد خرید اضافه کنید. سپس با کلیک بر روی دکمه «تکمیل خرید و تسویه‌حساب»، آدرس و اطلاعات گیرنده را ثبت کرده و از طریق درگاه امن شتاب، پرداخت آنلاین خود را به انجام برسانید. فاکتور سفارش بلافاصله برای شما صادر خواهد شد.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn" aria-expanded="false">
+                        <span>آیا پرداخت در محل (COD) امکان‌پذیر است؟</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="faq-answer-panel">
+                        <div class="faq-answer-inner">
+                            <p>به منظور تسریع در فرآیند بسته‌بندی در هاردباکس‌های ایمن و تحویل به موقع به شرکت‌های پستی، در حال حاضر کلیه سفارش‌ها از طریق درگاه‌های پرداخت اینترنتی شاپرک با کلیه کارت‌های عضو شتاب تسویه می‌شوند.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn" aria-expanded="false">
+                        <span>کد تخفیف را در کدام مرحله باید وارد کنم؟</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="faq-answer-panel">
+                        <div class="faq-answer-inner">
+                            <p>در صفحه تسویه‌حساب (Checkout)، کادر مشخصی برای وارد کردن کد تخفیف در سمت چپ فاکتور تعبیه شده است. پس از درج کد و فشردن دکمه «اعمال»، مبلغ تخفیف به صورت آنی و خودکار از مبلغ کل سفارش شما کسر خواهد شد.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Category 2: ارسال و رهگیری -->
+        <section class="faq-category-block">
+            <div class="faq-category-header">
+                <span class="faq-cat-icon">🚀</span>
+                <h2>شیوه‌های ارسال، هزینه‌ها و رهگیری مرسولات</h2>
+            </div>
+
+            <div class="faq-accordion-group">
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn" aria-expanded="false">
+                        <span>سفارش‌ها چگونه و ظرف چند روز تحویل داده می‌شوند؟</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="faq-answer-panel">
+                        <div class="faq-answer-inner">
+                            <p>سفارش‌های شهر تهران ظرف ۲۴ تا ۴۸ ساعت کاری با پیک ویژه ارسال می‌گردند. سفارش‌های سایر شهرهای کشور نیز از طریق پست پیشتاز و تیپاکس ارسال شده و معمولاً ظرف ۲ الی ۴ روز کاری به دست مشتریان گرامی می‌رسند.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn" aria-expanded="false">
+                        <span>هزینه ارسال چقدر است و شرایط ارسال رایگان چیست؟</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="faq-answer-panel">
+                        <div class="faq-answer-inner">
+                            <p>هزینه ارسال ثابت برای تمامی نقاط ایران مبلغ ۴۵,۰۰۰ تومان است. برای سبدهای خرید با مبلغ بالای ۷۰۰,۰۰۰ تومان، هزینه ارسال کاملاً رایگان محاسبه خواهد شد.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn" aria-expanded="false">
+                        <span>چگونه می‌توانم وضعیت بسته پستی خود را پیگیری کنم؟</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="faq-answer-panel">
+                        <div class="faq-answer-inner">
+                            <p>پس از تحویل سفارش به اداره پست، کد رهگیری ۲۴ رقمی پستی از طریق پیامک برای شما ارسال می‌شود. شما می‌توانید این کد را در سامانه رهگیری مرسولات پستی به نشانی tracking.post.ir وارد کرده و موقعیت لحظه‌ای مرسوله خود را مشاهده فرمایید.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Category 3: اصالت کالا و گارانتی بازگشت -->
+        <section class="faq-category-block">
+            <div class="faq-category-header">
+                <span class="faq-cat-icon">🛡️</span>
+                <h2>ضمانت اصالت و شرایط بازگشت کالا</h2>
+            </div>
+
+            <div class="faq-accordion-group">
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn" aria-expanded="false">
+                        <span>آیا محصولات عرضه شده در تحریرچی ۱۰۰٪ اورجینال هستند؟</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="faq-answer-panel">
+                        <div class="faq-answer-inner">
+                            <p>بله، قطعاً. تحریرچی اصالت فیزیکی تمامی کالاهای خود از جمله برندهای برتر روترینگ، اشنایدر، پنتر و فابرکاستل را ۱۰۰٪ تضمین می‌کند. در صورت هرگونه مغایرت با کالای اصل، وجه پرداختی خریدار بدون قید و شرط عودت داده خواهد شد.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn" aria-expanded="false">
+                        <span>شرایط استفاده از ضمانت بازگشت ۷ روزه چیست؟</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="faq-answer-panel">
+                        <div class="faq-answer-inner">
+                            <p>تا ۷ روز پس از دریافت بسته، در صورتی که کالا باز نشده، پلمپ آن مخدوش نشده و در شرایط اولیه باشد، یا در صورت وجود عیب فنی و فیزیکی اولیه در محصول، می‌توانید با هماهنگی تیم پشتیبانی کالا را مرجوع کرده و وجه آن را ظرف ۲۴ ساعت کاری در حساب بانکی خود دریافت کنید.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Still have questions? Help card -->
+    <div class="faq-footer-card">
+        <div>
+            <h3>پاسخ پرسش خود را پیدا نکردید؟</h3>
+            <p>کارشناسان پشتیبانی تحریرچی آماده راهنمایی و پاسخگویی به ابهامات شما هستند.</p>
+        </div>
+        <a href="{{ url('contact-us') }}" class="btn-faq-contact">ارسال پیام یا تماس مستقیم</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const accordionButtons = document.querySelectorAll('.faq-question-btn');
+
+    accordionButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const item = btn.closest('.faq-accordion-item');
+            const isOpen = item.classList.contains('active');
+
+            // Close other items in the same group (optional graceful accordion behavior)
+            const parentGroup = item.closest('.faq-accordion-group');
+            if (parentGroup) {
+                parentGroup.querySelectorAll('.faq-accordion-item.active').forEach(activeItem => {
+                    if (activeItem !== item) {
+                        activeItem.classList.remove('active');
+                        activeItem.querySelector('.faq-question-btn').setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+
+            // Toggle current item
+            if (isOpen) {
+                item.classList.remove('active');
+                btn.setAttribute('aria-expanded', 'false');
+            } else {
+                item.classList.add('active');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

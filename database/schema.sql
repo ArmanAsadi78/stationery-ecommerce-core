@@ -13,6 +13,7 @@ CREATE DATABASE IF NOT EXISTS `stationery_shop`
 USE `stationery_shop`;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `contact_messages`;
 DROP TABLE IF EXISTS `audit_logs`;
 DROP TABLE IF EXISTS `torob_cache`;
 DROP TABLE IF EXISTS `inventory_logs`;
@@ -294,4 +295,20 @@ CREATE TABLE `torob_cache` (
     `generated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `expires_at` TIMESTAMP NOT NULL,
     INDEX `idx_torob_expires` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- 13. CONTACT MESSAGES TABLE (Customer Inquiries & Feedback)
+-- ---------------------------------------------------------------------
+CREATE TABLE `contact_messages` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(100) NOT NULL,
+    `email` VARCHAR(150) NOT NULL,
+    `phone` VARCHAR(20) NULL,
+    `subject` VARCHAR(150) NOT NULL,
+    `message` TEXT NOT NULL,
+    `is_read` TINYINT(1) NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX `idx_contact_is_read` (`is_read`),
+    INDEX `idx_contact_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
