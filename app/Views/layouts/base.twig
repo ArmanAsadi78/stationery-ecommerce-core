@@ -71,17 +71,117 @@
             </div>
         </div>
 
-        <!-- Categories Navigation Bar -->
+        <!-- Categories Navigation Bar with Premium Mega Menu -->
         <nav class="nav-bar">
-            <div class="container">
+            <div class="container nav-container">
                 <ul class="nav-links">
+                    <!-- Mega Menu Dropdown Trigger -->
+                    <li class="nav-item-mega">
+                        <a href="{{ url('products') }}" class="mega-trigger">
+                            <svg class="nav-menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+                            </svg>
+                            <span>دسته‌بندی کالاها</span>
+                            <svg class="chevron-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </a>
+
+                        <!-- Wide Premium Mega Menu Panel -->
+                        <div class="mega-menu-dropdown" aria-label="منوی جامع دسته‌بندی‌ها">
+                            <div class="mega-menu-inner">
+                                <div class="mega-columns">
+                                    <!-- Column 1: نوشت‌افزار -->
+                                    <div class="mega-col">
+                                        <a href="{{ url('products?category=writing-instruments') }}" class="mega-col-header">
+                                            <span class="mega-icon-circle icon-pink">✏️</span>
+                                            <span class="mega-col-title">نوشت‌افزار و قلم</span>
+                                        </a>
+                                        <ul class="mega-col-list">
+                                            <li><a href="{{ url('products?category=rollerball-pens') }}">روان‌نویس و خودنویس</a></li>
+                                            <li><a href="{{ url('products?category=mechanical-pencils') }}">اتود و مداد نوکی</a></li>
+                                            <li><a href="{{ url('products?category=writing-instruments') }}">ماژیک و هایلایتر پاستلی</a></li>
+                                            <li><a href="{{ url('products?category=writing-instruments') }}">خودکار فانتزی و چندرنگ</a></li>
+                                            <li><a href="{{ url('products?category=writing-instruments') }}">پاک‌کن و غلط‌گیر</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Column 2: کاغذ و دفتر -->
+                                    <div class="mega-col">
+                                        <a href="{{ url('products?category=notebooks-and-paper') }}" class="mega-col-header">
+                                            <span class="mega-icon-circle icon-lavender">📓</span>
+                                            <span class="mega-col-title">دفتر، کاغذ و پلنر</span>
+                                        </a>
+                                        <ul class="mega-col-list">
+                                            <li><a href="{{ url('products?category=notebooks-and-paper') }}">دفتر مشق و خط‌دار</a></li>
+                                            <li><a href="{{ url('products?category=notebooks-and-paper') }}">بولت ژورنال و نقطه‌ای</a></li>
+                                            <li><a href="{{ url('products?category=notebooks-and-paper') }}">پلنر و دفتر برنامه‌ریزی</a></li>
+                                            <li><a href="{{ url('products?category=notebooks-and-paper') }}">کاغذ یادداشت و استیکی نوت</a></li>
+                                            <li><a href="{{ url('products?category=notebooks-and-paper') }}">کلاسور، زونکن و یدک</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Column 3: لوازم اداری و بایگانی -->
+                                    <div class="mega-col">
+                                        <a href="{{ url('products?category=office-supplies') }}" class="mega-col-header">
+                                            <span class="mega-icon-circle icon-butter">📎</span>
+                                            <span class="mega-col-title">لوازم اداری و بایگانی</span>
+                                        </a>
+                                        <ul class="mega-col-list">
+                                            <li><a href="{{ url('products?category=office-supplies') }}">زونکن و کلربوک اداری</a></li>
+                                            <li><a href="{{ url('products?category=office-supplies') }}">منگنه، پانچ و سوزن‌کش</a></li>
+                                            <li><a href="{{ url('products?category=office-supplies') }}">پایه‌چسب و چسب واشی</a></li>
+                                            <li><a href="{{ url('products?category=office-supplies') }}">قیچی، کاتر و تیغ برش</a></li>
+                                            <li><a href="{{ url('products?category=office-supplies') }}">ارگانایزر و نظم‌دهنده رومیزی</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Column 4: هنر و نقاشی -->
+                                    <div class="mega-col">
+                                        <a href="{{ url('products?category=art-and-drawing') }}" class="mega-col-header">
+                                            <span class="mega-icon-circle icon-mint">🎨</span>
+                                            <span class="mega-col-title">طراحی، نقاشی و هنر</span>
+                                        </a>
+                                        <ul class="mega-col-list">
+                                            <li><a href="{{ url('products?category=art-and-drawing') }}">مدادرنگی‌های تخصصی</a></li>
+                                            <li><a href="{{ url('products?category=art-and-drawing') }}">آبرنگ، گواش و قلم‌مو</a></li>
+                                            <li><a href="{{ url('products?category=art-and-drawing') }}">راپید و روان‌نویس مهندسی</a></li>
+                                            <li><a href="{{ url('products?category=art-and-drawing') }}">دفتر طراحی و مقوای ضخیم</a></li>
+                                            <li><a href="{{ url('products?category=art-and-drawing') }}">پاستل گچی و روغنی</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- Mega Menu Featured Side Promo -->
+                                <div class="mega-promo-box">
+                                    <div class="mega-promo-badge">پیشنهاد برگزیده ✨</div>
+                                    <h4 class="mega-promo-heading">کالکشن بهاره نوشت‌افزار</h4>
+                                    <p class="mega-promo-text">محبوب‌ترین ست‌های تحریر، ژورنال و هایلایتر با ضمانت اصالت ۱۰۰٪ فیزیکی</p>
+                                    <a href="{{ url('products') }}" class="mega-promo-action">
+                                        <span>مشاهده شگفت‌انگیزها</span>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
                     <li><a href="{{ url('/') }}">صفحه اصلی</a></li>
-                    <li><a href="{{ url('products') }}">تمامی محصولات</a></li>
-                    <li><a href="{{ url('products?category=writing-instruments') }}">نوشت‌افزار و خودکار</a></li>
-                    <li><a href="{{ url('products?category=notebooks-and-paper') }}">کاغذ و دفتر</a></li>
-                    <li><a href="{{ url('products?category=office-supplies') }}">لوازم اداری و بایگانی</a></li>
-                    <li><a href="{{ url('products?category=art-and-drawing') }}">هنر و طراحی</a></li>
+                    <li><a href="{{ url('products?category=writing-instruments') }}">نوشت‌افزار</a></li>
+                    <li><a href="{{ url('products?category=notebooks-and-paper') }}">دفتر و کاغذ</a></li>
+                    <li><a href="{{ url('products?category=art-and-drawing') }}">طراحی و نقاشی</a></li>
+                    <li><a href="{{ url('products?category=office-supplies') }}">لوازم اداری</a></li>
                 </ul>
+
+                <!-- Hot Deals Quick Link on Nav Bar -->
+                <div class="nav-deals-wrap">
+                    <a href="{{ url('products') }}" class="nav-hot-deals">
+                        <span class="deals-fire">🔥</span>
+                        <span>تخفیف‌های شگفت‌انگیز</span>
+                    </a>
+                </div>
             </div>
         </nav>
     </header>
