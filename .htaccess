@@ -1,0 +1,29 @@
+# =====================================================================
+# Root .htaccess - Stationery E-Commerce Platform
+# Redirects all traffic securely to the /public directory
+# Blocks access to internal architectural layers and sensitive files
+# =====================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Prevent direct access to sensitive files and directories
+    RewriteRule ^(\.env|\.git|composer\.(json|lock|phar)|phpunit\.xml|phpstan\.neon) - [F,L,NC]
+    RewriteRule ^(app|config|database|storage|tests|vendor)/ - [F,L,NC]
+
+    # If the request is already pointing to public/, pass through
+    RewriteCond %{REQUEST_URI} ^/public/ [NC]
+    RewriteRule ^ - [L]
+
+    # Rewrite all other requests to the public/ folder
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Prevent directory browsing
+Options -Indexes
+
+# Block dotfiles (.env, .gitignore, etc.)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

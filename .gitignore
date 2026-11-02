@@ -1,0 +1,33 @@
+# Environment files
+.env
+.env.backup
+.env.production
+
+# Composer
+/vendor/
+composer.phar
+
+# Storage runtime artifacts
+/storage/cache/*
+!/storage/cache/.gitkeep
+/storage/cache/twig/*
+!/storage/cache/twig/.gitkeep
+/storage/logs/*.log
+!/storage/logs/.gitkeep
+/storage/uploads/*
+!/storage/uploads/.gitkeep
+
+# IDEs & System files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing & Static Analysis
+.phpunit.result.cache
+.phpstan.cache/
+/coverage/
