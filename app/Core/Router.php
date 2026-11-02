@@ -11,55 +11,60 @@ use function FastRoute\simpleDispatcher;
 
 class Router
 {
-    /** @var list<array{0: string, 1: string, 2: callable|array{0: class-string, 1: string}}> */
+    /** @var list<array{0: string, 1: string, 2: callable|array{0: class-string, 1: string}, 3: list<class-string>}> */
     private array $routes = [];
 
     /**
      * @param callable|array{0: class-string, 1: string} $handler
+     * @param list<class-string> $middlewares
      */
-    public function get(string $route, callable|array $handler): void
+    public function get(string $route, callable|array $handler, array $middlewares = []): void
     {
-        $this->addRoute('GET', $route, $handler);
+        $this->addRoute('GET', $route, $handler, $middlewares);
     }
 
     /**
      * @param callable|array{0: class-string, 1: string} $handler
+     * @param list<class-string> $middlewares
      */
-    public function post(string $route, callable|array $handler): void
+    public function post(string $route, callable|array $handler, array $middlewares = []): void
     {
-        $this->addRoute('POST', $route, $handler);
+        $this->addRoute('POST', $route, $handler, $middlewares);
     }
 
     /**
      * @param callable|array{0: class-string, 1: string} $handler
+     * @param list<class-string> $middlewares
      */
-    public function put(string $route, callable|array $handler): void
+    public function put(string $route, callable|array $handler, array $middlewares = []): void
     {
-        $this->addRoute('PUT', $route, $handler);
+        $this->addRoute('PUT', $route, $handler, $middlewares);
     }
 
     /**
      * @param callable|array{0: class-string, 1: string} $handler
+     * @param list<class-string> $middlewares
      */
-    public function delete(string $route, callable|array $handler): void
+    public function delete(string $route, callable|array $handler, array $middlewares = []): void
     {
-        $this->addRoute('DELETE', $route, $handler);
+        $this->addRoute('DELETE', $route, $handler, $middlewares);
     }
 
     /**
      * @param callable|array{0: class-string, 1: string} $handler
+     * @param list<class-string> $middlewares
      */
-    private function addRoute(string $httpMethod, string $route, callable|array $handler): void
+    private function addRoute(string $httpMethod, string $route, callable|array $handler, array $middlewares = []): void
     {
-        $this->routes[] = [$httpMethod, $route, $handler];
+        $this->routes[] = [$httpMethod, $route, $handler, $middlewares];
     }
 
     public function dispatch(Request $request): Response
     {
         $dispatcher = simpleDispatcher(function (RouteCollector $r) {
             foreach ($this->routes as $routeDef) {
-                [$method, $pattern, $handler] = $routeDef;
-                $r->addRoute($method, $pattern, $handler);
+                [$method, $pattern, $handler, $middlewares] = $routeDef;
+                $r->addRoute($method, $pattern, [$handler, $middlewares]);
             }
         });
 
@@ -81,10 +86,27 @@ class Router
                 ], 405);
 
             case Dispatcher::FOUND:
-                /** @var callable|array{0: class-string, 1: string} $handler */
-                $handler = $routeInfo[1];
+                /** @var array{0: callable|array{0: class-string, 1: string}, 1: list<class-string>} $routeData */
+                $routeData = $routeInfo[1];
+                $handler = $routeData[0];
+                $middlewares = $routeData[1];
                 /** @var array<string, string> $vars */
                 $vars = $routeInfo[2];
+
+                // Execute route middlewares
+                foreach ($middlewares as $middlewareClass) {
+                    if (class_exists($middlewareClass)) {
+                        /** @var object $middleware */
+                        $middleware = new $middlewareClass();
+                        if (method_exists($middleware, 'handle')) {
+                            /** @var mixed $midResponse */
+                            $midResponse = $middleware->handle($request);
+                            if ($midResponse instanceof Response) {
+                                return $midResponse;
+                            }
+                        }
+                    }
+                }
 
                 return $this->executeHandler($handler, $request, $vars);
 

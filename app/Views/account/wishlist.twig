@@ -1,0 +1,124 @@
+{% extends 'account/layout.twig' %}
+
+{% block account_content %}
+<div class="account-card-panel">
+    <div class="panel-header-simple">
+        <div>
+            <h2>کالاهای مورد علاقه (Wishlist)</h2>
+            <p>محصولاتی که برای خرید بعدی نشان کرده‌اید تا با تخفیف یا شارژ موجودی تهیه کنید.</p>
+        </div>
+        <span class="wishlist-counter-pill">{{ wishlist|length|fa_num }} محصول نشان‌شده</span>
+    </div>
+
+    {% if wishlist is empty %}
+        <div class="empty-state-card">
+            <div class="empty-icon">💔</div>
+            <h4>لیست علاقه‌مندی‌های شما خالی است!</h4>
+            <p>روی آیکون قلب در کارت محصولات کلیک کنید تا کالاهای مورد نظرتان اینجا ذخیره شوند.</p>
+            <a href="{{ url('products') }}" class="btn-empty-action">جستجو در بین نوشت‌افزارها</a>
+        </div>
+    {% else %}
+        <div class="wishlist-products-grid">
+            {% for item in wishlist %}
+                <div class="wishlist-item-card" id="wishItem-{{ item.id }}">
+                    <div class="wish-card-img-box">
+                        <a href="{{ url('products/' ~ item.slug) }}">
+                            <img src="{{ item.primary_image ? asset(item.primary_image) : asset('images/products/schneider-one-business.webp') }}" alt="{{ item.title }}" loading="lazy">
+                        </a>
+                        <button type="button" class="btn-remove-wish" onclick="removeWishlistItem({{ item.id }})" title="حذف از علاقه‌مندی‌ها">
+                            ✕
+                        </button>
+                    </div>
+
+                    <div class="wish-card-content">
+                        {% if item.category_title %}
+                            <span class="wish-cat-tag">{{ item.category_title }}</span>
+                        {% endif %}
+
+                        <h4 class="wish-item-title">
+                            <a href="{{ url('products/' ~ item.slug) }}">{{ item.title }}</a>
+                        </h4>
+
+                        <div class="wish-item-pricing">
+                            {% if item.compare_at_price and item.compare_at_price > item.price %}
+                                <span class="old-price">{{ item.compare_at_price|price }}</span>
+                                <strong class="current-price">{{ item.price|price }} تومان</strong>
+                            {% else %}
+                                <strong class="current-price">{{ item.price|price }} تومان</strong>
+                            {% endif %}
+                        </div>
+
+                        <div class="wish-card-actions">
+                            {% if item.stock_quantity > 0 %}
+                                <button type="button" class="btn-wish-add-cart" onclick="addToCartFromWish({{ item.id }})">
+                                    🛒 افزودن به سبد
+                                </button>
+                            {% else %}
+                                <span class="stock-badge out-of-stock">ناموجود</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function removeWishlistItem(productId) {
+    if (!confirm('آیا از حذف این کالا از لیست علاقه‌مندی‌ها اطمینان دارید؟')) return;
+
+    fetch('{{ url("account/wishlist/toggle") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ product_id: productId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const card = document.getElementById('wishItem-' + productId);
+            if (card) {
+                card.style.transition = 'opacity 0.3s, transform 0.3s';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                setTimeout(() => card.remove(), 300);
+            }
+            if (typeof showToast === 'function') {
+                showToast(data.message, 'success');
+            }
+        }
+    })
+    .catch(() => alert('خطا در برقراری ارتباط با سرور.'));
+}
+
+function addToCartFromWish(productId) {
+    if (typeof window.cartManager !== 'undefined' && typeof window.cartManager.addItem === 'function') {
+        window.cartManager.addItem(productId, null, 1);
+    } else {
+        fetch('{{ url("cart/add") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ product_id: productId, quantity: 1 })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success && typeof showToast === 'function') {
+                showToast(res.message, 'success');
+                const badge = document.getElementById('headerCartBadge');
+                if (badge && res.cart_count) badge.textContent = res.cart_count;
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

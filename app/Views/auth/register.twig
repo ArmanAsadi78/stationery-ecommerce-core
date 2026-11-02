@@ -1,0 +1,125 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-page-wrapper">
+        <div class="auth-card">
+            <!-- Brand / Header -->
+            <div class="auth-header">
+                <div class="auth-badge-icon icon-register">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                </div>
+                <h1 class="auth-title">عضویت در فروشگاه تحریرچی</h1>
+                <p class="auth-subtitle">با ایجاد حساب کاربری، وضعیت خریدهای خود را پیگیری کرده و از تخفیف‌های ویژه بهره‌مند شوید.</p>
+            </div>
+
+            <!-- Flash / Status Alert -->
+            {% if error_message %}
+                <div class="auth-alert error">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{{ error_message }}</span>
+                </div>
+            {% endif %}
+
+            {% if success_message %}
+                <div class="auth-alert success">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{{ success_message }}</span>
+                </div>
+            {% endif %}
+
+            <!-- Register Form -->
+            <form action="{{ url('register') }}" method="POST" class="auth-form" id="registerForm">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                <div class="form-group">
+                    <label for="regFullName">نام و نام‌خانوادگی <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <input type="text" id="regFullName" name="full_name" class="form-input" placeholder="مثال: آرمان اسدی" required autofocus>
+                        <span class="input-icon">👤</span>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="regEmail">آدرس ایمیل <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <input type="email" id="regEmail" name="email" class="form-input dir-ltr" placeholder="name@example.com" required>
+                            <span class="input-icon">✉️</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPhone">شماره تلفن همراه <small>(اختیاری)</small></label>
+                        <div class="input-with-icon">
+                            <input type="tel" id="regPhone" name="phone" class="form-input dir-ltr" placeholder="09123456789">
+                            <span class="input-icon">📱</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="regPassword">رمز عبور <span class="required">*</span></label>
+                        <div class="input-with-icon password-toggle-box">
+                            <input type="password" id="regPassword" name="password" class="form-input dir-ltr" placeholder="حداقل ۶ کاراکتر" required minlength="6">
+                            <button type="button" class="btn-toggle-password" id="toggleRegPassBtn" aria-label="نمایش رمز">👁️</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPassConfirm">تکرار رمز عبور <span class="required">*</span></label>
+                        <div class="input-with-icon password-toggle-box">
+                            <input type="password" id="regPassConfirm" name="password_confirmation" class="form-input dir-ltr" placeholder="تکرار رمز عبور" required minlength="6">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-agreement-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="terms" required checked>
+                        <span>با ثبت‌نام، <a href="{{ url('terms') }}" target="_blank">قوانین و رویه‌های حریم خصوصی</a> تحریرچی را می‌پذیرم.</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-auth-submit" id="submitRegBtn">
+                    <span>ایجاد حساب کاربری</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </form>
+
+            <!-- Bottom Switch Link -->
+            <div class="auth-footer-link">
+                <span>قبلاً در تحریرچی ثبت‌نام کرده‌اید؟</span>
+                <a href="{{ url('login') }}">ورود به حساب کاربری ←</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggleRegPassBtn');
+    const passInput = document.getElementById('regPassword');
+    const confirmInput = document.getElementById('regPassConfirm');
+    if (toggleBtn && passInput) {
+        toggleBtn.addEventListener('click', function() {
+            const isPass = passInput.type === 'password';
+            passInput.type = isPass ? 'text' : 'password';
+            if (confirmInput) confirmInput.type = isPass ? 'text' : 'password';
+            toggleBtn.textContent = isPass ? '🔒' : '👁️';
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <div class="page-header-simple">
+        <nav class="breadcrumb-nav" aria-label="مسیر راهنما">
+            <a href="{{ url('/') }}">صفحه اصلی</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">حساب کاربری</span>
+            {% if active_tab == 'orders' %}
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-current">سفارش‌های من</span>
+            {% elseif active_tab == 'wishlist' %}
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-current">علاقه‌مندی‌ها</span>
+            {% elseif active_tab == 'profile' %}
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-current">تنظیمات پروفایل</span>
+            {% endif %}
+        </nav>
+        <h1 class="page-title-main">پرتال مشتریان تحریرچی</h1>
+    </div>
+
+    <!-- Two-Column Portal Grid -->
+    <div class="account-layout-grid">
+        <!-- Sidebar Navigation Card -->
+        <aside class="account-sidebar-card">
+            <!-- User Profile Summary Pill -->
+            <div class="account-user-badge">
+                <div class="account-avatar-circle">
+                    <span>{{ user.full_name|slice(0, 1)|default('👤') }}</span>
+                </div>
+                <div class="account-user-meta">
+                    <strong class="user-display-name">{{ user.full_name|default('کاربر گرامی') }}</strong>
+                    <span class="user-display-email">{{ user.email }}</span>
+                    {% if user.phone %}
+                        <small class="user-display-phone dir-ltr">{{ user.phone }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="account-sidebar-divider"></div>
+
+            <!-- Navigation Links -->
+            <nav class="account-nav-menu" aria-label="منوی حساب کاربری">
+                <a href="{{ url('account/dashboard') }}" class="account-nav-item {% if active_tab == 'dashboard' %}active{% endif %}">
+                    <span class="nav-item-icon">📊</span>
+                    <span>داشبورد و خلاصه حساب</span>
+                </a>
+
+                <a href="{{ url('account/orders') }}" class="account-nav-item {% if active_tab == 'orders' %}active{% endif %}">
+                    <span class="nav-item-icon">📦</span>
+                    <span>تاریخچه سفارش‌ها</span>
+                </a>
+
+                <a href="{{ url('account/wishlist') }}" class="account-nav-item {% if active_tab == 'wishlist' %}active{% endif %}">
+                    <span class="nav-item-icon">❤️</span>
+                    <span>لیست علاقه‌مندی‌ها</span>
+                </a>
+
+                <a href="{{ url('account/profile') }}" class="account-nav-item {% if active_tab == 'profile' %}active{% endif %}">
+                    <span class="nav-item-icon">⚙️</span>
+                    <span>اطلاعات فردی و امنیت</span>
+                </a>
+
+                <form action="{{ url('logout') }}" method="POST" class="account-logout-form">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="account-nav-item item-logout">
+                        <span class="nav-item-icon">🚪</span>
+                        <span>خروج از حساب کاربری</span>
+                    </button>
+                </form>
+            </nav>
+        </aside>
+
+        <!-- Main Account Content Panel -->
+        <main class="account-main-content">
+            {% if flash_success %}
+                <div class="auth-alert success" style="margin-bottom: 20px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{{ flash_success }}</span>
+                </div>
+            {% endif %}
+
+            {% if flash_error %}
+                <div class="auth-alert error" style="margin-bottom: 20px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{{ flash_error }}</span>
+                </div>
+            {% endif %}
+
+            {% block account_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}

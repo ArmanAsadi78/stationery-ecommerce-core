@@ -1,0 +1,112 @@
+{% extends 'account/layout.twig' %}
+
+{% block account_content %}
+<div class="account-card-panel">
+    <div class="panel-header-simple">
+        <div>
+            <h2>خلاصه وضعیت حساب کاربری</h2>
+            <p>در یک نگاه وضعیت سفارش‌ها، پرداختی‌ها و علاقه‌مندی‌های خود را مشاهده کنید.</p>
+        </div>
+        <a href="{{ url('products') }}" class="btn-panel-action">🛒 خرید محصول جدید</a>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="account-stats-grid">
+        <div class="acc-stat-box box-pink">
+            <div class="stat-box-icon">📦</div>
+            <div class="stat-box-info">
+                <span class="stat-box-val">{{ stats.total_orders|fa_num }}</span>
+                <span class="stat-box-title">کل سفارش‌های ثبت‌شده</span>
+            </div>
+        </div>
+
+        <div class="acc-stat-box box-amber">
+            <div class="stat-box-icon">⏳</div>
+            <div class="stat-box-info">
+                <span class="stat-box-val">{{ stats.pending_orders|fa_num }}</span>
+                <span class="stat-box-title">سفارش‌های در حال پردازش</span>
+            </div>
+        </div>
+
+        <div class="acc-stat-box box-green">
+            <div class="stat-box-icon">✅</div>
+            <div class="stat-box-info">
+                <span class="stat-box-val">{{ stats.delivered_orders|fa_num }}</span>
+                <span class="stat-box-title">سفارش‌های تحویل‌شده</span>
+            </div>
+        </div>
+
+        <div class="acc-stat-box box-purple">
+            <div class="stat-box-icon">❤️</div>
+            <div class="stat-box-info">
+                <span class="stat-box-val">{{ stats.wishlist_count|fa_num }}</span>
+                <span class="stat-box-title">کالاهای نشان‌شده</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders Section -->
+    <div class="account-section-block">
+        <div class="section-block-header">
+            <h3>آخرین سفارش‌های ثبت‌شده</h3>
+            <a href="{{ url('account/orders') }}" class="view-all-link">مشاهده همه سفارش‌ها ←</a>
+        </div>
+
+        {% if recent_orders is empty %}
+            <div class="empty-state-card">
+                <div class="empty-icon">🛍️</div>
+                <h4>شما هنوز سفارشی ثبت نکرده‌اید!</h4>
+                <p>مجموعه بی‌نظیر نوشت‌افزارها، روان‌نویس‌ها و دفاتر فانتزی تحریرچی را بررسی نمایید.</p>
+                <a href="{{ url('products') }}" class="btn-empty-action">مشاهده کاتالوگ محصولات</a>
+            </div>
+        {% else %}
+            <div class="orders-table-wrapper">
+                <table class="orders-data-table">
+                    <thead>
+                        <tr>
+                            <th>شماره سفارش</th>
+                            <th>تاریخ ثبت</th>
+                            <th>مبلغ کل</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ord in recent_orders %}
+                            <tr>
+                                <td>
+                                    <strong class="order-code dir-ltr">{{ ord.order_number }}</strong>
+                                </td>
+                                <td>
+                                    <span class="order-date">{{ ord.created_at|slice(0, 10) }}</span>
+                                </td>
+                                <td>
+                                    <strong class="order-price">{{ ord.total_amount|price_toman }} تومان</strong>
+                                </td>
+                                <td>
+                                    {% if ord.status == 'delivered' %}
+                                        <span class="badge-status status-delivered">تحویل شده</span>
+                                    {% elseif ord.status == 'shipped' %}
+                                        <span class="badge-status status-shipped">ارسال شده</span>
+                                    {% elseif ord.status == 'processing' %}
+                                        <span class="badge-status status-processing">در حال پردازش</span>
+                                    {% elseif ord.status == 'cancelled' %}
+                                        <span class="badge-status status-cancelled">لغو شده</span>
+                                    {% else %}
+                                        <span class="badge-status status-pending">در انتظار پرداخت</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url('account/orders/' ~ ord.id) }}" class="btn-table-view">
+                                        مشاهده فاکتور
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

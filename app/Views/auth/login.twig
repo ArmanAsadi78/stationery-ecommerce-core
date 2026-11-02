@@ -1,0 +1,97 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-page-wrapper">
+        <div class="auth-card">
+            <!-- Brand / Header -->
+            <div class="auth-header">
+                <div class="auth-badge-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                </div>
+                <h1 class="auth-title">ورود به حساب کاربری</h1>
+                <p class="auth-subtitle">برای دسترسی به سبد خرید، تاریخچه سفارش‌ها و تخفیف‌های ویژه وارد شوید.</p>
+            </div>
+
+            <!-- Flash / Status Alert -->
+            {% if error_message %}
+                <div class="auth-alert error">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{{ error_message }}</span>
+                </div>
+            {% endif %}
+
+            {% if success_message %}
+                <div class="auth-alert success">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{{ success_message }}</span>
+                </div>
+            {% endif %}
+
+            <!-- Login Form -->
+            <form action="{{ url('login') }}" method="POST" class="auth-form" id="loginForm">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                <div class="form-group">
+                    <label for="identifier">ایمیل یا شماره تلفن همراه <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <input type="text" id="identifier" name="identifier" class="form-input dir-ltr" placeholder="مثال: name@example.com یا 09123456789" required autofocus>
+                        <span class="input-icon">✉️</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="label-row">
+                        <label for="password">رمز عبور <span class="required">*</span></label>
+                    </div>
+                    <div class="input-with-icon password-toggle-box">
+                        <input type="password" id="password" name="password" class="form-input dir-ltr" placeholder="••••••••" required>
+                        <button type="button" class="btn-toggle-password" id="togglePasswordBtn" aria-label="نمایش یا پنهان‌سازی رمز عبور">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-auth-submit" id="submitLoginBtn">
+                    <span>ورود به حساب کاربری</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </form>
+
+            <!-- Bottom Switch Link -->
+            <div class="auth-footer-link">
+                <span>کاربر جدید هستید؟</span>
+                <a href="{{ url('register') }}">ایجاد حساب کاربری در تحریرچی ←</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const passwordInput = document.getElementById('password');
+    if (toggleBtn && passwordInput) {
+        toggleBtn.addEventListener('click', function() {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = '🔒';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

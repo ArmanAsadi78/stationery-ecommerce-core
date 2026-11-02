@@ -5,6 +5,8 @@ declare(strict_types=1);
 // Ensure vendor autoload is present
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
+use App\Controllers\AccountController;
+use App\Controllers\AuthController;
 use App\Controllers\CartController;
 use App\Controllers\CheckoutController;
 use App\Controllers\HomeController;
@@ -13,6 +15,7 @@ use App\Controllers\ProductController;
 use App\Controllers\SitemapController;
 use App\Controllers\TorobApiController;
 use App\Core\Application;
+use App\Middlewares\AuthMiddleware;
 
 $app = new Application();
 $router = $app->getRouter();
@@ -43,6 +46,23 @@ $router->post('/checkout/process', [CheckoutController::class, 'process']);
 $router->get('/payment/mock-gateway', [CheckoutController::class, 'mockGateway']);
 $router->get('/payment/callback', [CheckoutController::class, 'callback']);
 $router->get('/order/success/{id:[0-9]+}', [CheckoutController::class, 'success']);
+
+// Customer Authentication & Guest Access Routes
+$router->get('/login', [AuthController::class, 'showLogin']);
+$router->post('/login', [AuthController::class, 'login']);
+$router->get('/register', [AuthController::class, 'showRegister']);
+$router->post('/register', [AuthController::class, 'register']);
+$router->post('/logout', [AuthController::class, 'logout']);
+$router->get('/logout', [AuthController::class, 'logout']);
+
+// Customer Portal Routes (Protected by AuthMiddleware)
+$router->get('/account/dashboard', [AccountController::class, 'dashboard'], [AuthMiddleware::class]);
+$router->get('/account/orders', [AccountController::class, 'orders'], [AuthMiddleware::class]);
+$router->get('/account/orders/{id:[0-9]+}', [AccountController::class, 'orderDetail'], [AuthMiddleware::class]);
+$router->get('/account/wishlist', [AccountController::class, 'wishlist'], [AuthMiddleware::class]);
+$router->post('/account/wishlist/toggle', [AccountController::class, 'toggleWishlist']);
+$router->get('/account/profile', [AccountController::class, 'profile'], [AuthMiddleware::class]);
+$router->post('/account/profile', [AccountController::class, 'profile'], [AuthMiddleware::class]);
 
 // Search Engine Optimization & External Integrations
 $router->get('/sitemap.xml', [SitemapController::class, 'index']);

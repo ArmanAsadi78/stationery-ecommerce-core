@@ -461,14 +461,14 @@ class OrderService
 
         // 3. Fallback: check or create guest customer with customer role
         $email = 'guest_' . time() . '_' . bin2hex(random_bytes(2)) . '@stationery.local';
-        $name = isset($customerData['recipient_name']) ? (string) $customerData['recipient_name'] : 'مشتری مهمان';
+        $fullName = isset($customerData['recipient_name']) ? (string) $customerData['recipient_name'] : 'مشتری مهمان';
         $randomPass = password_hash(bin2hex(random_bytes(16)), PASSWORD_ARGON2ID);
 
         $this->db->execute("
-            INSERT INTO `users` (`name`, `email`, `phone`, `password_hash`, `role`, `is_active`)
-            VALUES (:name, :email, :phone, :password_hash, 'customer', 1)
+            INSERT INTO `users` (`full_name`, `email`, `phone`, `password_hash`, `role`, `is_active`)
+            VALUES (:full_name, :email, :phone, :password_hash, 'customer', 1)
         ", [
-            ':name' => $name,
+            ':full_name' => $fullName,
             ':email' => $email,
             ':phone' => $phone,
             ':password_hash' => $randomPass,

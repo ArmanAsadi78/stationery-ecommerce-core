@@ -1,0 +1,110 @@
+{% extends 'account/layout.twig' %}
+
+{% block account_content %}
+<div class="account-card-panel">
+    <div class="panel-header-simple">
+        <div>
+            <h2>اطلاعات فردی و امنیت حساب</h2>
+            <p>ویرایش مشخصات هویتی، به‌روزرسانی رمز عبور و مدیریت آدرس‌های ارسال سفارش.</p>
+        </div>
+    </div>
+
+    <div class="profile-forms-grid">
+        <!-- Personal Info Form -->
+        <div class="profile-sub-card">
+            <div class="sub-card-header">
+                <h3>👤 مشخصات فردی</h3>
+                <p>اطلاعات پایه حساب کاربری شما</p>
+            </div>
+
+            <form action="{{ url('account/profile') }}" method="POST" class="auth-form">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="profile">
+
+                <div class="form-group">
+                    <label for="profName">نام و نام‌خانوادگی <span class="required">*</span></label>
+                    <input type="text" id="profName" name="full_name" class="form-input" value="{{ user.full_name }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="profEmail">آدرس ایمیل <small>(غیرقابل تغییر)</small></label>
+                    <input type="email" id="profEmail" class="form-input dir-ltr disabled" value="{{ user.email }}" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="profPhone">شماره تلفن همراه</label>
+                    <input type="tel" id="profPhone" name="phone" class="form-input dir-ltr" value="{{ user.phone|default('') }}" placeholder="09123456789">
+                </div>
+
+                <button type="submit" class="btn-profile-submit">
+                    💾 ذخیره تغییرات مشخصات
+                </button>
+            </form>
+        </div>
+
+        <!-- Password Change Form -->
+        <div class="profile-sub-card">
+            <div class="sub-card-header">
+                <h3>🔒 تغییر رمز عبور</h3>
+                <p>افزایش امنیت دسترسی به حساب کاربری</p>
+            </div>
+
+            <form action="{{ url('account/profile') }}" method="POST" class="auth-form">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="password">
+
+                <div class="form-group">
+                    <label for="oldPass">رمز عبور فعلی <span class="required">*</span></label>
+                    <input type="password" id="oldPass" name="old_password" class="form-input dir-ltr" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newPass">رمز عبور جدید <span class="required">*</span></label>
+                    <input type="password" id="newPass" name="new_password" class="form-input dir-ltr" placeholder="حداقل ۶ کاراکتر" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="newPassConf">تکرار رمز عبور جدید <span class="required">*</span></label>
+                    <input type="password" id="newPassConf" name="new_password_confirmation" class="form-input dir-ltr" placeholder="تکرار رمز جدید" required minlength="6">
+                </div>
+
+                <button type="submit" class="btn-profile-submit btn-secondary-action">
+                    🔑 به‌روزرسانی رمز عبور
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Saved Delivery Addresses Section -->
+    <div class="profile-addresses-section">
+        <div class="sub-card-header">
+            <h3>📍 آدرس‌های تحویل مرسوله</h3>
+            <p>آدرس‌هایی که در زمان تسویه‌حساب برای ارسال سریع‌تر می‌توانید انتخاب کنید.</p>
+        </div>
+
+        {% if addresses is empty %}
+            <div class="address-empty-box">
+                <p>شما هنوز آدرسی در سیستم ذخیره نکرده‌اید. با ثبت اولین سفارش، آدرس شما به طور خودکار در این بخش ذخیره خواهد شد.</p>
+            </div>
+        {% else %}
+            <div class="addresses-cards-grid">
+                {% for addr in addresses %}
+                    <div class="user-address-card {% if addr.is_default %}is-default{% endif %}">
+                        <div class="addr-card-head">
+                            <strong class="addr-title">{{ addr.title }}</strong>
+                            {% if addr.is_default %}
+                                <span class="badge-default-addr">آدرس پیش‌فرض</span>
+                            {% endif %}
+                        </div>
+                        <p class="addr-text">{{ addr.province }}، {{ addr.city }}، {{ addr.address }}</p>
+                        <div class="addr-meta-row">
+                            <span>کد پستی: <strong class="dir-ltr">{{ addr.postal_code }}</strong></span>
+                            <span>گیرنده: <strong>{{ addr.recipient_name }}</strong> ({{ addr.recipient_phone }})</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

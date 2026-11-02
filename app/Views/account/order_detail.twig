@@ -1,0 +1,109 @@
+{% extends 'account/layout.twig' %}
+
+{% block account_content %}
+<div class="account-card-panel invoice-view-card">
+    <div class="panel-header-simple invoice-header-actions">
+        <div>
+            <div class="invoice-meta-head">
+                <a href="{{ url('account/orders') }}" class="back-link">← بازگشت به سفارش‌ها</a>
+                <span class="invoice-badge dir-ltr">#{{ order.order_number }}</span>
+            </div>
+            <h2>فاکتور رسمی سفارش #{{ order.order_number }}</h2>
+            <p>ثبت شده در تاریخ {{ order.created_at|slice(0, 10) }} | وضعیت: 
+                {% if order.status == 'delivered' %}
+                    <span class="badge-status status-delivered">تحویل شده</span>
+                {% elseif order.status == 'shipped' %}
+                    <span class="badge-status status-shipped">ارسال شده</span>
+                {% elseif order.status == 'processing' %}
+                    <span class="badge-status status-processing">در حال پردازش</span>
+                {% elseif order.status == 'cancelled' %}
+                    <span class="badge-status status-cancelled">لغو شده</span>
+                {% else %}
+                    <span class="badge-status status-pending">در انتظار پرداخت</span>
+                {% endif %}
+            </p>
+        </div>
+        <button type="button" class="btn-print-invoice" onclick="window.print()">
+            🖨️ چاپ فاکتور
+        </button>
+    </div>
+
+    <!-- Recipient & Delivery Details -->
+    <div class="order-recipient-strip">
+        <div class="recipient-col">
+            <span class="col-title">تحویل‌گیرنده مرسوله:</span>
+            <strong>{{ order.recipient_name }}</strong>
+            <span class="col-phone dir-ltr">📞 {{ order.recipient_phone }}</span>
+        </div>
+        <div class="recipient-col address-col">
+            <span class="col-title">نشانی مقصد:</span>
+            <p>{{ order.shipping_province }}، {{ order.shipping_city }}، {{ order.shipping_address }}</p>
+            <small>کد پستی: <span class="dir-ltr">{{ order.shipping_postal_code }}</span></small>
+        </div>
+        {% if payment %}
+            <div class="recipient-col payment-col">
+                <span class="col-title">اطلاعات تراکنش مالی:</span>
+                <span>درگاه: <strong>{{ payment.gateway_name|default('شتاب') }}</strong></span>
+                <span>کد رهگیری: <strong class="dir-ltr">{{ payment.tracking_number|default('TRK-9821') }}</strong></span>
+                <small>وضعیت: پرداخت موفق</small>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Items Table -->
+    <div class="order-items-wrapper">
+        <h3 class="items-heading">اقلام سفارش</h3>
+        <table class="orders-data-table invoice-items-table">
+            <thead>
+                <tr>
+                    <th>تصویر</th>
+                    <th>نام کالا</th>
+                    <th>قیمت واحد</th>
+                    <th>تعداد</th>
+                    <th>مجموع</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for itm in items %}
+                    <tr>
+                        <td class="col-img">
+                            <img src="{{ itm.primary_image ? asset(itm.primary_image) : asset('images/products/schneider-one-business.webp') }}" alt="{{ itm.title }}" class="item-thumb-img">
+                        </td>
+                        <td>
+                            <strong class="item-name">{{ itm.title }}</strong>
+                            {% if itm.variant_name %}
+                                <span class="item-variant">{{ itm.variant_name }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ itm.unit_price|price_toman }} تومان</td>
+                        <td>{{ itm.quantity|fa_num }} عدد</td>
+                        <td><strong>{{ itm.total_price|price_toman }} تومان</strong></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Financial Calculation Summary -->
+    <div class="invoice-summary-box">
+        <div class="inv-sum-row">
+            <span>مجموع ارزش اقلام:</span>
+            <span>{{ order.subtotal|price_toman }} تومان</span>
+        </div>
+        {% if order.discount_amount > 0 %}
+            <div class="inv-sum-row inv-discount">
+                <span>تخفیف اعمال‌شده:</span>
+                <span>- {{ order.discount_amount|price_toman }} تومان</span>
+            </div>
+        {% endif %}
+        <div class="inv-sum-row">
+            <span>هزینه بسته‌بندی و ارسال:</span>
+            <span>{{ order.shipping_cost == 0 ? 'رایگان' : (order.shipping_cost|price_toman ~ ' تومان') }}</span>
+        </div>
+        <div class="inv-sum-row inv-total-payable">
+            <strong>مبلغ کل پرداخت‌شده:</strong>
+            <strong class="total-price">{{ order.total_amount|price_toman }} تومان</strong>
+        </div>
+    </div>
+</div>
+{% endblock %}

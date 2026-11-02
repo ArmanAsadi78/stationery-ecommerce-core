@@ -111,6 +111,10 @@ class View
             return format_price($price);
         }));
 
+        $twig->addFilter(new TwigFilter('price_toman', function (int|float|string $price): string {
+            return format_price($price);
+        }));
+
         $twig->addFilter(new TwigFilter('fa_num', function (int|float|string $num): string {
             return persian_number($num);
         }));

@@ -13,6 +13,8 @@ CREATE DATABASE IF NOT EXISTS `stationery_shop`
 USE `stationery_shop`;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `wishlists`;
+DROP TABLE IF EXISTS `user_addresses`;
 DROP TABLE IF EXISTS `contact_messages`;
 DROP TABLE IF EXISTS `audit_logs`;
 DROP TABLE IF EXISTS `torob_cache`;
@@ -33,11 +35,11 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ---------------------------------------------------------------------
 CREATE TABLE `users` (
     `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `email` VARCHAR(191) NOT NULL UNIQUE,
+    `full_name` VARCHAR(100) NOT NULL,
+    `email` VARCHAR(150) NOT NULL UNIQUE,
     `phone` VARCHAR(20) NULL UNIQUE,
     `password_hash` VARCHAR(255) NOT NULL,
-    `role` ENUM('admin', 'customer') NOT NULL DEFAULT 'customer',
+    `role` ENUM('customer', 'admin') NOT NULL DEFAULT 'customer',
     `is_active` TINYINT(1) NOT NULL DEFAULT 1,
     `remember_token` VARCHAR(100) NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -169,7 +171,7 @@ CREATE TABLE `coupons` (
 CREATE TABLE `orders` (
     `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `order_number` VARCHAR(32) NOT NULL UNIQUE,
-    `user_id` BIGINT UNSIGNED NOT NULL,
+    `user_id` BIGINT UNSIGNED NULL,
     `coupon_id` BIGINT UNSIGNED NULL,
     `subtotal` DECIMAL(12, 0) UNSIGNED NOT NULL COMMENT 'Sum of items',
     `discount_amount` DECIMAL(12, 0) UNSIGNED NOT NULL DEFAULT 0,
@@ -311,4 +313,45 @@ CREATE TABLE `contact_messages` (
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX `idx_contact_is_read` (`is_read`),
     INDEX `idx_contact_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- 14. USER ADDRESSES TABLE (Customer Saved Delivery Addresses)
+-- ---------------------------------------------------------------------
+CREATE TABLE `user_addresses` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `title` VARCHAR(50) NOT NULL DEFAULT 'آدرس اصلی',
+    `recipient_name` VARCHAR(100) NOT NULL,
+    `recipient_phone` VARCHAR(20) NOT NULL,
+    `province` VARCHAR(100) NOT NULL,
+    `city` VARCHAR(100) NOT NULL,
+    `postal_code` VARCHAR(20) NOT NULL,
+    `address` TEXT NOT NULL,
+    `is_default` TINYINT(1) NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_user_addresses_user` 
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) 
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX `idx_user_addresses_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- 15. WISHLISTS TABLE (Customer Saved Favorites)
+-- ---------------------------------------------------------------------
+CREATE TABLE `wishlists` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `product_id` BIGINT UNSIGNED NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_wishlists_user` 
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) 
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_wishlists_product` 
+        FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) 
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY `uq_user_product` (`user_id`, `product_id`),
+    INDEX `idx_wishlists_user` (`user_id`),
+    INDEX `idx_wishlists_product` (`product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
