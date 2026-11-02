@@ -1,0 +1,120 @@
+{% extends 'layouts/base.twig' %}
+
+{% block head %}
+{# Schema.org Structured Data for SEO Rich Snippets #}
+<script type="application/ld+json">
+{{ schema_json|raw }}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav style="margin: 20px 0 10px 0; font-size: 13px; color: var(--text-muted);" aria-label="راهنمای مسیر">
+        <a href="{{ url('/') }}">صفحه اصلی</a> /
+        <a href="{{ url('products') }}">محصولات</a> /
+        <a href="{{ url('products?category=' ~ product.category_slug) }}">{{ product.category_title }}</a> /
+        <span style="color: var(--text-main); font-weight: 600;">{{ product.title }}</span>
+    </nav>
+
+    <!-- Product Detail Container -->
+    <div class="detail-layout">
+        <!-- Gallery Section -->
+        <div class="gallery-container">
+            <div class="main-image-box">
+                <img id="mainProductImage" src="{{ product.primary_image ? asset(product.primary_image) : asset('images/placeholder.webp') }}" alt="{{ product.title }}">
+            </div>
+        </div>
+
+        <!-- Info & Buy Section -->
+        <div class="detail-info">
+            <span class="product-brand">{{ product.brand }} | کد کالا: {{ product.sku }}</span>
+            <h1 class="detail-title">{{ product.title }}</h1>
+
+            <div class="detail-meta">
+                <span>دسته‌بندی: <strong>{{ product.category_title }}</strong></span>
+                <span>وضعیت: 
+                    {% if product.stock_quantity > 0 %}
+                        <strong style="color: var(--success);">موجود در انبار ({{ product.stock_quantity|fa_num }} عدد)</strong>
+                    {% else %}
+                        <strong style="color: var(--danger);">ناموجود</strong>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="detail-price-box">
+                <div style="display: flex; align-items: baseline; gap: 12px;">
+                    <span class="current">{{ product.price|price }}</span>
+                    {% if product.compare_at_price and product.compare_at_price > product.price %}
+                        <span class="price-old" style="font-size: 16px;">{{ product.compare_at_price|price }}</span>
+                        {% set discount = ((product.compare_at_price - product.price) / product.compare_at_price * 100)|round %}
+                        <span class="badge-discount" style="position: static;">{{ discount|fa_num }}% تخفیف</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if product.summary %}
+                <p style="color: #475569; font-size: 14px; margin-bottom: 24px; line-height: 1.8;">
+                    {{ product.summary }}
+                </p>
+            {% endif %}
+
+            <!-- Add to Cart Form -->
+            <form id="productDetailForm" data-product-id="{{ product.id }}">
+                {% if product.variants|length > 0 %}
+                    <div class="variants-section">
+                        <label class="variant-label">انتخاب تنوع ({{ product.variants[0].attribute_name }}):</label>
+                        <div class="variant-options">
+                            {% for variant in product.variants %}
+                                <label>
+                                    <input type="radio" name="variant_id" value="{{ variant.id }}" class="variant-radio" {% if loop.first %}checked{% endif %}>
+                                    <span class="variant-chip">
+                                        {% if variant.color_hex %}
+                                            <span class="color-indicator" style="background-color: {{ variant.color_hex }};"></span>
+                                        {% endif %}
+                                        <span>{{ variant.attribute_value }}</span>
+                                        {% if variant.additional_price > 0 %}
+                                            <small>(+{{ variant.additional_price|price }})</small>
+                                        {% endif %}
+                                    </span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if product.stock_quantity > 0 %}
+                    <div class="action-row">
+                        <div class="quantity-stepper">
+                            <button type="button" id="btnDetailQtyMinus">-</button>
+                            <input type="number" id="detailQtyInput" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}">
+                            <button type="button" id="btnDetailQtyPlus">+</button>
+                        </div>
+
+                        <button type="submit" class="btn-detail-add">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <span>افزودن به سبد خرید</span>
+                        </button>
+                    </div>
+                {% else %}
+                    <div style="background: #fee2e2; color: #991b1b; padding: 14px; border-radius: var(--radius-md); font-weight: 600; text-align: center; margin-top: 16px;">
+                        متأسفانه این محصول در حال حاضر ناموجود است. به زودی در انبار شارژ خواهد شد.
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Long Description Section -->
+    {% if product.description %}
+        <div style="background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); margin-top: 32px; margin-bottom: 48px;">
+            <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">نقد و بررسی تخصصی محصول</h3>
+            <div style="line-height: 2; font-size: 15px; color: #334155;">
+                {{ product.description|raw }}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

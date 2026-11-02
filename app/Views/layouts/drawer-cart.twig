@@ -1,0 +1,68 @@
+{# Drawer Cart Side Panel #}
+<div id="drawerCartBackdrop" class="drawer-backdrop" aria-hidden="true">
+    <aside class="drawer-panel" role="dialog" aria-modal="true" aria-label="سبد خرید">
+        <div class="drawer-header">
+            <h3>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                سبد خرید شما
+            </h3>
+            <button id="drawerCartClose" class="drawer-close" aria-label="بستن سبد خرید">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div id="drawerCartBody" class="drawer-body">
+            {# Items rendered dynamically by cart.js #}
+            {% if cart_items|length == 0 %}
+                <div class="drawer-empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                    <p style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">سبد خرید شما خالی است</p>
+                    <p style="font-size: 13px;">کالاهای مورد علاقه خود را به سبد خرید اضافه نمایید.</p>
+                </div>
+            {% else %}
+                {% for item in cart_items %}
+                    <div class="cart-item-row" data-key="{{ item.key }}">
+                        <div class="cart-item-img">
+                            <img src="{{ item.image ? asset(item.image) : asset('images/placeholder.webp') }}" alt="{{ item.title }}">
+                        </div>
+                        <div class="cart-item-info">
+                            <h4 class="cart-item-title"><a href="{{ url('products/' ~ item.slug) }}">{{ item.title }}</a></h4>
+                            {% if item.variant_title %}
+                                <span class="cart-item-variant">{{ item.variant_title }}</span>
+                            {% endif %}
+                            <div class="cart-item-bottom">
+                                <div class="cart-item-qty">
+                                    <button class="btn-qty-minus" data-key="{{ item.key }}" data-qty="{{ item.quantity - 1 }}">-</button>
+                                    <span>{{ item.quantity|fa_num }}</span>
+                                    <button class="btn-qty-plus" data-key="{{ item.key }}" data-qty="{{ item.quantity + 1 }}" {% if item.quantity >= item.max_stock %}disabled{% endif %}>+</button>
+                                </div>
+                                <span class="cart-item-price">{{ item.subtotal|price }}</span>
+                                <button class="cart-item-remove" data-key="{{ item.key }}" title="حذف کالا">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="drawer-footer" {% if cart_items|length == 0 %}style="display: none;"{% endif %}>
+            <div class="drawer-subtotal-row">
+                <span>مبلغ قابل پرداخت:</span>
+                <span id="drawerCartSubtotal" class="amount">{{ cart_total|price }}</span>
+            </div>
+            <a href="{{ url('checkout') }}" class="btn-checkout">
+                تکمیل سفارش و تسویه حساب
+            </a>
+        </div>
+    </aside>
+</div>

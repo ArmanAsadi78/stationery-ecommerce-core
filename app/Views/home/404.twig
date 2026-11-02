@@ -1,0 +1,19 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="container" style="padding: 80px 20px; text-align: center;">
+    <div style="max-width: 500px; margin: 0 auto; background: var(--bg-card); padding: 48px 32px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-md);">
+        <h1 style="font-size: 80px; font-weight: 900; color: var(--danger); line-height: 1; margin-bottom: 12px;">۴۰۴</h1>
+        <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 16px;">{{ page_title|default('صفحه مورد نظر یافت نشد') }}</h2>
+        <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 28px; line-height: 1.8;">
+            {{ message|default('متأسفانه صفحه‌ای که به دنبال آن بودید یافت نشد یا ممکن است آدرس آن تغییر کرده باشد.') }}
+        </p>
+        <a href="{{ url('/') }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: var(--primary); color: white; border-radius: var(--radius-full); font-weight: 700;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>بازگشت به صفحه اصلی</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

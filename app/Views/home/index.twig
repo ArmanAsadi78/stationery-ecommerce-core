@@ -1,0 +1,86 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Banner Section -->
+    <section class="hero-banner">
+        <div class="hero-content">
+            <span class="hero-tag">✨ شروع سال تحصیلی و اداری با برترین برندها</span>
+            <h1 class="hero-title">دنیای رنگ و نگارش، در دستان شما</h1>
+            <p class="hero-desc">مجموعه‌ای از برترین نوشت‌افزارهای تخصصی، روان‌نویس‌های اداری اشنایدر، اتودهای مهندسی روترینگ و مدادرنگی‌های حرفه‌ای فابرکاستل با تضمین اصالت و بهترین قیمت.</p>
+            <a href="{{ url('products') }}" class="hero-btn">
+                <span>مشاهده و خرید کاتالوگ</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+            </a>
+        </div>
+        <div class="hero-graphic">
+            <div class="hero-badge-card">
+                <div class="num">۱۰۰٪</div>
+                <div class="lbl">تضمین اصالت برند</div>
+            </div>
+            <div class="hero-badge-card">
+                <div class="num">۲۴h</div>
+                <div class="lbl">ارسال سریع سفارشات</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products Section -->
+    <section class="featured-section">
+        <div class="section-header">
+            <h2 class="section-title">محصولات منتخب و پرفروش</h2>
+            <a href="{{ url('products') }}" class="view-all-link">
+                <span>مشاهده همه محصولات</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+        </div>
+
+        <div class="product-grid">
+            {% for product in featured_products %}
+                <article class="product-card {% if product.stock_quantity <= 0 %}out-of-stock{% endif %}">
+                    <div class="product-thumb">
+                        <a href="{{ url('products/' ~ product.slug) }}">
+                            <img src="{{ product.primary_image ? asset(product.primary_image) : asset('images/placeholder.webp') }}" alt="{{ product.title }}" loading="lazy">
+                        </a>
+
+                        {% if product.compare_at_price and product.compare_at_price > product.price %}
+                            {% set discount = ((product.compare_at_price - product.price) / product.compare_at_price * 100)|round %}
+                            <span class="badge-discount">{{ discount|fa_num }}% تخفیف</span>
+                        {% endif %}
+
+                        {% if product.stock_quantity <= 0 %}
+                            <span class="badge-out-of-stock">ناموجود</span>
+                        {% endif %}
+                    </div>
+
+                    <span class="product-brand">{{ product.brand }} | {{ product.category_title }}</span>
+                    <h3 class="product-title">
+                        <a href="{{ url('products/' ~ product.slug) }}">{{ product.title }}</a>
+                    </h3>
+
+                    <div class="product-pricing">
+                        <div class="price-box">
+                            <span class="price-current">{{ product.price|price }}</span>
+                            {% if product.compare_at_price and product.compare_at_price > product.price %}
+                                <span class="price-old">{{ product.compare_at_price|price }}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if product.stock_quantity > 0 %}
+                            <button type="button" class="btn-quick-add" data-id="{{ product.id }}" title="افزودن سریع به سبد خرید" aria-label="افزودن به سبد">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
+                            </button>
+                        {% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

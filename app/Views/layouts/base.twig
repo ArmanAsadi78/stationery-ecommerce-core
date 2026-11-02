@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ page_title ? page_title : app_name }}</title>
+    <meta name="description" content="{{ meta_description ? meta_description : 'فروشگاه اینترنتی لوازم‌التحریر تحریرچی، مرجع تخصصی خرید انواع نوشت‌افزار، لوازم اداری، طراحی و دفتر با بهترین قیمت.' }}">
+    
+    <!-- Modern Main Stylesheet -->
+    <link rel="stylesheet" href="{{ asset('css/main.css') }}">
+    
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="container">
+            <div class="top-bar">
+                <!-- Brand Logo -->
+                <a href="{{ url('/') }}" class="brand-logo" title="صفحه اصلی تحریرچی">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                    <span>تحریرچی</span>
+                </a>
+
+                <!-- Search Input -->
+                <form action="{{ url('products') }}" method="GET" class="header-search">
+                    <input type="text" name="q" placeholder="جستجوی خودکار، روان‌نویس، اتود، دفتر، برند..." value="{{ search_query|default('') }}" autocomplete="off">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </form>
+
+                <!-- Actions / Cart Button -->
+                <div class="header-actions">
+                    <button type="button" class="cart-btn-trigger" aria-label="مشاهده سبد خرید">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        <span>سبد خرید</span>
+                        <span id="headerCartBadge" class="cart-badge">{{ cart_count|fa_num }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Navigation Bar -->
+        <nav class="nav-bar">
+            <div class="container">
+                <ul class="nav-links">
+                    <li><a href="{{ url('/') }}">صفحه اصلی</a></li>
+                    <li><a href="{{ url('products') }}">تمامی محصولات</a></li>
+                    <li><a href="{{ url('products?category=writing-instruments') }}">نوشت‌افزار و خودکار</a></li>
+                    <li><a href="{{ url('products?category=notebooks-and-paper') }}">کاغذ و دفتر</a></li>
+                    <li><a href="{{ url('products?category=office-supplies') }}">لوازم اداری و بایگانی</a></li>
+                    <li><a href="{{ url('products?category=art-and-drawing') }}">هنر و طراحی</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Block -->
+    <main class="site-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Drawer Cart Component -->
+    {% include 'layouts/drawer-cart.twig' %}
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- Site Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-features">
+                <div class="footer-feature-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <div>
+                        <h4>ارسال سریع به سراسر کشور</h4>
+                        <p>بسته‌بندی ایمن و ارسال با پست پیشتاز و تیپاکس</p>
+                    </div>
+                </div>
+                <div class="footer-feature-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <div>
+                        <h4>ضمانت ۱۰۰٪ اصالت کالا</h4>
+                        <p>تضمین بازگشت وجه در صورت عدم اصالت نوشت‌افزار</p>
+                    </div>
+                </div>
+                <div class="footer-feature-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <div>
+                        <h4>پرداخت آنلاین امن</h4>
+                        <p>اتصال به درگاه‌های معتبر بانکی شتاب</p>
+                    </div>
+                </div>
+                <div class="footer-feature-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <div>
+                        <h4>پشتیبانی تخصصی</h4>
+                        <p>مشاوره در خرید انواع قلم و نوشت‌افزار مهندسی</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© {{ "now"|date("Y") }} تمامی حقوق مادی و معنوی برای <strong>{{ app_name }}</strong> محفوظ است. طراحی شده با Clean Architecture و فریم‌ورک بومی PHP.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Vanilla AJAX Cart Script -->
+    <script src="{{ asset('js/cart.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
