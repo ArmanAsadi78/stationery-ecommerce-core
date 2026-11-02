@@ -109,9 +109,15 @@ class ProductController
             ],
         ];
 
+        $productUrl = url('products/' . $product['slug'], true);
+        $productImage = !empty($product['primary_image']) ? url((string) $product['primary_image'], true) : asset('images/placeholder.webp', true);
+
         $html = View::render('products/detail', [
             'page_title' => $product['title'] . ' | فروشگاه تحریرچی',
             'meta_description' => mb_substr(strip_tags((string) ($product['summary'] ?? $product['title'])), 0, 160),
+            'canonical_url' => $productUrl,
+            'og_type' => 'product',
+            'og_image' => $productImage,
             'product' => $product,
             'schema_json' => json_encode($schemaData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         ]);

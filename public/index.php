@@ -9,6 +9,8 @@ use App\Controllers\CartController;
 use App\Controllers\CheckoutController;
 use App\Controllers\HomeController;
 use App\Controllers\ProductController;
+use App\Controllers\SitemapController;
+use App\Controllers\TorobApiController;
 use App\Core\Application;
 
 $app = new Application();
@@ -33,6 +35,10 @@ $router->post('/checkout/process', [CheckoutController::class, 'process']);
 $router->get('/payment/mock-gateway', [CheckoutController::class, 'mockGateway']);
 $router->get('/payment/callback', [CheckoutController::class, 'callback']);
 $router->get('/order/success/{id:[0-9]+}', [CheckoutController::class, 'success']);
+
+// Search Engine Optimization & External Integrations
+$router->get('/sitemap.xml', [SitemapController::class, 'index']);
+$router->get('/api/torob-products', [TorobApiController::class, 'index']);
 
 // Execute Request Lifecycle
 $app->run();

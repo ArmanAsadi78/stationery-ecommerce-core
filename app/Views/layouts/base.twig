@@ -8,6 +8,25 @@
     <title>{{ page_title ? page_title : app_name }}</title>
     <meta name="description" content="{{ meta_description ? meta_description : 'فروشگاه اینترنتی لوازم‌التحریر تحریرچی، مرجع تخصصی خرید انواع نوشت‌افزار، لوازم اداری، طراحی و دفتر با بهترین قیمت.' }}">
     
+    <!-- SEO & Canonical Link -->
+    <link rel="canonical" href="{{ canonical_url ? canonical_url : url('', true) }}">
+    <meta name="robots" content="index, follow">
+
+    <!-- OpenGraph Social Meta Tags -->
+    <meta property="og:site_name" content="{{ app_name }}">
+    <meta property="og:locale" content="fa_IR">
+    <meta property="og:type" content="{{ og_type ? og_type : 'website' }}">
+    <meta property="og:title" content="{{ page_title ? page_title : app_name }}">
+    <meta property="og:description" content="{{ meta_description ? meta_description : 'فروشگاه اینترنتی لوازم‌التحریر تحریرچی، مرجع تخصصی خرید انواع نوشت‌افزار، لوازم اداری، طراحی و دفتر با بهترین قیمت.' }}">
+    <meta property="og:url" content="{{ canonical_url ? canonical_url : url('', true) }}">
+    <meta property="og:image" content="{{ og_image ? og_image : asset('images/placeholder.webp', true) }}">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ page_title ? page_title : app_name }}">
+    <meta name="twitter:description" content="{{ meta_description ? meta_description : 'فروشگاه اینترنتی لوازم‌التحریر تحریرچی، مرجع تخصصی خرید انواع نوشت‌افزار، لوازم اداری، طراحی و دفتر با بهترین قیمت.' }}">
+    <meta name="twitter:image" content="{{ og_image ? og_image : asset('images/placeholder.webp', true) }}">
+    
     <!-- Google Fonts Preconnect & Vazirmatn Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

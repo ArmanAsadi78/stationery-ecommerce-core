@@ -82,8 +82,8 @@ class View
             return '<input type="hidden" name="_csrf_token" value="' . escape_html($token) . '">';
         }, ['is_safe' => ['html']]));
 
-        $twig->addFunction(new TwigFunction('asset', function (string $path): string {
-            return asset($path);
+        $twig->addFunction(new TwigFunction('asset', function (string $path, bool $absolute = false): string {
+            return asset($path, $absolute);
         }));
 
         $twig->addFunction(new TwigFunction('url', function (string $path = '', bool $absolute = false): string {

@@ -31,10 +31,15 @@ class Application
         return $this->router;
     }
 
+    public function handle(Request $request): Response
+    {
+        return $this->router->dispatch($request);
+    }
+
     public function run(): void
     {
         try {
-            $response = $this->router->dispatch($this->request);
+            $response = $this->handle($this->request);
             $response->send();
         } catch (Throwable $e) {
             $this->handleException($e);

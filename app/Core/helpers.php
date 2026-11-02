@@ -145,10 +145,14 @@ if (!function_exists('url')) {
             return $cleanPath;
         }
 
-        $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? parse_url((string) config('app.url', 'http://localhost'), PHP_URL_HOST) ?? 'localhost';
+        if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== '') {
+            $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $base = "{$scheme}://{$_SERVER['HTTP_HOST']}";
+        } else {
+            $base = rtrim((string) config('app.url', 'http://localhost'), '/');
+        }
 
-        return "{$scheme}://{$host}" . ($cleanPath === '/' ? '' : $cleanPath);
+        return $base . ($cleanPath === '/' ? '' : $cleanPath);
     }
 }
 
@@ -156,13 +160,13 @@ if (!function_exists('asset')) {
     /**
      * Generate URL for public assets.
      */
-    function asset(string $path): string
+    function asset(string $path, bool $absolute = false): string
     {
         $clean = ltrim($path, '/\\');
         if (str_starts_with($clean, 'assets/') || str_starts_with($clean, 'assets\\')) {
             $clean = substr($clean, 7);
         }
-        return url('assets/' . ltrim($clean, '/\\'));
+        return url('assets/' . ltrim($clean, '/\\'), $absolute);
     }
 }
 

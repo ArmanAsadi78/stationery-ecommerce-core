@@ -249,6 +249,9 @@ class OrderService
 
             $this->db->commit();
 
+            // Invalidate Torob API cache upon inventory changes
+            CacheService::flushTorob();
+
             return [
                 'id' => $orderId,
                 'order_number' => $orderNumber,
@@ -355,6 +358,10 @@ class OrderService
             );
 
             $this->db->commit();
+
+            // Invalidate Torob API cache upon inventory restoration
+            CacheService::flushTorob();
+
             return true;
         } catch (Throwable $e) {
             if ($this->db->inTransaction()) {
