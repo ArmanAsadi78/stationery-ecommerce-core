@@ -32,14 +32,14 @@ try {
     // 1. Seed Users (Argon2id passwords)
     echo "[1/5] Seeding Users (Admin & Customer)...\n";
     $userStmt = $pdo->prepare("
-        INSERT INTO `users` (`name`, `email`, `phone`, `password_hash`, `role`, `is_active`)
-        VALUES (:name, :email, :phone, :password_hash, :role, 1)
-        ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `password_hash` = VALUES(`password_hash`)
+        INSERT INTO `users` (`full_name`, `email`, `phone`, `password_hash`, `role`, `is_active`)
+        VALUES (:full_name, :email, :phone, :password_hash, :role, 1)
+        ON DUPLICATE KEY UPDATE `full_name` = VALUES(`full_name`), `password_hash` = VALUES(`password_hash`)
     ");
 
     $adminPassword = password_hash('Admin@123456', PASSWORD_ARGON2ID);
     $userStmt->execute([
-        ':name' => 'مدیر سامانه (سیستم)',
+        ':full_name' => 'مدیر سامانه (سیستم)',
         ':email' => 'admin@stationery.local',
         ':phone' => '09120000001',
         ':password_hash' => $adminPassword,
@@ -49,7 +49,7 @@ try {
 
     $customerPassword = password_hash('Customer@123456', PASSWORD_ARGON2ID);
     $userStmt->execute([
-        ':name' => 'آرمان علوی (کاربر دمو)',
+        ':full_name' => 'آرمان علوی (کاربر دمو)',
         ':email' => 'customer@stationery.local',
         ':phone' => '09120000002',
         ':password_hash' => $customerPassword,
