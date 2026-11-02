@@ -1,0 +1,228 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="container checkout-container">
+    {# Breadcrumb & Steps #}
+    <div class="checkout-steps">
+        <div class="step-item step-completed">
+            <span class="step-num">✓</span>
+            <span class="step-title">سبد خرید</span>
+        </div>
+        <div class="step-connector active"></div>
+        <div class="step-item step-active">
+            <span class="step-num">۲</span>
+            <span class="step-title">اطلاعات ارسال و پرداخت</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item">
+            <span class="step-num">۳</span>
+            <span class="step-title">تکمیل و صدور فاکتور</span>
+        </div>
+    </div>
+
+    {# Flash Alerts #}
+    {% if has_flash('error') %}
+        <div class="alert alert-danger" role="alert">
+            <span class="alert-icon">⚠️</span>
+            <span>{{ flash('error') }}</span>
+        </div>
+    {% endif %}
+
+    {% if has_flash('success') %}
+        <div class="alert alert-success" role="alert">
+            <span class="alert-icon">✓</span>
+            <span>{{ flash('success') }}</span>
+        </div>
+    {% endif %}
+
+    {% if has_flash('info') %}
+        <div class="alert alert-info" role="alert">
+            <span class="alert-icon">ℹ️</span>
+            <span>{{ flash('info') }}</span>
+        </div>
+    {% endif %}
+
+    <div class="checkout-grid">
+        {# Left / Shipping Details Form #}
+        <div class="checkout-form-col">
+            <form action="{{ url('checkout/process') }}" method="POST" id="checkoutForm" class="checkout-card">
+                {{ csrf_field() }}
+
+                <div class="card-section-header">
+                    <span class="section-icon">📍</span>
+                    <div>
+                        <h2>مشخصات تحویل‌گیرنده و آدرس ارسال</h2>
+                        <p class="section-subtitle">لطفاً اطلاعات پستی را با دقت وارد نمایید تا مرسوله بدون تأخیر ارسال شود.</p>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="recipient_name">نام و نام‌خانوادگی تحویل‌گیرنده <span class="required">*</span></label>
+                        <input type="text" id="recipient_name" name="recipient_name" class="form-input" placeholder="مثال: علی رضایی" required value="{{ auth_user.name ?? '' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipient_phone">شماره تلفن همراه <span class="required">*</span></label>
+                        <input type="tel" id="recipient_phone" name="recipient_phone" class="form-input" placeholder="مثال: ۰۹۱۲۳۴۵۶۷۸۹" pattern="^09[0-9]{9}$" required value="{{ auth_user.phone ?? '' }}">
+                        <span class="input-hint">جهت هماهنگی تحویل سفارش و پیامک کد رهگیری پستی</span>
+                    </div>
+                </div>
+
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label for="shipping_province">استان <span class="required">*</span></label>
+                        <select id="shipping_province" name="shipping_province" class="form-select" required>
+                            <option value="">انتخاب استان...</option>
+                            {% for prov in provinces %}
+                                <option value="{{ prov }}" {% if prov == 'تهران' %}selected{% endif %}>{{ prov }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="shipping_city">شهر <span class="required">*</span></label>
+                        <input type="text" id="shipping_city" name="shipping_city" class="form-input" placeholder="مثال: تهران" value="تهران" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="shipping_postal_code">کد پستی ۱۰ رقمی <span class="required">*</span></label>
+                        <input type="text" id="shipping_postal_code" name="shipping_postal_code" class="form-input" placeholder="۱۰ رقم بدون خط تیره" pattern="^[0-9]{10}$" maxlength="10" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="shipping_address">آدرس کامل پستی <span class="required">*</span></label>
+                    <textarea id="shipping_address" name="shipping_address" rows="3" class="form-textarea" placeholder="خیابان، کوچه، پلاک، واحد..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="customer_notes">توضیحات یا یادداشت سفارش (اختیاری)</label>
+                    <textarea id="customer_notes" name="customer_notes" rows="2" class="form-textarea" placeholder="هرگونه نکته خاص برای بسته‌بندی یا زمان تحویل..."></textarea>
+                </div>
+
+                <div class="payment-method-selector">
+                    <h3>روش پرداخت</h3>
+                    <label class="payment-option selected">
+                        <input type="radio" name="payment_method" value="online" checked>
+                        <div class="payment-option-content">
+                            <span class="payment-icon">💳</span>
+                            <div>
+                                <strong>پرداخت آنلاین شتابی (زرین‌پال / شاپرک)</strong>
+                                <p>امکان پرداخت با کلیه کارت‌های بانکی عضو شبکه شتاب با رمز پویا</p>
+                            </div>
+                        </div>
+                        <span class="badge-safe">امن و رمزنگاری‌شده</span>
+                    </label>
+                </div>
+
+                <div class="checkout-submit-wrap">
+                    <button type="submit" id="btnSubmitOrder" class="btn-primary btn-submit-order">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        ثبت نهایی سفارش و ورود به درگاه پرداخت
+                    </button>
+                    <p class="submit-note">با کلیک روی دکمه بالا، سفارش شما با قفل انحصاری انبار رزرو شده و به درگاه امن بانکی هدایت می‌شوید.</p>
+                </div>
+            </form>
+        </div>
+
+        {# Right / Order Summary & Coupon #}
+        <div class="checkout-summary-col">
+            {# Items Overview #}
+            <div class="checkout-card summary-card">
+                <div class="card-section-header">
+                    <span class="section-icon">🛍️</span>
+                    <h3>خلاصه فاکتور خرید ({{ cart.total_count|fa_num }} قلم کالا)</h3>
+                </div>
+
+                <div class="summary-items-list">
+                    {% for item in items %}
+                        <div class="summary-item-row">
+                            <div class="item-thumb">
+                                <img src="{{ item.image ? asset(item.image) : asset('images/placeholder.webp') }}" alt="{{ item.title }}">
+                            </div>
+                            <div class="item-details">
+                                <div class="item-title">{{ item.title }}</div>
+                                {% if item.variant_title %}
+                                    <div class="item-variant">{{ item.variant_title }}</div>
+                                {% endif %}
+                                <div class="item-qty-price">
+                                    <span>{{ item.quantity|fa_num }} عدد</span>
+                                    <span class="price-val">{{ item.subtotal|price }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {# Coupon Box #}
+                <div class="coupon-box-section">
+                    {% if coupon_code %}
+                        <div class="applied-coupon-pill">
+                            <div class="coupon-info">
+                                <span class="coupon-tag-icon">🏷️</span>
+                                <span>کد تخفیف: <strong>{{ coupon_code }}</strong></span>
+                                <span class="discount-badge">-{{ discount_amount|price }}</span>
+                            </div>
+                            <form action="{{ url('checkout/remove-coupon') }}" method="POST">
+                                {{ csrf_field() }}
+                                <button type="submit" class="btn-remove-coupon" title="حذف کد تخفیف">✕</button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <form action="{{ url('checkout/apply-coupon') }}" method="POST" class="coupon-form">
+                            {{ csrf_field() }}
+                            <div class="coupon-input-group">
+                                <input type="text" name="coupon_code" class="form-input coupon-input" placeholder="کد تخفیف (مثال: WELCOME10)" required>
+                                <button type="submit" class="btn-secondary btn-apply-coupon">اعمال کد</button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+
+                {# Totals Calculation #}
+                <div class="order-totals-breakdown">
+                    <div class="total-row">
+                        <span>مجموع اقلام:</span>
+                        <span>{{ subtotal|price }}</span>
+                    </div>
+
+                    {% if discount_amount > 0 %}
+                        <div class="total-row discount-row">
+                            <span>تخفیف اعمال‌شده:</span>
+                            <span class="discount-val">- {{ discount_amount|price }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="total-row">
+                        <span>هزینه بسته‌بندی و ارسال:</span>
+                        {% if shipping_cost == 0 %}
+                            <span class="shipping-free">رایگان (سفارش بالای ۵۰۰ هزار تومان)</span>
+                        {% else %}
+                            <span>{{ shipping_cost|price }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="total-row grand-total-row">
+                        <span>مبلغ نهایی قابل پرداخت:</span>
+                        <span class="grand-total-amount">{{ payable_total|price }}</span>
+                    </div>
+                </div>
+
+                <div class="security-trust-box">
+                    <div class="trust-item">
+                        <span>🔒</span>
+                        <span>تضمین امنیت پرداخت با پروتکل شاپرک</span>
+                    </div>
+                    <div class="trust-item">
+                        <span>📦</span>
+                        <span>بسته‌بندی ویژه اقلام فانتزی و حساس</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="container order-success-container">
+    <div class="success-hero-card">
+        <div class="success-icon-badge">🎉</div>
+        <h1 class="success-title">سفارش شما با موفقیت ثبت و پرداخت گردید!</h1>
+        <p class="success-subtitle">از خرید شما سپاسگزاریم. سفارش شما هم‌اکنون وارد مرحله پردازش و آماده‌سازی در انبار تحریرچی شده است.</p>
+
+        <div class="order-quick-tokens">
+            <div class="token-item">
+                <span class="token-label">شماره سفارش:</span>
+                <span class="token-value" id="orderNumberVal">{{ order.order_number }}</span>
+            </div>
+            <div class="token-separator"></div>
+            <div class="token-item">
+                <span class="token-label">کد رهگیری تراکنش بانکی:</span>
+                <span class="token-value font-mono">{{ payment.reference_id ?? 'در حال صدور' }}</span>
+            </div>
+            <div class="token-separator"></div>
+            <div class="token-item">
+                <span class="token-label">تاریخ ثبت:</span>
+                <span class="token-value">{{ order.created_at|date('Y/m/d H:i')|fa_num }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="invoice-wrapper">
+        <div class="invoice-header">
+            <div>
+                <h2>فاکتور رسمی سفارش</h2>
+                <p>وضعیت سفارش: <span class="badge-status-processing">در حال پردازش در انبار</span></p>
+            </div>
+            <button onclick="window.print()" class="btn-print-invoice">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                چاپ فاکتور
+            </button>
+        </div>
+
+        {# Recipient & Delivery Meta #}
+        <div class="invoice-meta-grid">
+            <div class="meta-box">
+                <h4>اطلاعات تحویل‌گیرنده</h4>
+                <p><strong>نام:</strong> {{ order.recipient_name }}</p>
+                <p><strong>شماره تماس:</strong> {{ order.recipient_phone|fa_num }}</p>
+                {% if order.customer_notes %}
+                    <p><strong>یادداشت سفارش:</strong> {{ order.customer_notes }}</p>
+                {% endif %}
+            </div>
+            <div class="meta-box">
+                <h4>آدرس ارسال</h4>
+                <p><strong>استان و شهر:</strong> {{ order.shipping_province }} - {{ order.shipping_city }}</p>
+                <p><strong>کد پستی:</strong> {{ order.shipping_postal_code|fa_num }}</p>
+                <p><strong>نشانی:</strong> {{ order.shipping_address }}</p>
+            </div>
+        </div>
+
+        {# Items Table #}
+        <div class="table-responsive">
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>ردیف</th>
+                        <th>شرح کالا</th>
+                        <th>تنوع</th>
+                        <th>قیمت واحد</th>
+                        <th>تعداد</th>
+                        <th>مبلغ کل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for index, item in items %}
+                        <tr>
+                            <td>{{ (index + 1)|fa_num }}</td>
+                            <td class="item-cell-title"><strong>{{ item.product_title }}</strong></td>
+                            <td>{{ item.variant_details ?? '-' }}</td>
+                            <td>{{ item.unit_price|price }}</td>
+                            <td>{{ item.quantity|fa_num }}</td>
+                            <td>{{ item.subtotal|price }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Invoice Calculations #}
+        <div class="invoice-totals-table">
+            <div class="inv-row">
+                <span>جمع کل اقلام:</span>
+                <span>{{ order.subtotal|price }}</span>
+            </div>
+            {% if order.discount_amount > 0 %}
+                <div class="inv-row inv-discount">
+                    <span>تخفیف:</span>
+                    <span>- {{ order.discount_amount|price }}</span>
+                </div>
+            {% endif %}
+            <div class="inv-row">
+                <span>هزینه بسته‌بندی و ارسال:</span>
+                <span>{{ order.shipping_cost == 0 ? 'رایگان' : order.shipping_cost|price }}</span>
+            </div>
+            <div class="inv-row inv-grand-total">
+                <span>مبلغ پرداخت‌شده:</span>
+                <span>{{ order.total_amount|price }}</span>
+            </div>
+        </div>
+
+        <div class="invoice-footer-actions">
+            <a href="{{ url('/') }}" class="btn-primary">بازگشت به صفحه اصلی</a>
+            <a href="{{ url('products') }}" class="btn-secondary">مشاهده سایر نوشت‌افزارها</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

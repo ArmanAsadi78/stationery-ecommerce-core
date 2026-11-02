@@ -67,4 +67,17 @@ class HttpLifecycleTest extends TestCase
         $this->assertTrue($json['success'] ?? false);
         $this->assertArrayHasKey('cart', $json);
     }
+
+    public function test_checkout_page_renders_with_active_cart(): void
+    {
+        \App\Core\Session::start();
+        $cartService = new \App\Services\CartService();
+        $cartService->add(6, null, 1);
+
+        $body = $this->makeRequest('GET', '/checkout');
+
+        $this->assertStringContainsString('مشخصات تحویل‌گیرنده', $body);
+        $this->assertStringContainsString('ثبت نهایی سفارش', $body);
+        $this->assertStringContainsString('خلاصه فاکتور خرید', $body);
+    }
 }

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <link rel="stylesheet" href="{{ asset('css/main.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .gateway-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 580px;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12), 0 0 1px 1px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #f1f5f9;
+        }
+        .gateway-header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            color: #ffffff;
+            padding: 28px 32px;
+            text-align: center;
+            position: relative;
+        }
+        .gateway-logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .gateway-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .gateway-body {
+            padding: 32px;
+        }
+        .amount-highlight {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .amount-toman {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .amount-rial {
+            font-size: 14px;
+            color: #64748b;
+        }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            font-size: 13px;
+            margin-bottom: 24px;
+            background: #f1f5f9;
+            padding: 14px 18px;
+            border-radius: 16px;
+        }
+        .meta-grid div span {
+            color: #64748b;
+        }
+        .meta-grid div strong {
+            color: #1e293b;
+        }
+        .card-simulator-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 28px;
+        }
+        .sim-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 15px;
+            direction: ltr;
+            text-align: center;
+            letter-spacing: 2px;
+            background: #f8fafc;
+            color: #0f172a;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+        .gateway-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn-pay-success {
+            display: block;
+            text-align: center;
+            padding: 16px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s ease;
+        }
+        .btn-pay-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 25px -5px rgba(16, 185, 129, 0.5);
+            color: #ffffff;
+        }
+        .btn-pay-cancel {
+            display: block;
+            text-align: center;
+            padding: 14px;
+            background: #ffffff;
+            color: #ef4444;
+            border: 1.5px solid #fecaca;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-pay-cancel:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        .gateway-footer-note {
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="gateway-card">
+        <div class="gateway-header">
+            <div class="gateway-logo-row">
+                <span style="font-size: 24px;">🏦</span>
+                <h1 style="font-size: 20px; margin: 0; font-weight: 800;">درگاه پرداخت اینترنتی شاپرک / زرین‌پال</h1>
+            </div>
+            <span class="gateway-badge">محیط شبیه‌ساز امن تستی (Sandbox Mode)</span>
+        </div>
+
+        <div class="gateway-body">
+            <div class="amount-highlight">
+                <div class="amount-toman">{{ amount_tomans|price }}</div>
+                <div class="amount-rial">{{ amount_rials|number_format|fa_num }} ریال</div>
+            </div>
+
+            <div class="meta-grid">
+                <div><span>پذیرنده:</span> <strong>فروشگاه تحریرچی</strong></div>
+                <div><span>شماره سفارش:</span> <strong>{{ order.order_number }}</strong></div>
+                <div><span>شناسه پرداخت:</span> <strong style="font-size: 11px; direction: ltr; display: inline-block;">{{ authority }}</strong></div>
+                <div><span>تحویل‌گیرنده:</span> <strong>{{ order.recipient_name }}</strong></div>
+            </div>
+
+            <div class="card-simulator-box">
+                <label style="font-size: 13px; font-weight: 600; color: #475569;">شماره کارت شتابی تستی:</label>
+                <input type="text" class="sim-input" value="6037 •••• •••• 8421" readonly>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #64748b;">
+                    <span>CVV2: ***</span>
+                    <span>رمز پویا: پیامک شد ✓</span>
+                    <span>تاریخ انقضا: ۱۴۰۶/۰۸</span>
+                </div>
+            </div>
+
+            <div class="gateway-actions">
+                <a href="{{ url('payment/callback?Authority=' ~ authority ~ '&Status=OK') }}" class="btn-pay-success">
+                    ✓ پرداخت موفقیت‌آمیز و بازگشت به تحریرچی
+                </a>
+                <a href="{{ url('payment/callback?Authority=' ~ authority ~ '&Status=NOK') }}" class="btn-pay-cancel">
+                    ✕ انصراف از پرداخت و بازگشت به سبد خرید
+                </a>
+            </div>
+
+            <p class="gateway-footer-note">
+                این صفحه صرفاً جهت شبیه‌سازی دو مرحله‌ای پرداخت طراحی شده است و هیچ تراکنش واقعی بانکی انجام نمی‌شود.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

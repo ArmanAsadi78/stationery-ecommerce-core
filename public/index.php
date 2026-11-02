@@ -6,6 +6,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use App\Controllers\CartController;
+use App\Controllers\CheckoutController;
 use App\Controllers\HomeController;
 use App\Controllers\ProductController;
 use App\Core\Application;
@@ -23,6 +24,15 @@ $router->get('/cart/data', [CartController::class, 'data']);
 $router->post('/cart/add', [CartController::class, 'add']);
 $router->post('/cart/update', [CartController::class, 'update']);
 $router->post('/cart/remove', [CartController::class, 'remove']);
+
+// Checkout & Payment Routes
+$router->get('/checkout', [CheckoutController::class, 'index']);
+$router->post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon']);
+$router->post('/checkout/remove-coupon', [CheckoutController::class, 'removeCoupon']);
+$router->post('/checkout/process', [CheckoutController::class, 'process']);
+$router->get('/payment/mock-gateway', [CheckoutController::class, 'mockGateway']);
+$router->get('/payment/callback', [CheckoutController::class, 'callback']);
+$router->get('/order/success/{id:[0-9]+}', [CheckoutController::class, 'success']);
 
 // Execute Request Lifecycle
 $app->run();
