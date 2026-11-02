@@ -152,7 +152,11 @@ if (!function_exists('asset')) {
      */
     function asset(string $path): string
     {
-        return url('assets/' . ltrim($path, '/'));
+        $clean = ltrim($path, '/\\');
+        if (str_starts_with($clean, 'assets/') || str_starts_with($clean, 'assets\\')) {
+            $clean = substr($clean, 7);
+        }
+        return url('assets/' . ltrim($clean, '/\\'));
     }
 }
 

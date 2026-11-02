@@ -44,6 +44,7 @@
     "test": "phpunit --testdox",
     "analyse": "phpstan analyse app tests --level=6",
     "migrate": "php database/migrate.php",
-    "seed": "php database/seeders/DatabaseSeeder.php"
+    "seed": "php database/seeders/DatabaseSeeder.php",
+    "generate:placeholders": "php database/generate_placeholders.php"
   }
 }
