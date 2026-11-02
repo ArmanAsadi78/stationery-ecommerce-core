@@ -33,7 +33,7 @@
                 </div>
             {% endif %}
 
-            <form action="{{ url('admin/login') }}" method="POST" class="auth-form" id="adminLoginForm">
+            <form action="{{ url('admin/login') }}" method="POST" class="auth-form" id="adminLoginForm" novalidate>
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
 
                 <div class="form-group">

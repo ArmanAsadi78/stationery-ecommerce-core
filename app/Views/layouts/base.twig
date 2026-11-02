@@ -35,6 +35,9 @@
     <!-- Modern Main Stylesheet -->
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
     
+    <!-- AOS (Animate On Scroll) Stylesheet -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -212,12 +215,12 @@
                         </div>
                     </li>
 
-                    <li><a href="{{ url('/') }}">صفحه اصلی</a></li>
-                    <li><a href="{{ url('products?category=writing-instruments') }}">نوشت‌افزار</a></li>
-                    <li><a href="{{ url('products?category=notebooks-and-paper') }}">دفتر و کاغذ</a></li>
-                    <li><a href="{{ url('products?category=art-and-drawing') }}">طراحی و نقاشی</a></li>
-                    <li><a href="{{ url('about-us') }}">درباره ما</a></li>
-                    <li><a href="{{ url('contact-us') }}">تماس با ما</a></li>
+                    <li><a href="{{ url('/') }}" class="nav-link {{ current_path == '/' ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">صفحه اصلی</a></li>
+                    <li><a href="{{ url('products?category=writing-instruments') }}" class="nav-link {{ (current_path == '/products' and current_category == 'writing-instruments') ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">نوشت‌افزار</a></li>
+                    <li><a href="{{ url('products?category=notebooks-and-paper') }}" class="nav-link {{ (current_path == '/products' and current_category == 'notebooks-and-paper') ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">دفتر و کاغذ</a></li>
+                    <li><a href="{{ url('products?category=art-and-drawing') }}" class="nav-link {{ (current_path == '/products' and current_category == 'art-and-drawing') ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">طراحی و نقاشی</a></li>
+                    <li><a href="{{ url('about-us') }}" class="nav-link {{ current_path == '/about-us' ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">درباره ما</a></li>
+                    <li><a href="{{ url('contact-us') }}" class="nav-link {{ current_path == '/contact-us' ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">تماس با ما</a></li>
                 </ul>
 
                 <!-- Hot Deals Quick Link on Nav Bar -->
@@ -306,7 +309,6 @@
                         <li><a href="{{ url('products') }}">تمامی محصولات</a></li>
                         <li><a href="{{ url('about-us') }}">درباره تحریرچی</a></li>
                         <li><a href="{{ url('contact-us') }}">تماس با ما</a></li>
-                        <li><a href="{{ url('sitemap.xml') }}" target="_blank">نقشه سایت (XML)</a></li>
                     </ul>
                 </div>
 
@@ -349,6 +351,16 @@
 
     <!-- Vanilla AJAX Cart Script -->
     <script src="{{ asset('js/cart.js') }}"></script>
+    
+    <!-- AOS (Animate On Scroll) JavaScript Library -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({ once: true, offset: 50, duration: 800 });
+        }
+    });
+    </script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const userBtn = document.getElementById('userMenuBtn');

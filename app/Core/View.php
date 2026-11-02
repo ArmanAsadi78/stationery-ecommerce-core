@@ -54,6 +54,22 @@ class View
 
         $twig = self::getTwig();
 
+        // Extract clean current path and URI
+        $rawUri = (string) ($_SERVER['REQUEST_URI'] ?? '/');
+        $parsedPath = parse_url($rawUri, PHP_URL_PATH);
+        if ($parsedPath === false || $parsedPath === null || $parsedPath === '') {
+            $parsedPath = '/';
+        }
+        $decodedPath = rawurldecode($parsedPath);
+        $scriptName = (string) ($_SERVER['SCRIPT_NAME'] ?? '');
+        $scriptDir = dirname($scriptName);
+        if ($scriptDir !== '/' && $scriptDir !== '\\' && str_starts_with($decodedPath, $scriptDir)) {
+            $decodedPath = substr($decodedPath, strlen($scriptDir));
+        }
+        $trimmedPath = '/' . trim($decodedPath, '/');
+        $currentPath = ($trimmedPath === '/') ? '/' : rtrim($trimmedPath, '/');
+        $currentCategory = (string) ($_GET['category'] ?? '');
+
         // Inject dynamic globals
         $cartService = new CartService();
         $globalData = array_merge([
@@ -65,6 +81,9 @@ class View
             'cart_items' => $cartService->getItems(),
             'auth_user' => Session::get('user'),
             'is_logged_in' => Session::has('user'),
+            'current_path' => $currentPath,
+            'current_category' => $currentCategory,
+            'current_uri' => $rawUri,
         ], $data);
 
         return $twig->render($template, $globalData);
@@ -90,12 +109,12 @@ class View
             return url($path, $absolute);
         }));
 
-        $twig->addFunction(new TwigFunction('format_price', function (int|float|string $price): string {
-            return format_price($price);
+        $twig->addFunction(new TwigFunction('format_price', function (int|float|string|null $price): string {
+            return format_price($price ?? 0);
         }));
 
-        $twig->addFunction(new TwigFunction('persian_number', function (int|float|string $number): string {
-            return persian_number($number);
+        $twig->addFunction(new TwigFunction('persian_number', function (int|float|string|null $number): string {
+            return persian_number($number ?? 0);
         }));
 
         $twig->addFunction(new TwigFunction('flash', function (string $type): ?string {
@@ -107,16 +126,16 @@ class View
         }));
 
         // Helper Filters
-        $twig->addFilter(new TwigFilter('price', function (int|float|string $price): string {
-            return format_price($price);
+        $twig->addFilter(new TwigFilter('price', function (int|float|string|null $price): string {
+            return format_price($price ?? 0);
         }));
 
-        $twig->addFilter(new TwigFilter('price_toman', function (int|float|string $price): string {
-            return format_price($price);
+        $twig->addFilter(new TwigFilter('price_toman', function (int|float|string|null $price): string {
+            return format_price($price ?? 0);
         }));
 
-        $twig->addFilter(new TwigFilter('fa_num', function (int|float|string $num): string {
-            return persian_number($num);
+        $twig->addFilter(new TwigFilter('fa_num', function (int|float|string|null $num): string {
+            return persian_number($num ?? 0);
         }));
     }
 }
