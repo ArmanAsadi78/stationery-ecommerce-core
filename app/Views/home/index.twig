@@ -5,32 +5,52 @@
     <!-- Hero Banner Section -->
     <section class="hero-banner">
         <div class="hero-content">
-            <span class="hero-tag">✨ شروع سال تحصیلی و اداری با برترین برندها</span>
-            <h1 class="hero-title">دنیای رنگ و نگارش، در دستان شما</h1>
-            <p class="hero-desc">مجموعه‌ای از برترین نوشت‌افزارهای تخصصی، روان‌نویس‌های اداری اشنایدر، اتودهای مهندسی روترینگ و مدادرنگی‌های حرفه‌ای فابرکاستل با تضمین اصالت و بهترین قیمت.</p>
+            <span class="hero-tag">🌸 دنیای شیک، فانتزی و رنگارنگ لوازم‌التحریر</span>
+            <h1 class="hero-title">نوشتن و خلق زیبایی با شیرین‌ترین رنگ‌ها</h1>
+            <p class="hero-desc">مجموعه‌ای از برترین روان‌نویس‌های اشنایدر، اتودهای مهندسی روترینگ، مدادرنگی‌های حرفه‌ای فابرکاستل و دفترهای فانتزی با تضمین اصالت و بسته‌بندی جذاب.</p>
             <a href="{{ url('products') }}" class="hero-btn">
-                <span>مشاهده و خرید کاتالوگ</span>
+                <span>مشاهده کاتالوگ محصولات</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                 </svg>
             </a>
         </div>
         <div class="hero-graphic">
-            <div class="hero-badge-card">
+            <div class="hero-badge-card card-pink">
                 <div class="num">۱۰۰٪</div>
                 <div class="lbl">تضمین اصالت برند</div>
             </div>
-            <div class="hero-badge-card">
+            <div class="hero-badge-card card-yellow">
                 <div class="num">۲۴h</div>
-                <div class="lbl">ارسال سریع سفارشات</div>
+                <div class="lbl">ارسال سریع و مطمئن</div>
             </div>
         </div>
+    </section>
+
+    <!-- Cute Quick Category Pills -->
+    <section class="quick-categories-bar">
+        <a href="{{ url('products?category=writing-instruments') }}" class="quick-cat-pill pill-blue">
+            <span class="emoji">✏️</span>
+            <span>نوشت‌افزار و قلم</span>
+        </a>
+        <a href="{{ url('products?category=notebooks-and-paper') }}" class="quick-cat-pill pill-pink">
+            <span class="emoji">📓</span>
+            <span>دفتر و کاغذ فانتزی</span>
+        </a>
+        <a href="{{ url('products?category=office-supplies') }}" class="quick-cat-pill pill-purple">
+            <span class="emoji">📎</span>
+            <span>لوازم اداری و بایگانی</span>
+        </a>
+        <a href="{{ url('products?category=art-and-drawing') }}" class="quick-cat-pill pill-peach">
+            <span class="emoji">🎨</span>
+            <span>نقاشی و طراحی</span>
+        </a>
     </section>
 
     <!-- Featured Products Section -->
     <section class="featured-section">
         <div class="section-header">
-            <h2 class="section-title">محصولات منتخب و پرفروش</h2>
+            <h2 class="section-title">✨ محصولات منتخب و محبوب</h2>
             <a href="{{ url('products') }}" class="view-all-link">
                 <span>مشاهده همه محصولات</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

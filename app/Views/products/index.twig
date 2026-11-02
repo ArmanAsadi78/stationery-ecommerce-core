@@ -17,27 +17,33 @@
         </p>
     </div>
 
-    <div style="display: grid; grid-template-columns: 260px 1fr; gap: 32px; align-items: start;">
+    <div class="catalog-layout">
         <!-- Filters Sidebar -->
-        <aside style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px;">
-            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">دسته‌بندی‌های نوشت‌افزار</h3>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
+        <aside class="catalog-sidebar">
+            <h3 class="sidebar-title">
+                <span>🎀 دسته‌بندی‌های نوشت‌افزار</span>
+            </h3>
+            <ul class="sidebar-cat-list">
                 <li>
-                    <a href="{{ url('products') }}" style="font-size: 14px; {% if not current_category %}color: var(--primary); font-weight: bold;{% endif %}">
-                        همه دسته‌ها
+                    <a href="{{ url('products') }}" class="cat-link {% if not current_category %}active{% endif %}">
+                        <span class="cat-icon">🌟</span>
+                        <span>تمامی محصولات</span>
                     </a>
                 </li>
                 {% for cat in categories %}
                     <li>
-                        <a href="{{ url('products?category=' ~ cat.slug) }}" style="font-size: 14px; {% if current_category and current_category.slug == cat.slug %}color: var(--primary); font-weight: bold;{% endif %}">
-                            {{ cat.title }}
+                        <a href="{{ url('products?category=' ~ cat.slug) }}" class="cat-link {% if current_category and current_category.slug == cat.slug %}active{% endif %}">
+                            <span class="cat-icon">
+                                {% if 'writing' in cat.slug %}✏️{% elseif 'paper' in cat.slug %}📓{% elseif 'office' in cat.slug %}📎{% elseif 'art' in cat.slug %}🎨{% else %}📁{% endif %}
+                            </span>
+                            <span>{{ cat.title }}</span>
                         </a>
                         {% if cat.children|length > 0 %}
-                            <ul style="list-style: none; padding-right: 16px; margin-top: 6px; display: flex; flex-direction: column; gap: 6px;">
+                            <ul class="subcat-list">
                                 {% for sub in cat.children %}
                                     <li>
-                                        <a href="{{ url('products?category=' ~ sub.slug) }}" style="font-size: 13px; color: #64748b; {% if current_category and current_category.slug == sub.slug %}color: var(--primary); font-weight: bold;{% endif %}">
-                                            • {{ sub.title }}
+                                        <a href="{{ url('products?category=' ~ sub.slug) }}" class="subcat-link {% if current_category and current_category.slug == sub.slug %}active{% endif %}">
+                                            <span>🌸 {{ sub.title }}</span>
                                         </a>
                                     </li>
                                 {% endfor %}
