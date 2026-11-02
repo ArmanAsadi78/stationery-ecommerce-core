@@ -33,6 +33,16 @@ class CacheService
         return self::torob()->flush();
     }
 
+    public static function sitemap(): self
+    {
+        return new self('sitemap');
+    }
+
+    public static function flushSitemap(): bool
+    {
+        return self::sitemap()->flush();
+    }
+
     /**
      * Retrieve an item from cache.
      */

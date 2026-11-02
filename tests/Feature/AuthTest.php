@@ -307,4 +307,30 @@ class AuthTest extends TestCase
         $this->assertFalse($this->auth->check());
         $this->assertNull(Session::get('user'));
     }
+
+    public function test_customer_orders_ajax_filter(): void
+    {
+        $testEmail = 'ajax_order_cust_' . time() . '@example.com';
+        $this->createdUserEmails[] = $testEmail;
+
+        $hash = password_hash('pass123', PASSWORD_BCRYPT);
+        $this->db->execute(
+            "INSERT INTO `users` (`full_name`, `email`, `password_hash`, `role`, `is_active`, `created_at`) 
+             VALUES ('مشتری فیلتر ایجکس', :email, :hash, 'customer', 1, NOW())",
+            [':email' => $testEmail, ':hash' => $hash]
+        );
+
+        $this->auth->login($testEmail, 'pass123');
+
+        $response = $this->request('GET', '/account/orders?status=processing', [], [
+            'X-Requested-With' => 'XMLHttpRequest',
+        ]);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $json = json_decode($response->getContent(), true);
+        $this->assertIsArray($json);
+        $this->assertTrue($json['success']);
+        $this->assertArrayHasKey('html', $json);
+        $this->assertSame('processing', $json['current_filter']);
+    }
 }

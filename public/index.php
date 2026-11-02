@@ -77,6 +77,12 @@ $router->get('/admin/dashboard', [AdminController::class, 'dashboard'], [AdminMi
 $router->get('/admin/orders', [AdminController::class, 'orders'], [AdminMiddleware::class]);
 $router->get('/admin/orders/{id:[0-9]+}', [AdminController::class, 'orderDetail'], [AdminMiddleware::class]);
 $router->post('/admin/orders/{id:[0-9]+}/status', [AdminController::class, 'updateOrderStatus'], [AdminMiddleware::class]);
+$router->get('/admin/products', [AdminController::class, 'products'], [AdminMiddleware::class]);
+$router->get('/admin/products/create', [AdminController::class, 'createProduct'], [AdminMiddleware::class]);
+$router->post('/admin/products', [AdminController::class, 'storeProduct'], [AdminMiddleware::class]);
+$router->get('/admin/products/{id:[0-9]+}/edit', [AdminController::class, 'editProduct'], [AdminMiddleware::class]);
+$router->post('/admin/products/{id:[0-9]+}', [AdminController::class, 'updateProduct'], [AdminMiddleware::class]);
+$router->post('/admin/products/{id:[0-9]+}/delete', [AdminController::class, 'deleteProduct'], [AdminMiddleware::class]);
 
 // Search Engine Optimization & External Integrations
 $router->get('/sitemap.xml', [SitemapController::class, 'index']);

@@ -1,0 +1,56 @@
+{% if orders is empty %}
+    <div class="empty-state-card">
+        <div class="empty-icon">📦</div>
+        <h4>سفارشی با این وضعیت یافت نشد.</h4>
+        <p>برای مشاهده سفارش‌ها می‌توانید فیلتر را تغییر دهید یا به فروشگاه بازگردید.</p>
+        <a href="{{ url('products') }}" class="btn-empty-action">بازدید از محصولات</a>
+    </div>
+{% else %}
+    <div class="orders-cards-list">
+        {% for ord in orders %}
+            <div class="order-item-card">
+                <div class="order-card-top">
+                    <div class="order-meta-info">
+                        <span class="order-number-badge dir-ltr">سفارش #{{ ord.order_number }}</span>
+                        <span class="order-date-text">📅 ثبت شده در {{ ord.created_at|slice(0, 10) }}</span>
+                    </div>
+                    <div class="order-status-box">
+                        {% if ord.status == 'delivered' %}
+                            <span class="badge-status status-delivered">تحویل شده</span>
+                        {% elseif ord.status == 'shipped' %}
+                            <span class="badge-status status-shipped">ارسال شده با پست</span>
+                        {% elseif ord.status == 'processing' %}
+                            <span class="badge-status status-processing">در حال بسته‌بندی</span>
+                        {% elseif ord.status == 'cancelled' %}
+                            <span class="badge-status status-cancelled">لغو شده</span>
+                        {% else %}
+                            <span class="badge-status status-pending">در انتظار پرداخت</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="order-card-body">
+                    <div class="order-body-stat">
+                        <span class="stat-lbl">تحویل‌گیرنده:</span>
+                        <span class="stat-val">{{ ord.recipient_name }}</span>
+                    </div>
+                    <div class="order-body-stat">
+                        <span class="stat-lbl">تعداد اقلام:</span>
+                        <span class="stat-val">{{ ord.items_count|fa_num }} قلم کالا</span>
+                    </div>
+                    <div class="order-body-stat">
+                        <span class="stat-lbl">مبلغ پرداختی:</span>
+                        <strong class="stat-val price-highlight">{{ ord.total_amount|price_toman }} تومان</strong>
+                    </div>
+                </div>
+
+                <div class="order-card-footer">
+                    <span class="order-safe-badge">🛡️ ضمانت ۷ روزه اصالت و بازگشت</span>
+                    <a href="{{ url('account/orders/' ~ ord.id) }}" class="btn-view-invoice">
+                        مشاهده فاکتور و جزئیات ←
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}

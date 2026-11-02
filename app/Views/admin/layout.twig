@@ -35,6 +35,10 @@
                     <span class="admin-nav-icon">📦</span>
                     <span>مدیریت سفارش‌ها</span>
                 </a>
+                <a href="{{ url('admin/products') }}" class="admin-nav-item {% if active_menu == 'products' %}active{% endif %}">
+                    <span class="admin-nav-icon">🏷️</span>
+                    <span>مدیریت محصولات</span>
+                </a>
 
                 <span class="nav-section-title">دسترسی‌های سریع</span>
                 <a href="{{ url('products') }}" target="_blank" class="admin-nav-item">

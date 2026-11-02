@@ -43,6 +43,17 @@ class Request
         $this->server = $server;
         $this->cookies = $cookies;
         $this->files = $files;
+
+        // Auto-extract query parameters from REQUEST_URI or QUERY_STRING if $get is empty
+        if (empty($this->get)) {
+            $rawUri = (string) ($this->server['REQUEST_URI'] ?? '');
+            $queryString = (string) (parse_url($rawUri, PHP_URL_QUERY) ?? ($this->server['QUERY_STRING'] ?? ''));
+            if ($queryString !== '') {
+                parse_str($queryString, $parsed);
+                /** @var array<string, mixed> $parsed */
+                $this->get = $parsed;
+            }
+        }
     }
 
     public static function createFromGlobals(): self

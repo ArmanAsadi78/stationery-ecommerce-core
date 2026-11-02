@@ -83,6 +83,7 @@ CREATE TABLE `products` (
     `brand` VARCHAR(100) NULL,
     `summary` VARCHAR(500) NULL,
     `description` LONGTEXT NULL,
+    `specifications` TEXT NULL,
     `price` DECIMAL(12, 0) UNSIGNED NOT NULL COMMENT 'Base price in Tomans',
     `compare_at_price` DECIMAL(12, 0) UNSIGNED NULL COMMENT 'Original price for discount badge',
     `stock_quantity` INT NOT NULL DEFAULT 0 COMMENT 'Available base stock',

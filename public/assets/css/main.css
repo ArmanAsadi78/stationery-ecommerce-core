@@ -6758,3 +6758,91 @@ button, input, select {
     min-width: 100%;
   }
 }
+
+/* Admin Pagination Controls */
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.pagination-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-number,
+.btn-page-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+
+.page-number:hover,
+.btn-page-step:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.page-number.active {
+  background: #f43f5e;
+  border-color: #f43f5e;
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.25);
+}
+
+.page-ellipsis {
+  padding: 0 6px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* Admin Product Form Layout */
+.admin-product-grid-layout {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.badge-cat-tag {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+@media (max-width: 992px) {
+  .admin-product-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}

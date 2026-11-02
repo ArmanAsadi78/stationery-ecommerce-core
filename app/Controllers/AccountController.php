@@ -119,6 +119,20 @@ class AccountController
         /** @var list<array<string, mixed>> $orders */
         $orders = $this->db->fetchAll($sql, $params);
 
+        if ($request->isAjax()) {
+            $partialHtml = View::render('account/_orders_list', [
+                'orders' => $orders,
+                'current_filter' => $filterStatus,
+            ]);
+
+            return Response::json([
+                'success' => true,
+                'html' => $partialHtml,
+                'count' => count($orders),
+                'current_filter' => $filterStatus,
+            ]);
+        }
+
         $html = View::render('account/orders', [
             'page_title' => 'تاریخچه سفارش‌ها | تحریرچی',
             'active_tab' => 'orders',

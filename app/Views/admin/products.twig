@@ -1,0 +1,190 @@
+{% extends 'admin/layout.twig' %}
+
+{% block admin_content %}
+<div class="admin-products-view">
+    <div class="admin-page-title-row">
+        <div>
+            <h2>مدیریت محصولات و موجودی انبار</h2>
+            <p>مشاهده، جستجو، تغییر قیمت، کنترل انبار و افزودن کالاهای جدید به فروشگاه تحریرچی.</p>
+        </div>
+        <a href="{{ url('admin/products/create') }}" class="btn-admin-action">
+            ➕ افزودن محصول جدید
+        </a>
+    </div>
+
+    {% if flash_success %}
+        <div class="auth-alert success mb-4">
+            <span>✓ {{ flash_success }}</span>
+        </div>
+    {% endif %}
+
+    {% if flash_error %}
+        <div class="auth-alert error mb-4">
+            <span>✕ {{ flash_error }}</span>
+        </div>
+    {% endif %}
+
+    <!-- Filters & Search Toolbar -->
+    <div class="admin-toolbar-card">
+        <!-- Stock Filter Pills -->
+        <div class="admin-filter-pills">
+            <a href="{{ url('admin/products' ~ (selected_category ? '?category_id=' ~ selected_category : '')) }}" class="admin-pill {% if stock_filter == '' %}active{% endif %}">
+                همه کالاها
+            </a>
+            <a href="{{ url('admin/products?stock=in' ~ (selected_category ? '&category_id=' ~ selected_category : '')) }}" class="admin-pill {% if stock_filter == 'in' %}active{% endif %}">
+                دارای موجودی
+            </a>
+            <a href="{{ url('admin/products?stock=low' ~ (selected_category ? '&category_id=' ~ selected_category : '')) }}" class="admin-pill {% if stock_filter == 'low' %}active{% endif %}">
+                موجودی اندک (کمتر از ۵)
+            </a>
+            <a href="{{ url('admin/products?stock=out' ~ (selected_category ? '&category_id=' ~ selected_category : '')) }}" class="admin-pill {% if stock_filter == 'out' %}active{% endif %}">
+                ناموجود
+            </a>
+        </div>
+
+        <!-- Search & Category Form -->
+        <form action="{{ url('admin/products') }}" method="GET" class="admin-search-form" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <select name="category_id" class="admin-select" style="min-width: 170px; width: auto;" onchange="this.form.submit()">
+                <option value="">همه دسته‌بندی‌ها</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if selected_category == cat.id %}selected{% endif %}>
+                        {{ cat.title }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <input type="text" name="q" value="{{ search_query }}" placeholder="جستجوی عنوان، کد SKU یا برند..." class="admin-input-search">
+            {% if stock_filter %}
+                <input type="hidden" name="stock" value="{{ stock_filter }}">
+            {% endif %}
+
+            <button type="submit" class="btn-admin-search">🔍 جستجو</button>
+            {% if search_query or selected_category or stock_filter %}
+                <a href="{{ url('admin/products') }}" class="btn-clear-search">✕ پاک کردن</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Products Table Card -->
+    <div class="admin-panel-card">
+        {% if products is empty %}
+            <div class="admin-empty-state">
+                <div class="empty-icon">🏷️</div>
+                <h4>هیچ محصولی با این شرایط یافت نشد.</h4>
+                <p>فیلترها یا عبارت جستجو را تغییر دهید یا کالای جدید اضافه کنید.</p>
+                <a href="{{ url('admin/products/create') }}" class="btn-admin-action" style="display: inline-block; margin-top: 12px;">
+                    افزودن اولین محصول
+                </a>
+            </div>
+        {% else %}
+            <div class="admin-table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">تصویر</th>
+                            <th>نام کالا و برند</th>
+                            <th>دسته‌بندی</th>
+                            <th>قیمت فروش</th>
+                            <th>موجودی</th>
+                            <th>وضعیت</th>
+                            <th style="width: 160px;">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prod in products %}
+                            <tr>
+                                <td>
+                                    <img src="{{ prod.primary_image ? asset(prod.primary_image) : asset('images/placeholder.webp') }}" alt="{{ prod.title }}" class="admin-item-thumb">
+                                </td>
+                                <td>
+                                    <strong>{{ prod.title }}</strong>
+                                    <div class="block-sub dir-ltr">
+                                        <span>SKU: {{ prod.sku }}</span>
+                                        {% if prod.brand %}
+                                            <span style="margin-right: 8px;">· برند: {{ prod.brand }}</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge-cat-tag">{{ prod.category_title|default('بدون دسته‌بندی') }}</span>
+                                </td>
+                                <td>
+                                    <strong class="price-highlight">{{ prod.price|price_toman }} تومان</strong>
+                                    {% if prod.compare_at_price and prod.compare_at_price > prod.price %}
+                                        <div class="block-sub" style="text-decoration: line-through; color: #94a3b8;">
+                                            {{ prod.compare_at_price|price_toman }} تومان
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if prod.stock_quantity > 5 %}
+                                        <span class="admin-badge badge-green">{{ prod.stock_quantity|fa_num }} عدد</span>
+                                    {% elseif prod.stock_quantity > 0 %}
+                                        <span class="admin-badge badge-amber">تنها {{ prod.stock_quantity|fa_num }} عدد</span>
+                                    {% else %}
+                                        <span class="admin-badge badge-red">ناموجود</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if prod.is_active %}
+                                        <span class="admin-badge badge-green">فعال</span>
+                                    {% else %}
+                                        <span class="admin-badge badge-gray">غیرفعال</span>
+                                    {% endif %}
+                                    {% if prod.is_featured %}
+                                        <span class="admin-badge badge-blue">ویژه</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <a href="{{ url('admin/products/' ~ prod.id ~ '/edit') }}" class="btn-admin-sm" title="ویرایش محصول">
+                                            ✏️ ویرایش
+                                        </a>
+                                        <form action="{{ url('admin/products/' ~ prod.id ~ '/delete') }}" method="POST" style="display: inline;" onsubmit="return confirm('آیا از حذف یا غیرفعال‌سازی این محصول اطمینان دارید؟');">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn-admin-sm" style="color: #ef4444; border-color: #fecaca; background: #fff5f5; cursor: pointer;" title="حذف کالا">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if total_pages > 1 %}
+                <div class="admin-pagination">
+                    <div class="pagination-info">
+                        <span>نمایش صفحه {{ current_page|fa_num }} از {{ total_pages|fa_num }} (مجموع {{ total_products|fa_num }} کالا)</span>
+                    </div>
+                    <div class="pagination-links">
+                        {% if current_page > 1 %}
+                            <a href="{{ url('admin/products?page=' ~ (current_page - 1) ~ (selected_category ? '&category_id=' ~ selected_category : '') ~ (stock_filter ? '&stock=' ~ stock_filter : '') ~ (search_query ? '&q=' ~ search_query : '')) }}" class="btn-page-step">
+                                → قبلی
+                            </a>
+                        {% endif %}
+
+                        {% for p in 1..total_pages %}
+                            {% if p == current_page %}
+                                <span class="page-number active">{{ p|fa_num }}</span>
+                            {% elseif p == 1 or p == total_pages or (p >= current_page - 2 and p <= current_page + 2) %}
+                                <a href="{{ url('admin/products?page=' ~ p ~ (selected_category ? '&category_id=' ~ selected_category : '') ~ (stock_filter ? '&stock=' ~ stock_filter : '') ~ (search_query ? '&q=' ~ search_query : '')) }}" class="page-number">{{ p|fa_num }}</a>
+                            {% elseif p == current_page - 3 or p == current_page + 3 %}
+                                <span class="page-ellipsis">...</span>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if current_page < total_pages %}
+                            <a href="{{ url('admin/products?page=' ~ (current_page + 1) ~ (selected_category ? '&category_id=' ~ selected_category : '') ~ (stock_filter ? '&stock=' ~ stock_filter : '') ~ (search_query ? '&q=' ~ search_query : '')) }}" class="btn-page-step">
+                                بعدی ←
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

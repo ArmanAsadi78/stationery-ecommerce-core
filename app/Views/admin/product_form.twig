@@ -1,0 +1,197 @@
+{% extends 'admin/layout.twig' %}
+
+{% block admin_content %}
+<div class="admin-product-form-view">
+    <div class="admin-page-title-row">
+        <div>
+            <div class="back-nav-row" style="margin-bottom: 8px;">
+                <a href="{{ url('admin/products') }}" class="admin-back-link">← بازگشت به لیست محصولات</a>
+            </div>
+            <h2>{{ is_edit ? 'ویرایش کالا: ' ~ product.title : 'افزودن محصول جدید به کاتالوگ' }}</h2>
+            <p>مشخصات، قیمت‌گذاری، تصویر و تنظیمات انبار را با دقت تکمیل فرمایید.</p>
+        </div>
+        <a href="{{ url('admin/products') }}" class="btn-clear-search">انصراف و بازگشت</a>
+    </div>
+
+    {% if flash_error %}
+        <div class="auth-alert error mb-4">
+            <span>✕ {{ flash_error }}</span>
+        </div>
+    {% endif %}
+
+    <form action="{{ is_edit ? url('admin/products/' ~ product.id) : url('admin/products') }}" 
+          method="POST" 
+          enctype="multipart/form-data" 
+          class="admin-product-crud-form" 
+          novalidate>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+        <div class="admin-product-grid-layout">
+            <!-- Left / Main Column: Basic Information, Summary, Description, Specs -->
+            <div class="form-main-col">
+                <div class="admin-panel-card mb-4">
+                    <h3 class="panel-card-subtitle" style="margin-bottom: 20px;">📝 اطلاعات پایه و محتوای محصول</h3>
+
+                    <div class="form-group mb-3">
+                        <label for="prodName">نام و عنوان کالا <span class="required">*</span></label>
+                        <input type="text" id="prodName" name="name" class="form-input" 
+                               value="{{ product.title|default('') }}" 
+                               placeholder="مثال: روان‌نویس اشنایدر مدل One Business سایز 0.6 میلی‌متر" required autofocus>
+                        <small class="input-hint">عنوان کامل و تجاری محصول همانطور که در فروشگاه و ترب نمایش داده می‌شود.</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="prodSlug">شناسه پیوند یکتا (Slug / URL)</label>
+                        <input type="text" id="prodSlug" name="slug" class="form-input dir-ltr" 
+                               value="{{ product.slug|default('') }}" 
+                               placeholder="مثال: schneider-one-business-06">
+                        <small class="input-hint">در صورت خالی بودن، به صورت خودکار از عنوان محصول ساخته خواهد شد.</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="prodSummary">چکیده و معرفی کوتاه (خلاصه)</label>
+                        <textarea id="prodSummary" name="summary" class="form-textarea" style="min-height: 80px;"
+                                  placeholder="توضیح کوتاه ۱ یا ۲ جمله‌ای جهت نمایش در کارت‌های کاتالوگ و متاتگ‌های سئو...">{{ product.summary|default('') }}</textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="prodDescription">نقد و بررسی و توضیحات جامع</label>
+                        <textarea id="prodDescription" name="description" class="form-textarea" style="min-height: 160px;"
+                                  placeholder="توضیحات کامل درباره روان بودن جوهر، جنس بدنه، ارگونومی، کاربردهای طراحی و ویژگی‌ها...">{{ product.description|default('') }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prodSpec">مشخصات فنی و ویژگی‌ها (Spec)</label>
+                        <textarea id="prodSpec" name="spec" class="form-textarea" style="min-height: 120px;"
+                                  placeholder="هر مشخصه را در یک خط وارد کنید؛ مثال:&#10;کشور سازنده: آلمان&#10;قطر نوشتاری: ۰.۶ میلی‌متر&#10;نوع نوک: ساچمه‌ای ضد زنگ&#10;نوع جوهر: ضد آب و اسناد رسمی">{{ product.specifications|default('') }}</textarea>
+                        <small class="input-hint">این اطلاعات مستقیماً در تب مشخصات فنی صفحه محصول و متادیتای وب‌سرویس ترب قرار می‌گیرد.</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right / Side Column: Image Upload, Pricing, Category, Inventory -->
+            <div class="form-side-col">
+                <!-- Image Upload Card -->
+                <div class="admin-panel-card mb-4">
+                    <h3 class="panel-card-subtitle" style="margin-bottom: 16px;">🖼️ تصویر اصلی محصول</h3>
+
+                    <div class="product-image-preview-box" style="text-align: center; margin-bottom: 16px;">
+                        {% if product.primary_image %}
+                            <img id="imagePreview" src="{{ asset(product.primary_image) }}" alt="پیش‌نمایش تصویر" 
+                                 style="max-width: 100%; height: 180px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff; padding: 4px;">
+                        {% else %}
+                            <div id="imagePlaceholderBox" style="height: 160px; border: 2px dashed #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; background: #f8fafc;">
+                                <span style="font-size: 32px; margin-bottom: 6px;">📷</span>
+                                <span style="font-size: 12px;">تصویری بارگذاری نشده است</span>
+                            </div>
+                            <img id="imagePreview" src="" alt="پیش‌نمایش تصویر" style="display: none; max-width: 100%; height: 180px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff; padding: 4px;">
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prodImageUpload" class="btn-clear-search" style="display: block; text-align: center; cursor: pointer; padding: 10px; font-weight: 700; color: #0f172a;">
+                            📁 انتخاب فایل تصویر جدید...
+                        </label>
+                        <input type="file" id="prodImageUpload" name="image" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="previewSelectedImage(this)">
+                        <small class="input-hint" style="text-align: center;">فرمت‌های مجاز: WEBP, PNG, JPG (حداکثر ۵ مگابایت)</small>
+                    </div>
+                </div>
+
+                <!-- Pricing & Inventory Card -->
+                <div class="admin-panel-card mb-4">
+                    <h3 class="panel-card-subtitle" style="margin-bottom: 16px;">💰 قیمت و موجودی انبار</h3>
+
+                    <div class="form-group mb-3">
+                        <label for="prodCategory">دسته‌بندی کالا <span class="required">*</span></label>
+                        <select id="prodCategory" name="category_id" class="form-select" required>
+                            <option value="">-- انتخاب دسته‌بندی --</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if product.category_id == cat.id %}selected{% endif %}>
+                                    {{ cat.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="prodPrice">قیمت فروش نهایی (تومان) <span class="required">*</span></label>
+                        <input type="number" id="prodPrice" name="price" class="form-input dir-ltr" 
+                               value="{{ product.price|default('') }}" 
+                               placeholder="مثال: 85000" min="1000" step="1000" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="prodOldPrice">قیمت قبل از تخفیف (تومان)</label>
+                        <input type="number" id="prodOldPrice" name="old_price" class="form-input dir-ltr" 
+                               value="{{ product.compare_at_price|default('') }}" 
+                               placeholder="مثال: 95000 (اختیاری جهت نمایش بج تخفیف)" min="1000" step="1000">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="prodStock">موجودی انبار (تعداد) <span class="required">*</span></label>
+                        <input type="number" id="prodStock" name="stock" class="form-input dir-ltr" 
+                               value="{{ product.stock_quantity|default('10') }}" 
+                               min="0" step="1" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="prodBrand">برند تولیدکننده</label>
+                        <input type="text" id="prodBrand" name="brand" class="form-input" 
+                               value="{{ product.brand|default('') }}" 
+                               placeholder="مثال: اشنایدر، روترینگ، فابرکاستل...">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="prodSku">کد شناسه کالا (SKU)</label>
+                        <input type="text" id="prodSku" name="sku" class="form-input dir-ltr" 
+                               value="{{ product.sku|default('') }}" 
+                               placeholder="مثال: SCH-ONE-06">
+                    </div>
+
+                    <div class="admin-checkbox-group" style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #f1f5f9;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600;">
+                            <input type="checkbox" name="is_active" value="1" {% if product is null or product.is_active %}checked{% endif %}>
+                            <span>فعال و قابل خرید در فروشگاه</span>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600;">
+                            <input type="checkbox" name="is_featured" value="1" {% if product.is_featured %}checked{% endif %}>
+                            <span>نمایش به عنوان کالای منتخب/ویژه (صفحه اصلی)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Action Box -->
+                <div class="admin-panel-card">
+                    <button type="submit" class="btn-admin-submit-status" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span>💾</span>
+                        <span>{{ is_edit ? 'ذخیره و اعمال تغییرات محصول' : 'ثبت و انتشار محصول جدید' }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewSelectedImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('imagePlaceholderBox');
+            if (preview) {
+                preview.src = e.target.result;
+                preview.style.display = 'inline-block';
+            }
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+{% endblock %}

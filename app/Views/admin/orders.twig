@@ -113,6 +113,37 @@
                     </tbody>
                 </table>
             </div>
+
+            {% if total_pages > 1 %}
+                <div class="admin-pagination">
+                    <div class="pagination-info">
+                        <span>نمایش صفحه {{ current_page|fa_num }} از {{ total_pages|fa_num }} (مجموع {{ total_orders|fa_num }} سفارش)</span>
+                    </div>
+                    <div class="pagination-links">
+                        {% if current_page > 1 %}
+                            <a href="{{ url('admin/orders?page=' ~ (current_page - 1) ~ (current_status ? '&status=' ~ current_status : '') ~ (search_query ? '&q=' ~ search_query : '')) }}" class="btn-page-step">
+                                → قبلی
+                            </a>
+                        {% endif %}
+
+                        {% for p in 1..total_pages %}
+                            {% if p == current_page %}
+                                <span class="page-number active">{{ p|fa_num }}</span>
+                            {% elseif p == 1 or p == total_pages or (p >= current_page - 2 and p <= current_page + 2) %}
+                                <a href="{{ url('admin/orders?page=' ~ p ~ (current_status ? '&status=' ~ current_status : '') ~ (search_query ? '&q=' ~ search_query : '')) }}" class="page-number">{{ p|fa_num }}</a>
+                            {% elseif p == current_page - 3 or p == current_page + 3 %}
+                                <span class="page-ellipsis">...</span>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if current_page < total_pages %}
+                            <a href="{{ url('admin/orders?page=' ~ (current_page + 1) ~ (current_status ? '&status=' ~ current_status : '') ~ (search_query ? '&q=' ~ search_query : '')) }}" class="btn-page-step">
+                                بعدی ←
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 </div>

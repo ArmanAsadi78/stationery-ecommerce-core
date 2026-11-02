@@ -10,6 +10,7 @@ use App\Core\Response;
 use App\Core\Session;
 use App\Core\View;
 use App\Services\AuthService;
+use App\Services\CacheService;
 
 class AdminController
 {
@@ -193,6 +194,8 @@ class AdminController
 
         $statusFilter = trim((string) $request->getQuery('status', ''));
         $searchQuery = trim((string) $request->getQuery('q', ''));
+        $page = max(1, (int) $request->getQuery('page', 1));
+        $perPage = 20;
 
         $conditions = ["1=1"];
         $params = [];
@@ -213,6 +216,19 @@ class AdminController
 
         $whereSql = implode(' AND ', $conditions);
 
+        // Count total matching orders for pagination
+        $countRow = $this->db->fetch("
+            SELECT COUNT(DISTINCT o.`id`) AS total
+            FROM `orders` o
+            WHERE {$whereSql}
+        ", $params);
+        $totalOrders = (int) ($countRow['total'] ?? 0);
+        $totalPages = max(1, (int) ceil($totalOrders / $perPage));
+        if ($page > $totalPages && $totalOrders > 0) {
+            $page = $totalPages;
+        }
+        $offset = ($page - 1) * $perPage;
+
         /** @var list<array<string, mixed>> $orders */
         $orders = $this->db->fetchAll("
             SELECT o.`id`, o.`order_number`, o.`status`, o.`subtotal`, o.`discount_amount`, 
@@ -226,7 +242,7 @@ class AdminController
             WHERE {$whereSql}
             GROUP BY o.`id`
             ORDER BY o.`created_at` DESC
-            LIMIT 50
+            LIMIT {$perPage} OFFSET {$offset}
         ", $params);
 
         $html = View::render('admin/orders', [
@@ -236,6 +252,10 @@ class AdminController
             'orders' => $orders,
             'current_status' => $statusFilter,
             'search_query' => $searchQuery,
+            'current_page' => $page,
+            'total_pages' => $totalPages,
+            'total_orders' => $totalOrders,
+            'per_page' => $perPage,
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
@@ -356,5 +376,505 @@ class AdminController
         $this->auth->logout();
         Session::setFlash('success', 'با موفقیت از پنل مدیریت خارج شدید.');
         return Response::redirect(url('admin/login'));
+    }
+
+    /**
+     * Products Catalog Management List with Search and Filtering.
+     * Route: GET /admin/products
+     * 
+     * @param array<string, string> $vars
+     */
+    public function products(Request $request, array $vars = []): Response
+    {
+        $adminUser = $this->auth->user();
+
+        $searchQuery = trim((string) $request->getQuery('q', ''));
+        $categoryId = (int) $request->getQuery('category_id', 0);
+        $stockFilter = trim((string) $request->getQuery('stock', ''));
+        $page = max(1, (int) $request->getQuery('page', 1));
+        $perPage = 20;
+
+        $conditions = ["1=1"];
+        $params = [];
+
+        if ($searchQuery !== '') {
+            $conditions[] = "(p.`title` LIKE :q_title OR p.`sku` LIKE :q_sku OR p.`brand` LIKE :q_brand)";
+            $qVal = '%' . $searchQuery . '%';
+            $params[':q_title'] = $qVal;
+            $params[':q_sku'] = $qVal;
+            $params[':q_brand'] = $qVal;
+        }
+
+        if ($categoryId > 0) {
+            $conditions[] = "p.`category_id` = :cat_id";
+            $params[':cat_id'] = $categoryId;
+        }
+
+        if ($stockFilter === 'low') {
+            $conditions[] = "p.`stock_quantity` > 0 AND p.`stock_quantity` <= 5";
+        } elseif ($stockFilter === 'out') {
+            $conditions[] = "p.`stock_quantity` <= 0";
+        } elseif ($stockFilter === 'in') {
+            $conditions[] = "p.`stock_quantity` > 5";
+        }
+
+        $whereSql = implode(' AND ', $conditions);
+
+        // Count total products
+        $countRow = $this->db->fetch("
+            SELECT COUNT(*) AS total
+            FROM `products` p
+            WHERE {$whereSql}
+        ", $params);
+        $totalProducts = (int) ($countRow['total'] ?? 0);
+        $totalPages = max(1, (int) ceil($totalProducts / $perPage));
+        if ($page > $totalPages && $totalProducts > 0) {
+            $page = $totalPages;
+        }
+        $offset = ($page - 1) * $perPage;
+
+        /** @var list<array<string, mixed>> $products */
+        $products = $this->db->fetchAll("
+            SELECT p.`id`, p.`category_id`, p.`title`, p.`slug`, p.`sku`, p.`brand`,
+                   p.`price`, p.`compare_at_price`, p.`stock_quantity`, p.`primary_image`,
+                   p.`is_active`, p.`is_featured`, p.`created_at`,
+                   c.`title` AS category_title
+            FROM `products` p
+            LEFT JOIN `categories` c ON p.`category_id` = c.`id`
+            WHERE {$whereSql}
+            ORDER BY p.`id` DESC
+            LIMIT {$perPage} OFFSET {$offset}
+        ", $params);
+
+        /** @var list<array<string, mixed>> $categories */
+        $categories = $this->db->fetchAll("
+            SELECT `id`, `title` FROM `categories` ORDER BY `sort_order` ASC, `title` ASC
+        ");
+
+        $html = View::render('admin/products', [
+            'page_title' => 'مدیریت محصولات و کالاها | پنل ادمین',
+            'admin_user' => $adminUser,
+            'active_menu' => 'products',
+            'products' => $products,
+            'categories' => $categories,
+            'search_query' => $searchQuery,
+            'selected_category' => $categoryId,
+            'stock_filter' => $stockFilter,
+            'current_page' => $page,
+            'total_pages' => $totalPages,
+            'total_products' => $totalProducts,
+            'per_page' => $perPage,
+            'flash_success' => Session::getFlash('success'),
+            'flash_error' => Session::getFlash('error'),
+        ]);
+
+        return Response::html($html);
+    }
+
+    /**
+     * Show Create Product Form.
+     * Route: GET /admin/products/create
+     * 
+     * @param array<string, string> $vars
+     */
+    public function createProduct(Request $request, array $vars = []): Response
+    {
+        $adminUser = $this->auth->user();
+
+        /** @var list<array<string, mixed>> $categories */
+        $categories = $this->db->fetchAll("
+            SELECT `id`, `title` FROM `categories` ORDER BY `sort_order` ASC, `title` ASC
+        ");
+
+        $html = View::render('admin/product_form', [
+            'page_title' => 'افزودن محصول جدید | پنل مدیریت تحریرچی',
+            'admin_user' => $adminUser,
+            'active_menu' => 'products',
+            'is_edit' => false,
+            'product' => null,
+            'categories' => $categories,
+            'flash_success' => Session::getFlash('success'),
+            'flash_error' => Session::getFlash('error'),
+        ]);
+
+        return Response::html($html);
+    }
+
+    /**
+     * Store Newly Created Product.
+     * Route: POST /admin/products
+     * 
+     * @param array<string, string> $vars
+     */
+    public function storeProduct(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            Session::setFlash('error', 'توکن امنیتی نامعتبر است. لطفاً مجدداً تلاش فرمایید.');
+            return Response::redirect(url('admin/products/create'));
+        }
+
+        $title = trim((string) ($request->input('name') ?? $request->input('title') ?? ''));
+        $categoryId = (int) ($request->input('category_id') ?? $request->input('category') ?? 0);
+        $rawPrice = (string) $request->input('price', '0');
+        $price = (int) preg_replace('/[^0-9]/', '', $rawPrice);
+        $rawOldPrice = (string) ($request->input('old_price') ?? $request->input('compare_at_price') ?? '');
+        $compareAtPrice = $rawOldPrice !== '' ? (int) preg_replace('/[^0-9]/', '', $rawOldPrice) : null;
+        $stock = (int) ($request->input('stock') ?? $request->input('stock_quantity') ?? 0);
+        $brand = trim((string) $request->input('brand', ''));
+        $skuInput = trim((string) $request->input('sku', ''));
+        $summary = trim((string) $request->input('summary', ''));
+        $description = trim((string) $request->input('description', ''));
+        $spec = trim((string) ($request->input('spec') ?? $request->input('specifications') ?? ''));
+        $isActive = $request->input('is_active') ? 1 : 0;
+        $isFeatured = $request->input('is_featured') ? 1 : 0;
+
+        if ($title === '') {
+            Session::setFlash('error', 'نام یا عنوان محصول الزامی است.');
+            return Response::redirect(url('admin/products/create'));
+        }
+
+        if ($categoryId <= 0) {
+            Session::setFlash('error', 'انتخاب دسته‌بندی کالا الزامی است.');
+            return Response::redirect(url('admin/products/create'));
+        }
+
+        if ($price <= 0) {
+            Session::setFlash('error', 'قیمت محصول باید عددی معتبر و بزرگتر از صفر باشد.');
+            return Response::redirect(url('admin/products/create'));
+        }
+
+        // Slug Generation & Uniqueness
+        $customSlug = trim((string) $request->input('slug', ''));
+        $baseSlug = $customSlug !== '' ? $this->slugify($customSlug) : $this->slugify($title);
+        $slug = $this->ensureUniqueSlug($baseSlug);
+
+        // SKU Generation & Uniqueness
+        $sku = $skuInput !== '' ? $skuInput : 'TAH-' . strtoupper(substr(md5(uniqid((string) time(), true)), 0, 8));
+
+        // Image Upload
+        $uploadedImagePath = $this->handleImageUpload($request, $slug);
+        $primaryImage = $uploadedImagePath ?? '/assets/images/placeholder.webp';
+
+        $this->db->execute("
+            INSERT INTO `products` (
+                `category_id`, `title`, `slug`, `sku`, `brand`, `summary`, `description`, 
+                `specifications`, `price`, `compare_at_price`, `stock_quantity`, `primary_image`,
+                `is_active`, `is_featured`
+            ) VALUES (
+                :category_id, :title, :slug, :sku, :brand, :summary, :description,
+                :specifications, :price, :compare_at_price, :stock_quantity, :primary_image,
+                :is_active, :is_featured
+            )
+        ", [
+            ':category_id' => $categoryId,
+            ':title' => $title,
+            ':slug' => $slug,
+            ':sku' => $sku,
+            ':brand' => $brand !== '' ? $brand : null,
+            ':summary' => $summary !== '' ? $summary : null,
+            ':description' => $description !== '' ? $description : null,
+            ':specifications' => $spec !== '' ? $spec : null,
+            ':price' => $price,
+            ':compare_at_price' => ($compareAtPrice !== null && $compareAtPrice > 0) ? $compareAtPrice : null,
+            ':stock_quantity' => max(0, $stock),
+            ':primary_image' => $primaryImage,
+            ':is_active' => $isActive,
+            ':is_featured' => $isFeatured,
+        ]);
+
+        // Invalidate Torob API & Sitemap Cache
+        CacheService::flushTorob();
+        CacheService::flushSitemap();
+
+        Session::setFlash('success', "محصول جدید «{$title}» با موفقیت افزوده شد و تغییرات در وب‌سرویس‌ها منعکس گردید.");
+        return Response::redirect(url('admin/products'));
+    }
+
+    /**
+     * Show Edit Product Form.
+     * Route: GET /admin/products/{id}/edit
+     * 
+     * @param array<string, string> $vars
+     */
+    public function editProduct(Request $request, array $vars = []): Response
+    {
+        $adminUser = $this->auth->user();
+        $productId = (int) ($vars['id'] ?? 0);
+
+        /** @var array<string, mixed>|null $product */
+        $product = $this->db->fetch("SELECT * FROM `products` WHERE `id` = :id LIMIT 1", [':id' => $productId]);
+        if (!$product) {
+            Session::setFlash('error', 'محصول مورد نظر یافت نشد.');
+            return Response::redirect(url('admin/products'));
+        }
+
+        /** @var list<array<string, mixed>> $categories */
+        $categories = $this->db->fetchAll("
+            SELECT `id`, `title` FROM `categories` ORDER BY `sort_order` ASC, `title` ASC
+        ");
+
+        $html = View::render('admin/product_form', [
+            'page_title' => 'ویرایش محصول: ' . $product['title'] . ' | پنل مدیریت',
+            'admin_user' => $adminUser,
+            'active_menu' => 'products',
+            'is_edit' => true,
+            'product' => $product,
+            'categories' => $categories,
+            'flash_success' => Session::getFlash('success'),
+            'flash_error' => Session::getFlash('error'),
+        ]);
+
+        return Response::html($html);
+    }
+
+    /**
+     * Update Product Details.
+     * Route: POST /admin/products/{id}
+     * 
+     * @param array<string, string> $vars
+     */
+    public function updateProduct(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        $productId = (int) ($vars['id'] ?? 0);
+
+        if (!Session::validateCsrf($csrfToken)) {
+            Session::setFlash('error', 'توکن امنیتی نامعتبر است.');
+            return Response::redirect(url('admin/products/' . $productId . '/edit'));
+        }
+
+        /** @var array<string, mixed>|null $product */
+        $product = $this->db->fetch("SELECT * FROM `products` WHERE `id` = :id LIMIT 1", [':id' => $productId]);
+        if (!$product) {
+            Session::setFlash('error', 'محصول یافت نشد.');
+            return Response::redirect(url('admin/products'));
+        }
+
+        $title = trim((string) ($request->input('name') ?? $request->input('title') ?? ''));
+        $categoryId = (int) ($request->input('category_id') ?? $request->input('category') ?? 0);
+        $rawPrice = (string) $request->input('price', '0');
+        $price = (int) preg_replace('/[^0-9]/', '', $rawPrice);
+        $rawOldPrice = (string) ($request->input('old_price') ?? $request->input('compare_at_price') ?? '');
+        $compareAtPrice = $rawOldPrice !== '' ? (int) preg_replace('/[^0-9]/', '', $rawOldPrice) : null;
+        $stock = (int) ($request->input('stock') ?? $request->input('stock_quantity') ?? 0);
+        $brand = trim((string) $request->input('brand', ''));
+        $sku = trim((string) $request->input('sku', ''));
+        $summary = trim((string) $request->input('summary', ''));
+        $description = trim((string) $request->input('description', ''));
+        $spec = trim((string) ($request->input('spec') ?? $request->input('specifications') ?? ''));
+        $isActive = $request->input('is_active') !== null ? ($request->input('is_active') ? 1 : 0) : 1;
+        $isFeatured = $request->input('is_featured') ? 1 : 0;
+
+        if ($title === '') {
+            Session::setFlash('error', 'عنوان محصول نمی‌تواند خالی باشد.');
+            return Response::redirect(url('admin/products/' . $productId . '/edit'));
+        }
+
+        if ($categoryId <= 0) {
+            Session::setFlash('error', 'دسته‌بندی کالا معتبر نیست.');
+            return Response::redirect(url('admin/products/' . $productId . '/edit'));
+        }
+
+        if ($price <= 0) {
+            Session::setFlash('error', 'قیمت محصول باید عددی مثبت باشد.');
+            return Response::redirect(url('admin/products/' . $productId . '/edit'));
+        }
+
+        // Slug handling
+        $customSlug = trim((string) $request->input('slug', ''));
+        $baseSlug = $customSlug !== '' ? $this->slugify($customSlug) : $this->slugify($title);
+        $slug = $this->ensureUniqueSlug($baseSlug, $productId);
+
+        if ($sku === '') {
+            $sku = (string) $product['sku'];
+        }
+
+        // Image Handling
+        $newUploadedImage = $this->handleImageUpload($request, $slug);
+        $primaryImage = $newUploadedImage ?? $product['primary_image'];
+
+        $this->db->execute("
+            UPDATE `products` SET
+                `category_id` = :category_id,
+                `title` = :title,
+                `slug` = :slug,
+                `sku` = :sku,
+                `brand` = :brand,
+                `summary` = :summary,
+                `description` = :description,
+                `specifications` = :specifications,
+                `price` = :price,
+                `compare_at_price` = :compare_at_price,
+                `stock_quantity` = :stock_quantity,
+                `primary_image` = :primary_image,
+                `is_active` = :is_active,
+                `is_featured` = :is_featured,
+                `updated_at` = CURRENT_TIMESTAMP
+            WHERE `id` = :id
+        ", [
+            ':category_id' => $categoryId,
+            ':title' => $title,
+            ':slug' => $slug,
+            ':sku' => $sku,
+            ':brand' => $brand !== '' ? $brand : null,
+            ':summary' => $summary !== '' ? $summary : null,
+            ':description' => $description !== '' ? $description : null,
+            ':specifications' => $spec !== '' ? $spec : null,
+            ':price' => $price,
+            ':compare_at_price' => ($compareAtPrice !== null && $compareAtPrice > 0) ? $compareAtPrice : null,
+            ':stock_quantity' => max(0, $stock),
+            ':primary_image' => $primaryImage,
+            ':is_active' => $isActive,
+            ':is_featured' => $isFeatured,
+            ':id' => $productId,
+        ]);
+
+        // Invalidate Torob API & Sitemap Cache
+        CacheService::flushTorob();
+        CacheService::flushSitemap();
+
+        Session::setFlash('success', "محصول «{$title}» با موفقیت ویرایش شد و کش ترب و نقشه سایت بروزرسانی گردید.");
+        return Response::redirect(url('admin/products'));
+    }
+
+    /**
+     * Delete Product or Deactivate if Ordered.
+     * Route: POST /admin/products/{id}/delete
+     * 
+     * @param array<string, string> $vars
+     */
+    public function deleteProduct(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            Session::setFlash('error', 'توکن امنیتی نامعتبر است.');
+            return Response::redirect(url('admin/products'));
+        }
+
+        $productId = (int) ($vars['id'] ?? 0);
+        $product = $this->db->fetch("SELECT `id`, `title` FROM `products` WHERE `id` = :id LIMIT 1", [':id' => $productId]);
+        if (!$product) {
+            Session::setFlash('error', 'محصول یافت نشد.');
+            return Response::redirect(url('admin/products'));
+        }
+
+        // Check if product was referenced in orders
+        $orderCountRow = $this->db->fetch("SELECT COUNT(*) AS total FROM `order_items` WHERE `product_id` = :id", [':id' => $productId]);
+        $hasOrders = ((int) ($orderCountRow['total'] ?? 0)) > 0;
+
+        if ($hasOrders) {
+            // Soft delete by deactivating to preserve financial order integrity
+            $this->db->execute("UPDATE `products` SET `is_active` = 0 WHERE `id` = :id", [':id' => $productId]);
+            $msg = "محصول «{$product['title']}» به دلیل وجود در فاکتورهای پیشین غیرفعال گردید.";
+        } else {
+            $this->db->execute("DELETE FROM `products` WHERE `id` = :id", [':id' => $productId]);
+            $msg = "محصول «{$product['title']}» با موفقیت از سیستم حذف شد.";
+        }
+
+        // Invalidate Torob API & Sitemap Cache
+        CacheService::flushTorob();
+        CacheService::flushSitemap();
+
+        Session::setFlash('success', $msg);
+        return Response::redirect(url('admin/products'));
+    }
+
+    /**
+     * Securely handle image uploads to public/assets/images/products/
+     */
+    private function handleImageUpload(Request $request, string $slug): ?string
+    {
+        /** @var array<string, mixed>|null $file */
+        $file = $request->getFile('image') ?? $request->getFile('primary_image');
+        if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+            return null;
+        }
+
+        $size = (int) ($file['size'] ?? 0);
+        if ($size > 5 * 1024 * 1024) { // 5 MB max
+            return null;
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($tmpName);
+
+        $allowedMimes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+        ];
+
+        if (!isset($allowedMimes[$mime])) {
+            return null;
+        }
+
+        $ext = $allowedMimes[$mime];
+        $targetDir = public_path('assets' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR . 'products');
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $cleanSlug = substr(preg_replace('/[^a-zA-Z0-9_-]/', '', $slug) ?: 'prod', 0, 30);
+        $fileName = $cleanSlug . '-' . time() . '-' . mt_rand(100, 999) . '.' . $ext;
+        $destination = $targetDir . DIRECTORY_SEPARATOR . $fileName;
+
+        if (move_uploaded_file($tmpName, $destination)) {
+            return '/assets/images/products/' . $fileName;
+        }
+
+        return null;
+    }
+
+    private function slugify(string $text): string
+    {
+        $text = preg_replace('~[^\pL\d]+~u', '-', $text) ?? '';
+        $text = trim($text, '-');
+        $text = preg_replace('~-+~', '-', $text) ?? '';
+        $text = mb_strtolower($text, 'UTF-8');
+
+        return $text !== '' ? $text : 'item-' . time();
+    }
+
+    private function ensureUniqueSlug(string $baseSlug, int $ignoreId = 0): string
+    {
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (true) {
+            $row = $this->db->fetch(
+                "SELECT `id` FROM `products` WHERE `slug` = :slug AND `id` != :ignore_id LIMIT 1",
+                [':slug' => $slug, ':ignore_id' => $ignoreId]
+            );
+
+            if (!$row) {
+                break;
+            }
+
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 }
