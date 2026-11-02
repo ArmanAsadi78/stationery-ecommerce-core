@@ -307,4 +307,112 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
+
+    // =====================================================================
+    // PRODUCT CAROUSEL INTERACTION (Smooth Scroll & Mouse Drag)
+    // =====================================================================
+    const carouselTrack = document.getElementById('featuredCarouselTrack');
+    const carouselPrevBtn = document.getElementById('carouselPrevBtn');
+    const carouselNextBtn = document.getElementById('carouselNextBtn');
+
+    if (carouselTrack) {
+        const getScrollDistance = () => {
+            const card = carouselTrack.querySelector('.carousel-slide');
+            return card ? card.offsetWidth + 22 : 292;
+        };
+
+        if (carouselPrevBtn) {
+            carouselPrevBtn.addEventListener('click', () => {
+                // In RTL, moving to "previous" items scrolls towards the right
+                carouselTrack.scrollBy({ left: getScrollDistance(), behavior: 'smooth' });
+            });
+        }
+
+        if (carouselNextBtn) {
+            carouselNextBtn.addEventListener('click', () => {
+                // In RTL, moving to "next" items scrolls towards the left (negative delta)
+                carouselTrack.scrollBy({ left: -getScrollDistance(), behavior: 'smooth' });
+            });
+        }
+
+        // Mouse Drag / Swipe to Scroll
+        let isDown = false;
+        let startX = 0;
+        let scrollLeftVal = 0;
+
+        carouselTrack.addEventListener('mousedown', (e) => {
+            // Avoid triggering drag when clicking on buttons or links directly
+            if (e.target.closest('button') || e.target.closest('a')) return;
+            isDown = true;
+            carouselTrack.classList.add('grabbing');
+            startX = e.pageX - carouselTrack.offsetLeft;
+            scrollLeftVal = carouselTrack.scrollLeft;
+        });
+
+        carouselTrack.addEventListener('mouseleave', () => {
+            isDown = false;
+            carouselTrack.classList.remove('grabbing');
+        });
+
+        carouselTrack.addEventListener('mouseup', () => {
+            isDown = false;
+            carouselTrack.classList.remove('grabbing');
+        });
+
+        carouselTrack.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - carouselTrack.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            carouselTrack.scrollLeft = scrollLeftVal - walk;
+        });
+    }
+
+    // =====================================================================
+    // WISHLIST INTERACTION (Local Persistence & Toast Alert)
+    // =====================================================================
+    const getWishlist = () => {
+        try {
+            return JSON.parse(localStorage.getItem('stationery_wishlist') || '[]');
+        } catch {
+            return [];
+        }
+    };
+
+    const saveWishlist = (list) => {
+        try {
+            localStorage.setItem('stationery_wishlist', JSON.stringify(list));
+        } catch {}
+    };
+
+    // Initialize active wishlist buttons
+    const activeWishlist = getWishlist();
+    document.querySelectorAll('.btn-wishlist').forEach((btn) => {
+        const id = parseInt(btn.getAttribute('data-id'), 10);
+        if (activeWishlist.includes(id)) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Wishlist Toggle Click Handler
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-wishlist');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const pId = parseInt(btn.getAttribute('data-id'), 10);
+            let list = getWishlist();
+
+            if (list.includes(pId)) {
+                list = list.filter((item) => item !== pId);
+                btn.classList.remove('active');
+                showToast('از لیست علاقه‌مندی‌ها حذف شد', 'info');
+            } else {
+                list.push(pId);
+                btn.classList.add('active');
+                showToast('به لیست علاقه‌مندی‌ها اضافه شد ❤️', 'success');
+            }
+            saveWishlist(list);
+        }
+    });
 });

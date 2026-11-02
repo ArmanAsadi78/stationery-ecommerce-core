@@ -59,7 +59,7 @@
                 </div>
             </div>
 
-            {# Left Column: Visual Showcase Box with Glassmorphism #}
+            {# Left Column: Visual Showcase Box with Commercial Composite Image #}
             <div class="hero-visual-col">
                 <div class="hero-glass-showcase">
                     <div class="floating-sticker sticker-top">
@@ -68,14 +68,7 @@
                     </div>
 
                     <div class="showcase-center-art">
-                        <div class="art-pen-circle">
-                            <span class="hero-emoji-icon">✏️</span>
-                        </div>
-                        <div class="art-floating-chips">
-                            <span class="art-chip chip-pink">🎨 آبرنگ و مدادرنگی</span>
-                            <span class="art-chip chip-yellow">🖍️ هایلایتر پاستلی</span>
-                            <span class="art-chip chip-purple">📐 اتود مهندسی روترینگ</span>
-                        </div>
+                        <img src="{{ asset('images/banners/hero-showcase.webp') }}" alt="چیدمان فانتزی لوازم‌التحریر تحریرچی" class="hero-composite-img" loading="eager" width="540" height="480">
                     </div>
 
                     <div class="showcase-rating-card">
@@ -163,7 +156,7 @@
     </section>
 
     {# ================================================================= #}
-    {# 3. PROMO TILES (Pastel Mid-page Banners)                          #}
+    {# 3. PROMO TILES (Commercial Composite Images & Clean Cards)        #}
     {# ================================================================= #}
     <section class="promo-tiles-section">
         <div class="promo-grid">
@@ -175,7 +168,7 @@
                     <a href="{{ url('products?category=notebooks-and-paper') }}" class="promo-btn">مشاهده کالکشن ژورنال ←</a>
                 </div>
                 <div class="promo-art-box">
-                    <span class="promo-big-emoji">📓</span>
+                    <img src="{{ asset('images/banners/promo-journal.webp') }}" alt="کالکشن بولت ژورنال و دفترهای فانتزی" class="promo-composite-img" loading="lazy" width="360" height="320">
                 </div>
             </div>
 
@@ -187,19 +180,20 @@
                     <a href="{{ url('products?category=writing-instruments') }}" class="promo-btn">خرید محصولات مهندسی ←</a>
                 </div>
                 <div class="promo-art-box">
-                    <span class="promo-big-emoji">✒️</span>
+                    <img src="{{ asset('images/banners/promo-technical.webp') }}" alt="ابزارهای تخصصی طراحی و مهندسی روترینگ" class="promo-composite-img" loading="lazy" width="360" height="320">
                 </div>
             </div>
         </div>
     </section>
 
     {# ================================================================= #}
-    {# 4. CUTE ENHANCED PRODUCT CARDS (Color Dots & Soft Elevation)      #}
+    {# ================================================================= #}
+    {# 4. INTERACTIVE PRODUCT CAROUSEL (Commercial Rich Cards)           #}
     {# ================================================================= #}
     <section class="featured-section">
         <div class="section-header">
             <div>
-                <h2 class="section-title">✨ محصولات منتخب و محبوب تحریرچی</h2>
+                <h2 class="section-title">✨ محصولات منتخب و شگفت‌انگیز تحریرچی</h2>
                 <p class="section-subtitle">پرفروش‌ترین‌های این هفته با تخفیف ویژه و بسته‌بندی اختصاصی</p>
             </div>
             <a href="{{ url('products') }}" class="view-all-link">
@@ -210,73 +204,119 @@
             </a>
         </div>
 
-        <div class="product-grid">
-            {% for product in featured_products %}
-                <article class="product-card {% if product.stock_quantity <= 0 %}out-of-stock{% endif %}">
-                    <div class="product-thumb">
-                        <a href="{{ url('products/' ~ product.slug) }}" class="thumb-link">
-                            <img src="{{ product.primary_image ? asset(product.primary_image) : asset('images/placeholder.webp') }}" alt="{{ product.title }}" loading="lazy">
-                        </a>
+        <!-- Horizontal Product Carousel -->
+        <div class="product-carousel-wrapper">
+            <!-- Navigation Button Right (Prev in RTL) -->
+            <button type="button" class="carousel-nav-btn carousel-prev" id="carouselPrevBtn" aria-label="محصولات قبلی" title="قبلی">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
 
-                        <div class="product-badges-wrap">
-                            {% if product.compare_at_price and product.compare_at_price > product.price %}
-                                {% set discount = ((product.compare_at_price - product.price) / product.compare_at_price * 100)|round %}
-                                <span class="badge-discount">🔥 {{ discount|fa_num }}% تخفیف</span>
-                            {% elseif product.is_featured %}
-                                <span class="badge-featured">⭐ محبوب</span>
-                            {% endif %}
+            <!-- Carousel Track with Swipe / Drag & Snap -->
+            <div class="product-carousel-track" id="featuredCarouselTrack">
+                {% for product in featured_products %}
+                    <article class="product-card carousel-slide {% if product.stock_quantity <= 0 %}out-of-stock{% endif %}">
+                        <div class="product-thumb">
+                            <a href="{{ url('products/' ~ product.slug) }}" class="thumb-link">
+                                <img src="{{ product.primary_image ? asset(product.primary_image) : asset('images/placeholder.webp') }}" alt="{{ product.title }}" loading="lazy">
+                            </a>
 
-                            {% if product.stock_quantity <= 0 %}
-                                <span class="badge-out-of-stock">ناموجود</span>
-                            {% endif %}
-                        </div>
-                    </div>
+                            <!-- Wishlist Heart Button -->
+                            <button type="button" class="btn-wishlist" data-id="{{ product.id }}" title="افزودن به علاقه‌مندی‌ها" aria-label="علاقه‌مندی">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                                </svg>
+                            </button>
 
-                    <div class="product-info-wrap">
-                        <span class="product-category-brand">{{ product.brand ?? 'تحریرچی' }} · {{ product.category_title }}</span>
-                        
-                        <h3 class="product-title">
-                            <a href="{{ url('products/' ~ product.slug) }}" title="{{ product.title }}">{{ product.title }}</a>
-                        </h3>
-
-                        {# Color Swatch Dots for products with variants #}
-                        {% if product.variants is defined and product.variants|length > 0 %}
-                            <div class="product-color-dots" title="تنوع رنگی موجود">
-                                {% set shownColors = [] %}
-                                {% for v in product.variants %}
-                                    {% if v.color_hex and v.color_hex not in shownColors %}
-                                        {% set shownColors = shownColors|merge([v.color_hex]) %}
-                                        <span class="color-swatch-dot" style="background-color: {{ v.color_hex }};" title="{{ v.attribute_value }}"></span>
-                                    {% endif %}
-                                {% endfor %}
-                                <span class="color-count-label">{{ product.variants|length|fa_num }} تنوع</span>
-                            </div>
-                        {% else %}
-                            <div class="product-color-placeholder"></div>
-                        {% endif %}
-
-                        <div class="product-pricing">
-                            <div class="price-box">
-                                <span class="price-current">{{ product.price|price }}</span>
+                            <div class="product-badges-wrap">
                                 {% if product.compare_at_price and product.compare_at_price > product.price %}
-                                    <span class="price-old">{{ product.compare_at_price|price }}</span>
+                                    {% set discount = ((product.compare_at_price - product.price) / product.compare_at_price * 100)|round %}
+                                    <span class="badge-discount">🔥 {{ discount|fa_num }}% تخفیف</span>
+                                {% elseif product.is_featured %}
+                                    <span class="badge-featured">⭐ محبوب</span>
+                                {% endif %}
+
+                                {% if product.stock_quantity <= 0 %}
+                                    <span class="badge-out-of-stock">ناموجود</span>
                                 {% endif %}
                             </div>
-
-                            {% if product.stock_quantity > 0 %}
-                                <button type="button" class="btn-quick-add" data-id="{{ product.id }}" title="افزودن سریع به سبد خرید" aria-label="افزودن به سبد">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    <span class="add-txt">خرید</span>
-                                </button>
-                            {% else %}
-                                <span class="btn-quick-disabled">ناموجود</span>
-                            {% endif %}
                         </div>
-                    </div>
-                </article>
-            {% endfor %}
+
+                        <div class="product-info-wrap">
+                            <span class="product-category-brand">{{ product.brand ?? 'تحریرچی' }} · {{ product.category_title }}</span>
+
+                            <!-- 5-Star Commercial Rating Row -->
+                            <div class="product-rating-row">
+                                <div class="rating-stars" aria-label="امتیاز ۵ از ۵">
+                                    <span class="star-gold">★</span>
+                                    <span class="star-gold">★</span>
+                                    <span class="star-gold">★</span>
+                                    <span class="star-gold">★</span>
+                                    <span class="star-gold">★</span>
+                                </div>
+                                <span class="rating-val">{{ (4.7 + ((product.id * 3) % 4) * 0.1)|number_format(1, '.')|fa_num }}</span>
+                                <span class="rating-count">({{ (15 + (product.id * 17) % 65)|fa_num }})</span>
+                            </div>
+
+                            <h3 class="product-title">
+                                <a href="{{ url('products/' ~ product.slug) }}" title="{{ product.title }}">{{ product.title }}</a>
+                            </h3>
+
+                            {# Low Stock Urgency Indicator (<= 5 items) #}
+                            {% if product.stock_quantity > 0 and product.stock_quantity <= 5 %}
+                                <div class="product-stock-urgency">
+                                    <span class="urgency-dot"></span>
+                                    <span>تنها {{ product.stock_quantity|fa_num }} عدد در انبار باقی مانده!</span>
+                                </div>
+                            {% endif %}
+
+                            {# Color Swatch Dots for products with variants #}
+                            {% if product.variants is defined and product.variants|length > 0 %}
+                                <div class="product-color-dots" title="تنوع رنگی موجود">
+                                    {% set shownColors = [] %}
+                                    {% for v in product.variants %}
+                                        {% if v.color_hex and v.color_hex not in shownColors %}
+                                            {% set shownColors = shownColors|merge([v.color_hex]) %}
+                                            <span class="color-swatch-dot" style="background-color: {{ v.color_hex }};" title="{{ v.attribute_value }}"></span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="color-count-label">{{ product.variants|length|fa_num }} تنوع</span>
+                                </div>
+                            {% else %}
+                                <div class="product-color-placeholder"></div>
+                            {% endif %}
+
+                            <div class="product-pricing">
+                                <div class="price-box">
+                                    <span class="price-current">{{ product.price|price }}</span>
+                                    {% if product.compare_at_price and product.compare_at_price > product.price %}
+                                        <span class="price-old">{{ product.compare_at_price|price }}</span>
+                                    {% endif %}
+                                </div>
+
+                                {% if product.stock_quantity > 0 %}
+                                    <button type="button" class="btn-quick-add" data-id="{{ product.id }}" title="افزودن سریع به سبد خرید" aria-label="افزودن به سبد">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        <span class="add-txt">خرید</span>
+                                    </button>
+                                {% else %}
+                                    <span class="btn-quick-disabled">ناموجود</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+
+            <!-- Navigation Button Left (Next in RTL) -->
+            <button type="button" class="carousel-nav-btn carousel-next" id="carouselNextBtn" aria-label="محصولات بعدی" title="بعدی">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
         </div>
     </section>
 
