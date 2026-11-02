@@ -2,57 +2,196 @@
 
 {% block content %}
 <div class="container">
-    <!-- Hero Banner Section -->
-    <section class="hero-banner">
-        <div class="hero-content">
-            <span class="hero-tag">🌸 دنیای شیک، فانتزی و رنگارنگ لوازم‌التحریر</span>
-            <h1 class="hero-title">نوشتن و خلق زیبایی با شیرین‌ترین رنگ‌ها</h1>
-            <p class="hero-desc">مجموعه‌ای از برترین روان‌نویس‌های اشنایدر، اتودهای مهندسی روترینگ، مدادرنگی‌های حرفه‌ای فابرکاستل و دفترهای فانتزی با تضمین اصالت و بسته‌بندی جذاب.</p>
-            <a href="{{ url('products') }}" class="hero-btn">
-                <span>مشاهده کاتالوگ محصولات</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                </svg>
+    {# ================================================================= #}
+    {# 1. TWO-COLUMN HERO SECTION (Cute Pastel Aesthetic & Glassmorphism)#}
+    {# ================================================================= #}
+    <section class="hero-banner-modern">
+        <div class="hero-grid">
+            {# Right Column: Catchy Copy, Badges & Float CTA #}
+            <div class="hero-text-col">
+                <div class="hero-pill-badge">
+                    <span class="badge-sparkle">✨</span>
+                    <span>کالکشن جدید و فانتزی نوشت‌افزار ۱۴۰۵</span>
+                </div>
+
+                <h1 class="hero-main-title">
+                    دنیای رنگارنگ، کیوت و دوست‌داشتنیِ <span class="gradient-text">لوازم‌التحریر</span>
+                </h1>
+
+                <p class="hero-subtitle">
+                    خاص‌ترین روان‌نویس‌های ژاپنی و آلمانی، اتودهای مهندسی روترینگ، پلنرهای انگیزشی و ماژیک‌های هایلایتر پاستلی با ضمانت ۱۰۰٪ اصالت فیزیکی و بسته‌بندی پر از عشق و حس خوب! 🎀
+                </p>
+
+                <div class="hero-cta-group">
+                    <a href="{{ url('products') }}" class="btn-hero-primary">
+                        <span>مشاهده کاتالوگ محصولات</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                        </svg>
+                    </a>
+                    <a href="{{ url('products?category=writing-instruments') }}" class="btn-hero-secondary">
+                        <span>قلم و روان‌نویس‌ها ✏️</span>
+                    </a>
+                </div>
+
+                <div class="hero-trust-badges">
+                    <div class="trust-badge-item">
+                        <span class="trust-icon">🚀</span>
+                        <div>
+                            <strong>ارسال سریع سراسری</strong>
+                            <small>پست پیشتاز و تیپاکس</small>
+                        </div>
+                    </div>
+                    <div class="trust-badge-item">
+                        <span class="trust-icon">💎</span>
+                        <div>
+                            <strong>ضمانت ۱۰۰٪ اصالت</strong>
+                            <small>اورجینال برندهای برتر</small>
+                        </div>
+                    </div>
+                    <div class="trust-badge-item">
+                        <span class="trust-icon">🎁</span>
+                        <div>
+                            <strong>بسته‌بندی ایمن و کادویی</strong>
+                            <small>هدیه درون هر بسته</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Left Column: Visual Showcase Box with Glassmorphism #}
+            <div class="hero-visual-col">
+                <div class="hero-glass-showcase">
+                    <div class="floating-sticker sticker-top">
+                        <span>📓</span>
+                        <span>پلنر و ژورنال فانتزی</span>
+                    </div>
+
+                    <div class="showcase-center-art">
+                        <div class="art-pen-circle">
+                            <span class="hero-emoji-icon">✏️</span>
+                        </div>
+                        <div class="art-floating-chips">
+                            <span class="art-chip chip-pink">🎨 آبرنگ و مدادرنگی</span>
+                            <span class="art-chip chip-yellow">🖍️ هایلایتر پاستلی</span>
+                            <span class="art-chip chip-purple">📐 اتود مهندسی روترینگ</span>
+                        </div>
+                    </div>
+
+                    <div class="showcase-rating-card">
+                        <div class="stars-row">⭐⭐⭐⭐⭐</div>
+                        <strong>۴.۹ از ۵ رضایت خریداران</strong>
+                        <span>بیش از ۲،۴۰۰ نظر تاییدشده تحریرچی</span>
+                    </div>
+
+                    <div class="floating-sticker sticker-bottom">
+                        <span>🌸</span>
+                        <span>بسته‌بندی ویژه و دوست‌داشتنی</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ================================================================= #}
+    {# 2. CIRCULAR STORY CATEGORIES (Pastel Story Bubbles)               #}
+    {# ================================================================= #}
+    <section class="story-categories-section">
+        <div class="story-categories-header">
+            <div>
+                <h2 class="story-section-title">💖 دسته‌بندی‌های محبوب و رنگی‌رنگی</h2>
+                <p class="story-section-hint">روی دسته‌بندی مورد علاقه خود بزنید تا فانتزی‌ترین‌ها را ببینید</p>
+            </div>
+            <a href="{{ url('products') }}" class="story-view-all">مشاهده همه ←</a>
+        </div>
+
+        <div class="story-categories-track">
+            <a href="{{ url('products?category=writing-instruments') }}" class="story-cat-item">
+                <div class="story-circle circle-pink">
+                    <span class="story-emoji">✏️</span>
+                </div>
+                <span class="story-label">نوشت‌افزار و قلم</span>
+            </a>
+
+            <a href="{{ url('products?category=notebooks-and-paper') }}" class="story-cat-item">
+                <div class="story-circle circle-lavender">
+                    <span class="story-emoji">📓</span>
+                </div>
+                <span class="story-label">دفتر و پلنر انگیزشی</span>
+            </a>
+
+            <a href="{{ url('products?category=art-and-drawing') }}" class="story-cat-item">
+                <div class="story-circle circle-mint">
+                    <span class="story-emoji">🎨</span>
+                </div>
+                <span class="story-label">نقاشی و مدادرنگی</span>
+            </a>
+
+            <a href="{{ url('products?category=office-supplies') }}" class="story-cat-item">
+                <div class="story-circle circle-butter">
+                    <span class="story-emoji">📎</span>
+                </div>
+                <span class="story-label">لوازم میز و اداری</span>
+            </a>
+
+            <a href="{{ url('products?category=mechanical-pencils') }}" class="story-cat-item">
+                <div class="story-circle circle-sky">
+                    <span class="story-emoji">📐</span>
+                </div>
+                <span class="story-label">اتود و خط‌کش مهندسی</span>
+            </a>
+
+            <a href="{{ url('products?category=rollerball-pens') }}" class="story-cat-item">
+                <div class="story-circle circle-peach">
+                    <span class="story-emoji">🖊️</span>
+                </div>
+                <span class="story-label">روان‌نویس و خودنویس</span>
             </a>
         </div>
-        <div class="hero-graphic">
-            <div class="hero-badge-card card-pink">
-                <div class="num">۱۰۰٪</div>
-                <div class="lbl">تضمین اصالت برند</div>
+    </section>
+
+    {# ================================================================= #}
+    {# 3. PROMO TILES (Pastel Mid-page Banners)                          #}
+    {# ================================================================= #}
+    <section class="promo-tiles-section">
+        <div class="promo-grid">
+            <div class="promo-tile promo-tile-peach">
+                <div class="promo-content">
+                    <span class="promo-badge">🎀 کالکشن کیوت بولت ژورنال</span>
+                    <h3 class="promo-title">پک‌های هدیه و دفترهای نقطه‌ای</h3>
+                    <p class="promo-desc">شامل دفترهای جلدسخت، استیکرهای ژورنال و چسب‌های واشی با تخفیف هیجان‌انگیز</p>
+                    <a href="{{ url('products?category=notebooks-and-paper') }}" class="promo-btn">مشاهده کالکشن ژورنال ←</a>
+                </div>
+                <div class="promo-art-box">
+                    <span class="promo-big-emoji">📓</span>
+                </div>
             </div>
-            <div class="hero-badge-card card-yellow">
-                <div class="num">۲۴h</div>
-                <div class="lbl">ارسال سریع و مطمئن</div>
+
+            <div class="promo-tile promo-tile-lavender">
+                <div class="promo-content">
+                    <span class="promo-badge">📐 نوشت‌افزار تکنیکال و دقیق</span>
+                    <h3 class="promo-title">روترینگ و فابرکاستل آلمان</h3>
+                    <p class="promo-desc">ضمانت اصالت فیزیکی تمامی اتودها، نوک‌ها و مدادرنگی‌های تخصصی با بسته‌بندی هاردباکس</p>
+                    <a href="{{ url('products?category=writing-instruments') }}" class="promo-btn">خرید محصولات مهندسی ←</a>
+                </div>
+                <div class="promo-art-box">
+                    <span class="promo-big-emoji">✒️</span>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Cute Quick Category Pills -->
-    <section class="quick-categories-bar">
-        <a href="{{ url('products?category=writing-instruments') }}" class="quick-cat-pill pill-blue">
-            <span class="emoji">✏️</span>
-            <span>نوشت‌افزار و قلم</span>
-        </a>
-        <a href="{{ url('products?category=notebooks-and-paper') }}" class="quick-cat-pill pill-pink">
-            <span class="emoji">📓</span>
-            <span>دفتر و کاغذ فانتزی</span>
-        </a>
-        <a href="{{ url('products?category=office-supplies') }}" class="quick-cat-pill pill-purple">
-            <span class="emoji">📎</span>
-            <span>لوازم اداری و بایگانی</span>
-        </a>
-        <a href="{{ url('products?category=art-and-drawing') }}" class="quick-cat-pill pill-peach">
-            <span class="emoji">🎨</span>
-            <span>نقاشی و طراحی</span>
-        </a>
-    </section>
-
-    <!-- Featured Products Section -->
+    {# ================================================================= #}
+    {# 4. CUTE ENHANCED PRODUCT CARDS (Color Dots & Soft Elevation)      #}
+    {# ================================================================= #}
     <section class="featured-section">
         <div class="section-header">
-            <h2 class="section-title">✨ محصولات منتخب و محبوب</h2>
+            <div>
+                <h2 class="section-title">✨ محصولات منتخب و محبوب تحریرچی</h2>
+                <p class="section-subtitle">پرفروش‌ترین‌های این هفته با تخفیف ویژه و بسته‌بندی اختصاصی</p>
+            </div>
             <a href="{{ url('products') }}" class="view-all-link">
-                <span>مشاهده همه محصولات</span>
+                <span>مشاهده کاتالوگ کامل</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -63,44 +202,82 @@
             {% for product in featured_products %}
                 <article class="product-card {% if product.stock_quantity <= 0 %}out-of-stock{% endif %}">
                     <div class="product-thumb">
-                        <a href="{{ url('products/' ~ product.slug) }}">
+                        <a href="{{ url('products/' ~ product.slug) }}" class="thumb-link">
                             <img src="{{ product.primary_image ? asset(product.primary_image) : asset('images/placeholder.webp') }}" alt="{{ product.title }}" loading="lazy">
                         </a>
 
-                        {% if product.compare_at_price and product.compare_at_price > product.price %}
-                            {% set discount = ((product.compare_at_price - product.price) / product.compare_at_price * 100)|round %}
-                            <span class="badge-discount">{{ discount|fa_num }}% تخفیف</span>
-                        {% endif %}
-
-                        {% if product.stock_quantity <= 0 %}
-                            <span class="badge-out-of-stock">ناموجود</span>
-                        {% endif %}
-                    </div>
-
-                    <span class="product-brand">{{ product.brand }} | {{ product.category_title }}</span>
-                    <h3 class="product-title">
-                        <a href="{{ url('products/' ~ product.slug) }}">{{ product.title }}</a>
-                    </h3>
-
-                    <div class="product-pricing">
-                        <div class="price-box">
-                            <span class="price-current">{{ product.price|price }}</span>
+                        <div class="product-badges-wrap">
                             {% if product.compare_at_price and product.compare_at_price > product.price %}
-                                <span class="price-old">{{ product.compare_at_price|price }}</span>
+                                {% set discount = ((product.compare_at_price - product.price) / product.compare_at_price * 100)|round %}
+                                <span class="badge-discount">🔥 {{ discount|fa_num }}% تخفیف</span>
+                            {% elseif product.is_featured %}
+                                <span class="badge-featured">⭐ محبوب</span>
+                            {% endif %}
+
+                            {% if product.stock_quantity <= 0 %}
+                                <span class="badge-out-of-stock">ناموجود</span>
                             {% endif %}
                         </div>
+                    </div>
 
-                        {% if product.stock_quantity > 0 %}
-                            <button type="button" class="btn-quick-add" data-id="{{ product.id }}" title="افزودن سریع به سبد خرید" aria-label="افزودن به سبد">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                </svg>
-                            </button>
+                    <div class="product-info-wrap">
+                        <span class="product-category-brand">{{ product.brand ?? 'تحریرچی' }} · {{ product.category_title }}</span>
+                        
+                        <h3 class="product-title">
+                            <a href="{{ url('products/' ~ product.slug) }}" title="{{ product.title }}">{{ product.title }}</a>
+                        </h3>
+
+                        {# Color Swatch Dots for products with variants #}
+                        {% if product.variants is defined and product.variants|length > 0 %}
+                            <div class="product-color-dots" title="تنوع رنگی موجود">
+                                {% set shownColors = [] %}
+                                {% for v in product.variants %}
+                                    {% if v.color_hex and v.color_hex not in shownColors %}
+                                        {% set shownColors = shownColors|merge([v.color_hex]) %}
+                                        <span class="color-swatch-dot" style="background-color: {{ v.color_hex }};" title="{{ v.attribute_value }}"></span>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="color-count-label">{{ product.variants|length|fa_num }} تنوع</span>
+                            </div>
+                        {% else %}
+                            <div class="product-color-placeholder"></div>
                         {% endif %}
+
+                        <div class="product-pricing">
+                            <div class="price-box">
+                                <span class="price-current">{{ product.price|price }}</span>
+                                {% if product.compare_at_price and product.compare_at_price > product.price %}
+                                    <span class="price-old">{{ product.compare_at_price|price }}</span>
+                                {% endif %}
+                            </div>
+
+                            {% if product.stock_quantity > 0 %}
+                                <button type="button" class="btn-quick-add" data-id="{{ product.id }}" title="افزودن سریع به سبد خرید" aria-label="افزودن به سبد">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <span class="add-txt">خرید</span>
+                                </button>
+                            {% else %}
+                                <span class="btn-quick-disabled">ناموجود</span>
+                            {% endif %}
+                        </div>
                     </div>
                 </article>
             {% endfor %}
         </div>
+    </section>
+
+    {# ================================================================= #}
+    {# 5. PASTEL PROMO BANNER STRIP (Highlighter & Marker World)         #}
+    {# ================================================================= #}
+    <section class="promo-strip-card">
+        <div class="strip-content">
+            <span class="strip-badge">🖍️ دنیای هایلایترهای پاستلی</span>
+            <h3>رنگ‌های ملایم، بدون پس دادن جوهر روی کاغذ</h3>
+            <p>مجموعه ماژیک‌های پاستلی استبیلو، پنتر و اشنایدر برای زیباتر کردن خلاصه‌نویسی‌ها و درس خواندن لذت‌بخش</p>
+        </div>
+        <a href="{{ url('products') }}" class="btn-strip-cta">کشف هایلایترها ✨</a>
     </section>
 </div>
 {% endblock %}

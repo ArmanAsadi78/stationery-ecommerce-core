@@ -87,9 +87,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Render Drawer DOM
     const renderDrawer = (cart) => {
-        // Update header badge
+        // Update header badge with reactive pulse animation
         if (cartBadge) {
             cartBadge.textContent = cart.total_count;
+            if (cart.total_count > 0) {
+                cartBadge.classList.add('has-items');
+            } else {
+                cartBadge.classList.remove('has-items');
+            }
         }
 
         if (drawerSubtotal) {

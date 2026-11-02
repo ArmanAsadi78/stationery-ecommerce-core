@@ -67,40 +67,66 @@
                     {% for product in products %}
                         <article class="product-card {% if product.stock_quantity <= 0 %}out-of-stock{% endif %}">
                             <div class="product-thumb">
-                                <a href="{{ url('products/' ~ product.slug) }}">
+                                <a href="{{ url('products/' ~ product.slug) }}" class="thumb-link">
                                     <img src="{{ product.primary_image ? asset(product.primary_image) : asset('images/placeholder.webp') }}" alt="{{ product.title }}" loading="lazy">
                                 </a>
 
-                                {% if product.compare_at_price and product.compare_at_price > product.price %}
-                                    {% set discount = ((product.compare_at_price - product.price) / product.compare_at_price * 100)|round %}
-                                    <span class="badge-discount">{{ discount|fa_num }}% تخفیف</span>
-                                {% endif %}
-
-                                {% if product.stock_quantity <= 0 %}
-                                    <span class="badge-out-of-stock">ناموجود</span>
-                                {% endif %}
-                            </div>
-
-                            <span class="product-brand">{{ product.brand }} | {{ product.category_title }}</span>
-                            <h3 class="product-title">
-                                <a href="{{ url('products/' ~ product.slug) }}">{{ product.title }}</a>
-                            </h3>
-
-                            <div class="product-pricing">
-                                <div class="price-box">
-                                    <span class="price-current">{{ product.price|price }}</span>
+                                <div class="product-badges-wrap">
                                     {% if product.compare_at_price and product.compare_at_price > product.price %}
-                                        <span class="price-old">{{ product.compare_at_price|price }}</span>
+                                        {% set discount = ((product.compare_at_price - product.price) / product.compare_at_price * 100)|round %}
+                                        <span class="badge-discount">🔥 {{ discount|fa_num }}% تخفیف</span>
+                                    {% elseif product.is_featured %}
+                                        <span class="badge-featured">⭐ محبوب</span>
+                                    {% endif %}
+
+                                    {% if product.stock_quantity <= 0 %}
+                                        <span class="badge-out-of-stock">ناموجود</span>
                                     {% endif %}
                                 </div>
+                            </div>
 
-                                {% if product.stock_quantity > 0 %}
-                                    <button type="button" class="btn-quick-add" data-id="{{ product.id }}" title="افزودن سریع به سبد خرید" aria-label="افزودن به سبد">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                        </svg>
-                                    </button>
+                            <div class="product-info-wrap">
+                                <span class="product-category-brand">{{ product.brand ?? 'تحریرچی' }} · {{ product.category_title }}</span>
+                                
+                                <h3 class="product-title">
+                                    <a href="{{ url('products/' ~ product.slug) }}" title="{{ product.title }}">{{ product.title }}</a>
+                                </h3>
+
+                                {# Color Swatch Dots for products with variants #}
+                                {% if product.variants is defined and product.variants|length > 0 %}
+                                    <div class="product-color-dots" title="تنوع رنگی موجود">
+                                        {% set shownColors = [] %}
+                                        {% for v in product.variants %}
+                                            {% if v.color_hex and v.color_hex not in shownColors %}
+                                                {% set shownColors = shownColors|merge([v.color_hex]) %}
+                                                <span class="color-swatch-dot" style="background-color: {{ v.color_hex }};" title="{{ v.attribute_value }}"></span>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <span class="color-count-label">{{ product.variants|length|fa_num }} تنوع</span>
+                                    </div>
+                                {% else %}
+                                    <div class="product-color-placeholder"></div>
                                 {% endif %}
+
+                                <div class="product-pricing">
+                                    <div class="price-box">
+                                        <span class="price-current">{{ product.price|price }}</span>
+                                        {% if product.compare_at_price and product.compare_at_price > product.price %}
+                                            <span class="price-old">{{ product.compare_at_price|price }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if product.stock_quantity > 0 %}
+                                        <button type="button" class="btn-quick-add" data-id="{{ product.id }}" title="افزودن سریع به سبد خرید" aria-label="افزودن به سبد">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            <span class="add-txt">خرید</span>
+                                        </button>
+                                    {% else %}
+                                        <span class="btn-quick-disabled">ناموجود</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </article>
                     {% endfor %}
