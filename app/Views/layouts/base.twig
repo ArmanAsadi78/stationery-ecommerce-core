@@ -216,19 +216,22 @@
                     </li>
 
                     <li><a href="{{ url('/') }}" class="nav-link {{ current_path == '/' ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">صفحه اصلی</a></li>
-                    <li><a href="{{ url('products?category=writing-instruments') }}" class="nav-link {{ (current_path == '/products' and current_category == 'writing-instruments') ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">نوشت‌افزار</a></li>
-                    <li><a href="{{ url('products?category=notebooks-and-paper') }}" class="nav-link {{ (current_path == '/products' and current_category == 'notebooks-and-paper') ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">دفتر و کاغذ</a></li>
-                    <li><a href="{{ url('products?category=art-and-drawing') }}" class="nav-link {{ (current_path == '/products' and current_category == 'art-and-drawing') ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">طراحی و نقاشی</a></li>
+                    <li>
+                        <a href="{{ url('products') }}" class="nav-link {{ (current_path == '/products' and not current_category) ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">
+                            <span class="deals-fire">🔥</span>
+                            <span>تخفیف‌های شگفت‌انگیز</span>
+                        </a>
+                    </li>
                     <li><a href="{{ url('about-us') }}" class="nav-link {{ current_path == '/about-us' ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">درباره ما</a></li>
                     <li><a href="{{ url('contact-us') }}" class="nav-link {{ current_path == '/contact-us' ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">تماس با ما</a></li>
                 </ul>
 
-                <!-- Hot Deals Quick Link on Nav Bar -->
+                <!-- Top Free Shipping / Fast Delivery Badge -->
                 <div class="nav-deals-wrap">
-                    <a href="{{ url('products') }}" class="nav-hot-deals">
-                        <span class="deals-fire">🔥</span>
-                        <span>تخفیف‌های شگفت‌انگیز</span>
-                    </a>
+                    <span class="nav-hot-deals" style="background: #f0fdf4; border-color: #bbf7d0; color: #16a34a; cursor: default;">
+                        <span>🚚</span>
+                        <span>ارسال رایگان سفارش‌های بالای ۳۰۰ هزار تومان</span>
+                    </span>
                 </div>
             </div>
         </nav>

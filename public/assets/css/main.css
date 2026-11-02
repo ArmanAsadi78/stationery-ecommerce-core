@@ -728,6 +728,24 @@ button, input, select {
   position: relative;
 }
 
+@keyframes floatSoft {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2.5deg);
+  }
+}
+
+@keyframes floatReverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(7px) rotate(-2.5deg);
+  }
+}
+
 .floating-sticker {
   background: #ffffff;
   border: 1px solid #f1f5f9;
@@ -736,22 +754,144 @@ button, input, select {
   font-size: 12px;
   font-weight: 800;
   color: #0f172a;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  z-index: 3;
 }
 
 .sticker-top {
   align-self: flex-start;
-  transform: rotate(-2deg);
   margin-bottom: 16px;
+  animation: floatSoft 4.5s ease-in-out infinite;
 }
 
 .sticker-bottom {
   align-self: flex-end;
-  transform: rotate(2deg);
   margin-top: 16px;
+  animation: floatReverse 5s ease-in-out infinite;
+}
+
+/* Playful Floating Stickers & Badges */
+.deco-floating-sticker {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.deco-floating-sticker.float-soft {
+  animation: floatSoft 4.5s ease-in-out infinite;
+}
+
+.deco-floating-sticker.float-reverse {
+  animation: floatReverse 5.2s ease-in-out infinite;
+}
+
+.deco-floating-sticker.float-delay-1 {
+  animation-delay: 1.2s;
+}
+
+.deco-floating-sticker.float-delay-2 {
+  animation-delay: 2.4s;
+}
+
+.deco-floating-sticker.theme-pink {
+  background: rgba(255, 241, 242, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid #fecdd3;
+  color: #e11d48;
+}
+
+.deco-floating-sticker.theme-lavender {
+  background: rgba(245, 243, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid #ddd6fe;
+  color: #7c3aed;
+}
+
+.deco-floating-sticker.theme-mint {
+  background: rgba(240, 253, 244, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid #bbf7d0;
+  color: #16a34a;
+}
+
+.deco-floating-sticker.theme-butter {
+  background: rgba(254, 252, 232, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid #fef08a;
+  color: #ca8a04;
+}
+
+.deco-sticker-circle {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+  user-select: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  box-shadow: 0 8px 20px -3px rgba(15, 23, 42, 0.1);
+  border: 2px solid #ffffff;
+}
+
+.deco-sticker-circle.float-soft {
+  animation: floatSoft 4.2s ease-in-out infinite;
+}
+
+.deco-sticker-circle.float-reverse {
+  animation: floatReverse 5s ease-in-out infinite;
+}
+
+.deco-sticker-circle.float-delay-1 {
+  animation-delay: 1.5s;
+}
+
+.deco-sticker-circle.theme-pink {
+  background: #ffe4e6;
+}
+
+.deco-sticker-circle.theme-lavender {
+  background: #ede9fe;
+}
+
+.deco-sticker-circle.theme-mint {
+  background: #dcfce7;
+}
+
+.deco-sticker-circle.theme-butter {
+  background: #fef9c3;
+}
+
+/* PJAX Smooth Fade Container Transition */
+.account-main-content,
+.admin-content-area {
+  transition: opacity 0.18s ease-in-out;
+}
+
+.pjax-animating {
+  opacity: 0.35;
+  pointer-events: none;
 }
 
 .showcase-center-art {
@@ -3161,6 +3301,8 @@ button, input, select {
   box-shadow: var(--shadow-soft);
   padding: 40px;
   margin-bottom: 48px;
+  position: relative;
+  overflow: hidden;
 }
 
 .about-hero-grid {
@@ -4837,6 +4979,8 @@ button, input, select {
   background: #f8fafc;
   border-radius: var(--radius-lg);
   border: 1px dashed #cbd5e1;
+  position: relative;
+  overflow: hidden;
 }
 
 .empty-icon {

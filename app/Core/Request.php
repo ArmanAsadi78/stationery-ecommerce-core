@@ -213,6 +213,12 @@ class Request
         return str_contains($accept, 'application/json');
     }
 
+    public function isPjax(): bool
+    {
+        $pjax = $this->getHeader('X-PJAX');
+        return $pjax !== null && ($pjax === 'true' || $pjax === '1');
+    }
+
     public function ip(): string
     {
         $client = $this->server['HTTP_CLIENT_IP'] ?? null;

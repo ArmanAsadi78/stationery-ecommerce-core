@@ -1,4 +1,4 @@
-{% extends 'admin/layout.twig' %}
+{% extends is_pjax ? 'layouts/blank.twig' : 'admin/layout.twig' %}
 
 {% block admin_content %}
 <div class="admin-product-form-view">

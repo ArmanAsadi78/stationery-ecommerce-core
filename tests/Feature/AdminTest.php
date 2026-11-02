@@ -322,4 +322,55 @@ class AdminTest extends TestCase
         $deletedProduct = $this->db->fetch("SELECT `id` FROM `products` WHERE `id` = :id", [':id' => $prodId]);
         $this->assertNull($deletedProduct);
     }
+
+    public function test_admin_pjax_tab_navigation(): void
+    {
+        $adminEmail = 'admin_pjax_' . time() . '@example.com';
+        $this->createdUserEmails[] = $adminEmail;
+
+        $hash = password_hash('adm_pass123', PASSWORD_BCRYPT);
+        $this->db->execute(
+            "INSERT INTO `users` (`full_name`, `email`, `password_hash`, `role`, `is_active`, `created_at`) 
+             VALUES ('مدیر سیستم پی‌جکس', :email, :hash, 'admin', 1, NOW())",
+            [':email' => $adminEmail, ':hash' => $hash]
+        );
+
+        $this->auth->login($adminEmail, 'adm_pass123');
+
+        // 1. Dashboard PJAX
+        $dashRes = $this->request('GET', '/admin/dashboard', [], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'X-PJAX' => 'true',
+        ]);
+        $this->assertSame(200, $dashRes->getStatusCode());
+        $dashJson = json_decode($dashRes->getContent(), true);
+        $this->assertIsArray($dashJson);
+        $this->assertTrue($dashJson['success']);
+        $this->assertSame('dashboard', $dashJson['active_menu']);
+        $this->assertStringContainsString('admin-metrics-grid', $dashJson['html']);
+
+        // 2. Orders PJAX
+        $ordersRes = $this->request('GET', '/admin/orders', [], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'X-PJAX' => 'true',
+        ]);
+        $this->assertSame(200, $ordersRes->getStatusCode());
+        $ordersJson = json_decode($ordersRes->getContent(), true);
+        $this->assertIsArray($ordersJson);
+        $this->assertTrue($ordersJson['success']);
+        $this->assertSame('orders', $ordersJson['active_menu']);
+        $this->assertStringContainsString('admin-orders-view', $ordersJson['html']);
+
+        // 3. Products PJAX
+        $productsRes = $this->request('GET', '/admin/products', [], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'X-PJAX' => 'true',
+        ]);
+        $this->assertSame(200, $productsRes->getStatusCode());
+        $productsJson = json_decode($productsRes->getContent(), true);
+        $this->assertIsArray($productsJson);
+        $this->assertTrue($productsJson['success']);
+        $this->assertSame('products', $productsJson['active_menu']);
+        $this->assertStringContainsString('admin-products-view', $productsJson['html']);
+    }
 }

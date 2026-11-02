@@ -101,6 +101,92 @@
         </div>
     </div>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contentArea = document.querySelector('.admin-content-area');
+        if (!contentArea) return;
+
+        async function loadAdminPage(url, push = true) {
+            contentArea.classList.add('pjax-animating');
+
+            try {
+                const res = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-PJAX': 'true',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    window.location.href = url;
+                    return;
+                }
+
+                const data = await res.json();
+                if (data && data.success && data.html !== undefined) {
+                    contentArea.innerHTML = data.html;
+                    if (data.title) {
+                        document.title = data.title;
+                        const breadcrumbCurrent = document.querySelector('.admin-topbar-breadcrumb .current');
+                        if (breadcrumbCurrent) {
+                            breadcrumbCurrent.textContent = data.title;
+                        }
+                    }
+
+                    // Update active class on sidebar items
+                    const currentUrlObj = new URL(url, window.location.origin);
+                    const currentPath = currentUrlObj.pathname;
+                    const activeMenu = data.active_menu;
+
+                    document.querySelectorAll('.admin-nav .admin-nav-item').forEach(item => {
+                        const href = item.getAttribute('href');
+                        if (!href) return;
+                        const itemUrlObj = new URL(href, window.location.origin);
+                        if (itemUrlObj.pathname === currentPath || (activeMenu && itemUrlObj.pathname.endsWith('/' + activeMenu))) {
+                            item.classList.add('active');
+                        } else {
+                            item.classList.remove('active');
+                        }
+                    });
+
+                    if (push) {
+                        history.pushState({ pjax: true, url: url }, '', url);
+                    }
+
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    window.location.href = url;
+                }
+            } catch (err) {
+                window.location.href = url;
+            } finally {
+                contentArea.classList.remove('pjax-animating');
+            }
+        }
+
+        // Intercept sidebar link clicks
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('.admin-nav a.admin-nav-item:not(.admin-nav-logout):not([target="_blank"])');
+            if (!link) return;
+
+            const href = link.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+
+            e.preventDefault();
+            loadAdminPage(href, true);
+        });
+
+        // Handle browser popstate
+        window.addEventListener('popstate', function() {
+            const path = window.location.pathname;
+            if (path.includes('/admin/')) {
+                loadAdminPage(window.location.href, false);
+            }
+        });
+    });
+    </script>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>

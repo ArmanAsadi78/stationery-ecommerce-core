@@ -98,4 +98,127 @@
         </main>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mainContent = document.querySelector('.account-main-content');
+    if (!mainContent) return;
+
+    async function loadPage(url, push = true) {
+        mainContent.classList.add('pjax-animating');
+
+        try {
+            const res = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-PJAX': 'true',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!res.ok) {
+                window.location.href = url;
+                return;
+            }
+
+            const data = await res.json();
+            if (data && data.success && data.html !== undefined) {
+                mainContent.innerHTML = data.html;
+                if (data.title) {
+                    document.title = data.title;
+                }
+
+                // Update active state in sidebar
+                const currentUrlObj = new URL(url, window.location.origin);
+                const currentPath = currentUrlObj.pathname;
+                const activeTab = data.active_tab;
+
+                document.querySelectorAll('.account-nav-menu .account-nav-item').forEach(item => {
+                    const href = item.getAttribute('href');
+                    if (!href) return;
+                    const itemUrlObj = new URL(href, window.location.origin);
+                    if (itemUrlObj.pathname === currentPath || (activeTab && itemUrlObj.pathname.endsWith('/' + activeTab))) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+
+                if (push) {
+                    history.pushState({ pjax: true, url: url }, '', url);
+                }
+
+                window.scrollTo({ top: 120, behavior: 'smooth' });
+            } else {
+                window.location.href = url;
+            }
+        } catch (err) {
+            window.location.href = url;
+        } finally {
+            mainContent.classList.remove('pjax-animating');
+        }
+    }
+
+    // Intercept sidebar link clicks
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.account-nav-menu a.account-nav-item:not(.item-logout)');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+
+        e.preventDefault();
+        loadPage(href, true);
+    });
+
+    // Handle Browser Back / Forward buttons
+    window.addEventListener('popstate', function(e) {
+        const path = window.location.pathname;
+        if (path.includes('/account/')) {
+            loadPage(window.location.href, false);
+        }
+    });
+
+    // Dynamic order status filter delegation
+    document.addEventListener('click', function(e) {
+        const pill = e.target.closest('.orders-filter-strip .filter-tab-pill');
+        if (!pill) return;
+        e.preventDefault();
+
+        const targetUrl = pill.getAttribute('href');
+        const container = document.getElementById('ordersContainer');
+        if (!targetUrl || !container) return;
+
+        const filterPills = document.querySelectorAll('.orders-filter-strip .filter-tab-pill');
+        filterPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+
+        container.style.opacity = '0.5';
+        container.style.pointerEvents = 'none';
+
+        fetch(targetUrl, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.success && data.html !== undefined) {
+                container.innerHTML = data.html;
+                history.pushState({ pjax: false, url: targetUrl }, '', targetUrl);
+            } else {
+                window.location.href = targetUrl;
+            }
+        })
+        .catch(() => {
+            window.location.href = targetUrl;
+        })
+        .finally(() => {
+            container.style.opacity = '1';
+            container.style.pointerEvents = 'auto';
+        });
+    });
+});
+</script>
 {% endblock %}

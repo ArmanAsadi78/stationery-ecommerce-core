@@ -1,4 +1,4 @@
-{% extends 'account/layout.twig' %}
+{% extends is_pjax ? 'layouts/blank.twig' : 'account/layout.twig' %}
 
 {% block account_content %}
 <div class="account-card-panel invoice-view-card">

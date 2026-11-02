@@ -64,9 +64,13 @@ class AccountController
             [':user_id' => $userId]
         );
 
+        $pageTitle = 'داشبورد کاربری | تحریرچی';
+        $isPjax = $request->isPjax();
+
         $html = View::render('account/dashboard', [
-            'page_title' => 'داشبورد کاربری | تحریرچی',
+            'page_title' => $pageTitle,
             'active_tab' => 'dashboard',
+            'is_pjax' => $isPjax,
             'user' => $user,
             'stats' => [
                 'total_orders' => (int) ($ordersCountRow['total_orders'] ?? 0),
@@ -79,6 +83,15 @@ class AccountController
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_tab' => 'dashboard',
+            ]);
+        }
 
         return Response::html($html);
     }
@@ -119,7 +132,7 @@ class AccountController
         /** @var list<array<string, mixed>> $orders */
         $orders = $this->db->fetchAll($sql, $params);
 
-        if ($request->isAjax()) {
+        if ($request->isAjax() && !$request->isPjax()) {
             $partialHtml = View::render('account/_orders_list', [
                 'orders' => $orders,
                 'current_filter' => $filterStatus,
@@ -133,15 +146,28 @@ class AccountController
             ]);
         }
 
+        $pageTitle = 'تاریخچه سفارش‌ها | تحریرچی';
+        $isPjax = $request->isPjax();
+
         $html = View::render('account/orders', [
-            'page_title' => 'تاریخچه سفارش‌ها | تحریرچی',
+            'page_title' => $pageTitle,
             'active_tab' => 'orders',
+            'is_pjax' => $isPjax,
             'user' => $user,
             'orders' => $orders,
             'current_filter' => $filterStatus,
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_tab' => 'orders',
+            ]);
+        }
 
         return Response::html($html);
     }
@@ -194,14 +220,27 @@ class AccountController
             [':order_id' => $orderId]
         );
 
+        $pageTitle = 'جزئیات سفارش ' . $order['order_number'] . ' | تحریرچی';
+        $isPjax = $request->isPjax();
+
         $html = View::render('account/order_detail', [
-            'page_title' => 'جزئیات سفارش ' . $order['order_number'] . ' | تحریرچی',
+            'page_title' => $pageTitle,
             'active_tab' => 'orders',
+            'is_pjax' => $isPjax,
             'user' => $user,
             'order' => $order,
             'items' => $items,
             'payment' => $payment ?: null,
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_tab' => 'orders',
+            ]);
+        }
 
         return Response::html($html);
     }
@@ -222,14 +261,27 @@ class AccountController
         $userId = (int) $user['id'];
         $wishlistItems = $this->auth->getWishlist($userId);
 
+        $pageTitle = 'کالاهای مورد علاقه | تحریرچی';
+        $isPjax = $request->isPjax();
+
         $html = View::render('account/wishlist', [
-            'page_title' => 'کالاهای مورد علاقه | تحریرچی',
+            'page_title' => $pageTitle,
             'active_tab' => 'wishlist',
+            'is_pjax' => $isPjax,
             'user' => $user,
             'wishlist' => $wishlistItems,
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_tab' => 'wishlist',
+            ]);
+        }
 
         return Response::html($html);
     }
@@ -363,14 +415,27 @@ class AccountController
             [':user_id' => $userId]
         );
 
+        $pageTitle = 'تنظیمات و اطلاعات کاربری | تحریرچی';
+        $isPjax = $request->isPjax();
+
         $html = View::render('account/profile', [
-            'page_title' => 'تنظیمات و اطلاعات کاربری | تحریرچی',
+            'page_title' => $pageTitle,
             'active_tab' => 'profile',
+            'is_pjax' => $isPjax,
             'user' => $user,
             'addresses' => $addresses,
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_tab' => 'profile',
+            ]);
+        }
 
         return Response::html($html);
     }

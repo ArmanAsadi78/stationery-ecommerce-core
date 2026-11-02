@@ -1,4 +1,4 @@
-{% extends 'account/layout.twig' %}
+{% extends is_pjax ? 'layouts/blank.twig' : 'account/layout.twig' %}
 
 {% block account_content %}
 <div class="account-card-panel">
@@ -33,62 +33,4 @@
         {% include 'account/_orders_list.twig' %}
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const filterPills = document.querySelectorAll('.orders-filter-strip .filter-tab-pill');
-    const container = document.getElementById('ordersContainer');
-    if (!filterPills.length || !container) return;
-
-    filterPills.forEach(pill => {
-        pill.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetUrl = this.getAttribute('href');
-            if (!targetUrl) return;
-
-            // Immediately switch active class without page refresh
-            filterPills.forEach(p => p.classList.remove('active'));
-            this.classList.add('active');
-
-            // Visual feedback
-            container.style.opacity = '0.5';
-            container.style.pointerEvents = 'none';
-
-            fetch(targetUrl, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('Network error');
-                return res.json();
-            })
-            .then(data => {
-                if (data && data.success && data.html !== undefined) {
-                    container.innerHTML = data.html;
-                    if (window.history && window.history.pushState) {
-                        window.history.pushState({ path: targetUrl }, '', targetUrl);
-                    }
-                } else {
-                    window.location.href = targetUrl;
-                }
-            })
-            .catch(() => {
-                window.location.href = targetUrl;
-            })
-            .finally(() => {
-                container.style.opacity = '1';
-                container.style.pointerEvents = 'auto';
-            });
-        });
-    });
-
-    window.addEventListener('popstate', function() {
-        window.location.reload();
-    });
-});
-</script>
 {% endblock %}

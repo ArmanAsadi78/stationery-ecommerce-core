@@ -1,4 +1,4 @@
-{% extends 'account/layout.twig' %}
+{% extends is_pjax ? 'layouts/blank.twig' : 'account/layout.twig' %}
 
 {% block account_content %}
 <div class="account-card-panel">
@@ -54,6 +54,8 @@
 
         {% if recent_orders is empty %}
             <div class="empty-state-card">
+                <div class="deco-sticker-circle theme-butter float-soft" style="top: 16px; right: 24px; width: 34px; height: 34px; font-size: 16px;">✨</div>
+                <div class="deco-sticker-circle theme-lavender float-reverse float-delay-1" style="bottom: 16px; left: 24px; width: 34px; height: 34px; font-size: 16px;">📎</div>
                 <div class="empty-icon">🛍️</div>
                 <h4>شما هنوز سفارشی ثبت نکرده‌اید!</h4>
                 <p>مجموعه بی‌نظیر نوشت‌افزارها، روان‌نویس‌ها و دفاتر فانتزی تحریرچی را بررسی نمایید.</p>

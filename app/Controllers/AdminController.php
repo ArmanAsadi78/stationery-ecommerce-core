@@ -160,10 +160,14 @@ class AdminController
             LIMIT 8
         ");
 
+        $pageTitle = 'داشبورد مدیریت سامانه | تحریرچی';
+        $isPjax = $request->isPjax();
+
         $html = View::render('admin/dashboard', [
-            'page_title' => 'داشبورد مدیریت سامانه | تحریرچی',
+            'page_title' => $pageTitle,
             'admin_user' => $adminUser,
             'active_menu' => 'dashboard',
+            'is_pjax' => $isPjax,
             'metrics' => [
                 'total_orders' => (int) ($metrics['total_orders'] ?? 0),
                 'total_revenue' => (float) ($metrics['total_revenue'] ?? 0),
@@ -178,6 +182,15 @@ class AdminController
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'dashboard',
+            ]);
+        }
 
         return Response::html($html);
     }
@@ -245,10 +258,14 @@ class AdminController
             LIMIT {$perPage} OFFSET {$offset}
         ", $params);
 
+        $pageTitle = 'مدیریت و پیگیری سفارش‌ها | پنل ادمین';
+        $isPjax = $request->isPjax();
+
         $html = View::render('admin/orders', [
-            'page_title' => 'مدیریت و پیگیری سفارش‌ها | پنل ادمین',
+            'page_title' => $pageTitle,
             'admin_user' => $adminUser,
             'active_menu' => 'orders',
+            'is_pjax' => $isPjax,
             'orders' => $orders,
             'current_status' => $statusFilter,
             'search_query' => $searchQuery,
@@ -259,6 +276,15 @@ class AdminController
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'orders',
+            ]);
+        }
 
         return Response::html($html);
     }
@@ -301,16 +327,29 @@ class AdminController
             SELECT * FROM `payments` WHERE `order_id` = :id ORDER BY `id` DESC LIMIT 1
         ", [':id' => $orderId]);
 
+        $pageTitle = 'جزئیات سفارش #' . $order['order_number'] . ' | پنل مدیریت';
+        $isPjax = $request->isPjax();
+
         $html = View::render('admin/order_detail', [
-            'page_title' => 'جزئیات سفارش #' . $order['order_number'] . ' | پنل مدیریت',
+            'page_title' => $pageTitle,
             'admin_user' => $adminUser,
             'active_menu' => 'orders',
+            'is_pjax' => $isPjax,
             'order' => $order,
             'items' => $items,
             'payment' => $payment,
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'orders',
+            ]);
+        }
 
         return Response::html($html);
     }
@@ -451,10 +490,14 @@ class AdminController
             SELECT `id`, `title` FROM `categories` ORDER BY `sort_order` ASC, `title` ASC
         ");
 
+        $pageTitle = 'مدیریت محصولات و کالاها | پنل ادمین';
+        $isPjax = $request->isPjax();
+
         $html = View::render('admin/products', [
-            'page_title' => 'مدیریت محصولات و کالاها | پنل ادمین',
+            'page_title' => $pageTitle,
             'admin_user' => $adminUser,
             'active_menu' => 'products',
+            'is_pjax' => $isPjax,
             'products' => $products,
             'categories' => $categories,
             'search_query' => $searchQuery,
@@ -467,6 +510,15 @@ class AdminController
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'products',
+            ]);
+        }
 
         return Response::html($html);
     }
@@ -486,16 +538,29 @@ class AdminController
             SELECT `id`, `title` FROM `categories` ORDER BY `sort_order` ASC, `title` ASC
         ");
 
+        $pageTitle = 'افزودن محصول جدید | پنل مدیریت تحریرچی';
+        $isPjax = $request->isPjax();
+
         $html = View::render('admin/product_form', [
-            'page_title' => 'افزودن محصول جدید | پنل مدیریت تحریرچی',
+            'page_title' => $pageTitle,
             'admin_user' => $adminUser,
             'active_menu' => 'products',
+            'is_pjax' => $isPjax,
             'is_edit' => false,
             'product' => null,
             'categories' => $categories,
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'products',
+            ]);
+        }
 
         return Response::html($html);
     }
@@ -619,16 +684,29 @@ class AdminController
             SELECT `id`, `title` FROM `categories` ORDER BY `sort_order` ASC, `title` ASC
         ");
 
+        $pageTitle = 'ویرایش محصول: ' . $product['title'] . ' | پنل مدیریت';
+        $isPjax = $request->isPjax();
+
         $html = View::render('admin/product_form', [
-            'page_title' => 'ویرایش محصول: ' . $product['title'] . ' | پنل مدیریت',
+            'page_title' => $pageTitle,
             'admin_user' => $adminUser,
             'active_menu' => 'products',
+            'is_pjax' => $isPjax,
             'is_edit' => true,
             'product' => $product,
             'categories' => $categories,
             'flash_success' => Session::getFlash('success'),
             'flash_error' => Session::getFlash('error'),
         ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'products',
+            ]);
+        }
 
         return Response::html($html);
     }

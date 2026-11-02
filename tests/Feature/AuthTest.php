@@ -333,4 +333,65 @@ class AuthTest extends TestCase
         $this->assertArrayHasKey('html', $json);
         $this->assertSame('processing', $json['current_filter']);
     }
+
+    public function test_customer_pjax_tab_navigation(): void
+    {
+        $testEmail = 'pjax_cust_' . time() . '@example.com';
+        $this->createdUserEmails[] = $testEmail;
+
+        $hash = password_hash('pass123', PASSWORD_BCRYPT);
+        $this->db->execute(
+            "INSERT INTO `users` (`full_name`, `email`, `password_hash`, `role`, `is_active`, `created_at`) 
+             VALUES ('مشتری تست پی‌جکس', :email, :hash, 'customer', 1, NOW())",
+            [':email' => $testEmail, ':hash' => $hash]
+        );
+
+        $this->auth->login($testEmail, 'pass123');
+
+        // Test dashboard PJAX
+        $dashRes = $this->request('GET', '/account/dashboard', [], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'X-PJAX' => 'true',
+        ]);
+        $this->assertSame(200, $dashRes->getStatusCode());
+        $dashJson = json_decode($dashRes->getContent(), true);
+        $this->assertIsArray($dashJson);
+        $this->assertTrue($dashJson['success']);
+        $this->assertSame('dashboard', $dashJson['active_tab']);
+        $this->assertStringContainsString('خلاصه وضعیت حساب کاربری', $dashJson['html']);
+
+        // Test orders PJAX
+        $ordersRes = $this->request('GET', '/account/orders', [], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'X-PJAX' => 'true',
+        ]);
+        $this->assertSame(200, $ordersRes->getStatusCode());
+        $ordersJson = json_decode($ordersRes->getContent(), true);
+        $this->assertIsArray($ordersJson);
+        $this->assertTrue($ordersJson['success']);
+        $this->assertSame('orders', $ordersJson['active_tab']);
+        $this->assertStringContainsString('orders-filter-strip', $ordersJson['html']);
+
+        // Test wishlist PJAX
+        $wishRes = $this->request('GET', '/account/wishlist', [], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'X-PJAX' => 'true',
+        ]);
+        $this->assertSame(200, $wishRes->getStatusCode());
+        $wishJson = json_decode($wishRes->getContent(), true);
+        $this->assertIsArray($wishJson);
+        $this->assertTrue($wishJson['success']);
+        $this->assertSame('wishlist', $wishJson['active_tab']);
+
+        // Test profile PJAX
+        $profRes = $this->request('GET', '/account/profile', [], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'X-PJAX' => 'true',
+        ]);
+        $this->assertSame(200, $profRes->getStatusCode());
+        $profJson = json_decode($profRes->getContent(), true);
+        $this->assertIsArray($profJson);
+        $this->assertTrue($profJson['success']);
+        $this->assertSame('profile', $profJson['active_tab']);
+    }
 }

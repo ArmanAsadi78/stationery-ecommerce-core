@@ -1,4 +1,4 @@
-{% extends 'account/layout.twig' %}
+{% extends is_pjax ? 'layouts/blank.twig' : 'account/layout.twig' %}
 
 {% block account_content %}
 <div class="account-card-panel">
@@ -12,6 +12,8 @@
 
     {% if wishlist is empty %}
         <div class="empty-state-card">
+            <div class="deco-sticker-circle theme-pink float-soft" style="top: 16px; right: 24px; width: 34px; height: 34px; font-size: 16px;">💖</div>
+            <div class="deco-sticker-circle theme-lavender float-reverse float-delay-1" style="bottom: 16px; left: 24px; width: 34px; height: 34px; font-size: 16px;">✨</div>
             <div class="empty-icon">💔</div>
             <h4>لیست علاقه‌مندی‌های شما خالی است!</h4>
             <p>روی آیکون قلب در کارت محصولات کلیک کنید تا کالاهای مورد نظرتان اینجا ذخیره شوند.</p>
