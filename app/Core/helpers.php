@@ -136,13 +136,19 @@ if (!function_exists('escape_html')) {
 
 if (!function_exists('url')) {
     /**
-     * Generate relative or absolute application URL.
+     * Generate application URL (relative by default for flawless VirtualHost compatibility).
      */
-    function url(string $path = ''): string
+    function url(string $path = '', bool $absolute = false): string
     {
-        $base = rtrim((string) (config('app.url') ?? ''), '/');
         $cleanPath = '/' . ltrim($path, '/');
-        return $cleanPath === '/' ? ($base ?: '/') : ($base ? $base . $cleanPath : $cleanPath);
+        if (!$absolute) {
+            return $cleanPath;
+        }
+
+        $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? parse_url((string) config('app.url', 'http://localhost'), PHP_URL_HOST) ?? 'localhost';
+
+        return "{$scheme}://{$host}" . ($cleanPath === '/' ? '' : $cleanPath);
     }
 }
 

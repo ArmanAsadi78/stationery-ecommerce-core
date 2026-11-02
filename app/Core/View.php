@@ -86,8 +86,8 @@ class View
             return asset($path);
         }));
 
-        $twig->addFunction(new TwigFunction('url', function (string $path = ''): string {
-            return url($path);
+        $twig->addFunction(new TwigFunction('url', function (string $path = '', bool $absolute = false): string {
+            return url($path, $absolute);
         }));
 
         $twig->addFunction(new TwigFunction('format_price', function (int|float|string $price): string {

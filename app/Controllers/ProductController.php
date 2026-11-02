@@ -92,7 +92,7 @@ class ProductController
             '@context' => 'https://schema.org/',
             '@type' => 'Product',
             'name' => $product['title'],
-            'image' => [url((string) ($product['primary_image'] ?? ''))],
+            'image' => [url((string) ($product['primary_image'] ?? ''), true)],
             'description' => strip_tags((string) ($product['summary'] ?? $product['title'])),
             'sku' => $product['sku'],
             'brand' => [
@@ -101,7 +101,7 @@ class ProductController
             ],
             'offers' => [
                 '@type' => 'Offer',
-                'url' => url('products/' . $product['slug']),
+                'url' => url('products/' . $product['slug'], true),
                 'priceCurrency' => 'IRR',
                 'price' => (float) $product['price'] * 10, // Tomans to Rials standard for Googlebot
                 'priceValidUntil' => date('Y-m-d', strtotime('+1 year')),
