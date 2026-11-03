@@ -1,0 +1,145 @@
+{% extends is_pjax ? 'layouts/blank.twig' : 'admin/layout.twig' %}
+
+{% block admin_content %}
+<div class="admin-menus-view">
+    <div class="admin-page-title-row">
+        <div>
+            <h2>مدیریت منوهای ناوبری سایت</h2>
+            <p>لینک‌های منوی بالای سایت (هدر) و فوتر را به‌صورت داینامیک مدیریت، مرتب‌سازی و فعال/غیرفعال کنید.</p>
+        </div>
+    </div>
+
+    <!-- Add New Menu Form Card -->
+    <div class="admin-panel-card" style="margin-bottom: 24px;">
+        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <span>➕</span>
+            <span>افزودن آیتم جدید به منو</span>
+        </h3>
+
+        <form action="{{ url('admin/menus') }}" method="POST" class="admin-menu-form">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: flex-end;">
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #475569;">عنوان نمایشی منو *</label>
+                    <input type="text" name="title" required placeholder="مثال: تخفیف‌های ویژه" class="admin-input-search" style="width: 100%;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #475569;">آدرس مقصد (URL) *</label>
+                    <input type="text" name="url" required placeholder="مثال: /products یا https://..." class="admin-input-search dir-ltr" style="width: 100%;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #475569;">موقعیت منو</label>
+                    <select name="location" class="admin-select" style="width: 100%;">
+                        <option value="header" selected>هدر اصلی (Header)</option>
+                        <option value="footer">فوتر سایت (Footer)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #475569;">ترتیب نمایش</label>
+                    <input type="number" name="sort_order" value="1" min="0" class="admin-input-search dir-ltr" style="width: 100%;">
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px;">
+                    <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                        <input type="checkbox" name="is_active" value="1" checked style="width: 18px; height: 18px;">
+                        <span>وضعیت: فعال</span>
+                    </label>
+                </div>
+
+                <div>
+                    <button type="submit" class="btn-admin-action" style="width: 100%; justify-content: center;">
+                        ذخیره آیتم منو
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Menus List Card -->
+    <div class="admin-panel-card">
+        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <span>🧭</span>
+            <span>لیست آیتم‌های تعریف‌شده ({{ menus|length|fa_num }} آیتم)</span>
+        </h3>
+
+        {% if menus is empty %}
+            <div style="text-align: center; padding: 32px; color: #94a3b8;">
+                <p>هیچ آیتم منویی در دیتابیس ثبت نشده است.</p>
+            </div>
+        {% else %}
+            <div class="admin-table-responsive">
+                <table class="admin-table admin-menus-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">ردیف</th>
+                            <th>عنوان منو</th>
+                            <th>آدرس لینک (URL)</th>
+                            <th>موقعیت</th>
+                            <th>ترتیب نمایش</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in menus %}
+                            <tr>
+                                <td>{{ loop.index|fa_num }}</td>
+                                <td>
+                                    <strong>{{ item.title }}</strong>
+                                </td>
+                                <td>
+                                    <span class="dir-ltr text-rose font-mono">{{ item.url }}</span>
+                                </td>
+                                <td>
+                                    {% if item.location == 'header' %}
+                                        <span class="admin-badge badge-blue">هدر اصلی</span>
+                                    {% else %}
+                                        <span class="admin-badge badge-purple">فوتر</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="font-bold">{{ item.sort_order|fa_num }}</span>
+                                </td>
+                                <td>
+                                    {% if item.is_active == 1 %}
+                                        <span class="admin-badge badge-green">فعال</span>
+                                    {% else %}
+                                        <span class="admin-badge badge-red">غیرفعال</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <!-- Toggle Status Form -->
+                                        <form action="{{ url('admin/menus/' ~ item.id ~ '/toggle') }}" method="POST" style="display: inline;">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn-admin-sm" title="تغییر وضعیت فعال/غیرفعال" style="cursor: pointer;">
+                                                {% if item.is_active == 1 %}
+                                                    ⏸️ غیرفعال‌سازی
+                                                {% else %}
+                                                    ▶️ فعال‌سازی
+                                                {% endif %}
+                                            </button>
+                                        </form>
+
+                                        <!-- Delete Form -->
+                                        <form action="{{ url('admin/menus/' ~ item.id ~ '/delete') }}" method="POST" style="display: inline;" onsubmit="return confirm('آیا از حذف این منو مطمئن هستید؟');">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn-admin-sm" style="color: #ef4444; border-color: #fecaca; background: #fff5f5; cursor: pointer;" title="حذف منو">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

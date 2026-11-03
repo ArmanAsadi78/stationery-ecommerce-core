@@ -11,6 +11,8 @@ use App\Core\Session;
 use App\Core\View;
 use App\Services\AuthService;
 use App\Services\CacheService;
+use App\Services\MenuService;
+use App\Services\SettingService;
 
 class AdminController
 {
@@ -954,5 +956,244 @@ class AdminController
         }
 
         return $slug;
+    }
+
+    /**
+     * Navigation Menus Management.
+     * Route: GET /admin/menus
+     * 
+     * @param array<string, string> $vars
+     */
+    public function menus(Request $request, array $vars = []): Response
+    {
+        $adminUser = $this->auth->user();
+
+        /** @var list<array<string, mixed>> $menus */
+        $menus = $this->db->fetchAll("
+            SELECT `id`, `title`, `url`, `sort_order`, `is_active`, `location`, `created_at`
+            FROM `navigation_menus`
+            ORDER BY `location` ASC, `sort_order` ASC, `id` ASC
+        ");
+
+        $pageTitle = 'مدیریت منوهای ناوبری | پنل مدیریت';
+        $isPjax = $request->isPjax();
+
+        $html = View::render('admin/menus', [
+            'page_title' => $pageTitle,
+            'admin_user' => $adminUser,
+            'active_menu' => 'menus',
+            'is_pjax' => $isPjax,
+            'menus' => $menus,
+            'flash_success' => Session::getFlash('success'),
+            'flash_error' => Session::getFlash('error'),
+        ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'menus',
+            ]);
+        }
+
+        return Response::html($html);
+    }
+
+    /**
+     * Store New Navigation Menu Item.
+     * Route: POST /admin/menus
+     * 
+     * @param array<string, string> $vars
+     */
+    public function storeMenu(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            Session::setFlash('error', 'اعتبار نشست کاربری منقضی شده است. لطفاً مجدداً تلاش کنید.');
+            return Response::redirect(url('admin/menus'));
+        }
+
+        $title = trim((string) $request->input('title', ''));
+        $urlPath = trim((string) $request->input('url', ''));
+        $sortOrder = (int) $request->input('sort_order', 0);
+        $location = (string) $request->input('location', 'header');
+        if (!in_array($location, ['header', 'footer'], true)) {
+            $location = 'header';
+        }
+        $isActive = $request->input('is_active') !== null ? 1 : 0;
+
+        if ($title === '' || $urlPath === '') {
+            Session::setFlash('error', 'عنوان و آدرس مقصد منو الزامی هستند.');
+            return Response::redirect(url('admin/menus'));
+        }
+
+        $this->db->execute("
+            INSERT INTO `navigation_menus` (`title`, `url`, `sort_order`, `is_active`, `location`)
+            VALUES (:title, :url, :sort_order, :is_active, :location)
+        ", [
+            ':title' => $title,
+            ':url' => $urlPath,
+            ':sort_order' => $sortOrder,
+            ':is_active' => $isActive,
+            ':location' => $location,
+        ]);
+
+        MenuService::flush();
+
+        Session::setFlash('success', "آیتم منوی «{$title}» با موفقیت افزوده شد.");
+        return Response::redirect(url('admin/menus'));
+    }
+
+    /**
+     * Toggle Menu Active Status.
+     * Route: POST /admin/menus/{id}/toggle
+     * 
+     * @param array<string, string> $vars
+     */
+    public function toggleMenu(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            if ($request->isAjax()) {
+                return Response::json(['success' => false, 'message' => 'توکن امنیتی نامعتبر است.'], 403);
+            }
+            Session::setFlash('error', 'توکن امنیتی نامعتبر است.');
+            return Response::redirect(url('admin/menus'));
+        }
+
+        $id = (int) ($vars['id'] ?? 0);
+        $this->db->execute("
+            UPDATE `navigation_menus` 
+            SET `is_active` = 1 - `is_active` 
+            WHERE `id` = :id
+        ", [':id' => $id]);
+
+        MenuService::flush();
+
+        if ($request->isAjax()) {
+            return Response::json(['success' => true, 'message' => 'وضعیت آیتم منو تغییر یافت.']);
+        }
+
+        Session::setFlash('success', 'وضعیت آیتم منو با موفقیت به‌روزرسانی شد.');
+        return Response::redirect(url('admin/menus'));
+    }
+
+    /**
+     * Delete Navigation Menu Item.
+     * Route: POST /admin/menus/{id}/delete
+     * 
+     * @param array<string, string> $vars
+     */
+    public function deleteMenu(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            if ($request->isAjax()) {
+                return Response::json(['success' => false, 'message' => 'توکن امنیتی نامعتبر است.'], 403);
+            }
+            Session::setFlash('error', 'توکن امنیتی نامعتبر است.');
+            return Response::redirect(url('admin/menus'));
+        }
+
+        $id = (int) ($vars['id'] ?? 0);
+        $this->db->execute("DELETE FROM `navigation_menus` WHERE `id` = :id", [':id' => $id]);
+
+        MenuService::flush();
+
+        if ($request->isAjax()) {
+            return Response::json(['success' => true, 'message' => 'آیتم منو با موفقیت حذف گردید.']);
+        }
+
+        Session::setFlash('success', 'آیتم منو با موفقیت حذف گردید.');
+        return Response::redirect(url('admin/menus'));
+    }
+
+    /**
+     * General Site Settings.
+     * Route: GET /admin/settings
+     * 
+     * @param array<string, string> $vars
+     */
+    public function settings(Request $request, array $vars = []): Response
+    {
+        $adminUser = $this->auth->user();
+        $settings = SettingService::all();
+
+        $pageTitle = 'تنظیمات عمومی سایت | پنل مدیریت';
+        $isPjax = $request->isPjax();
+
+        $html = View::render('admin/settings', [
+            'page_title' => $pageTitle,
+            'admin_user' => $adminUser,
+            'active_menu' => 'settings',
+            'is_pjax' => $isPjax,
+            'settings' => $settings,
+            'flash_success' => Session::getFlash('success'),
+            'flash_error' => Session::getFlash('error'),
+        ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'settings',
+            ]);
+        }
+
+        return Response::html($html);
+    }
+
+    /**
+     * Update Site Settings.
+     * Route: POST /admin/settings
+     * 
+     * @param array<string, string> $vars
+     */
+    public function updateSettings(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            Session::setFlash('error', 'اعتبار نشست کاربری منقضی شده است. لطفاً مجدداً تلاش کنید.');
+            return Response::redirect(url('admin/settings'));
+        }
+
+        $allowedKeys = [
+            'top_announcement_text',
+            'support_phone',
+            'support_email',
+            'store_address',
+            'working_hours',
+            'footer_copyright',
+        ];
+
+        foreach ($allowedKeys as $key) {
+            $val = trim((string) $request->input($key, ''));
+            SettingService::set($key, $val);
+        }
+
+        Session::setFlash('success', 'تنظیمات عمومی سایت با موفقیت به‌روزرسانی شد.');
+        return Response::redirect(url('admin/settings'));
     }
 }

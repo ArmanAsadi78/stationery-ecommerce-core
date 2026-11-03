@@ -84,6 +84,16 @@ $router->get('/admin/products/{id:[0-9]+}/edit', [AdminController::class, 'editP
 $router->post('/admin/products/{id:[0-9]+}', [AdminController::class, 'updateProduct'], [AdminMiddleware::class]);
 $router->post('/admin/products/{id:[0-9]+}/delete', [AdminController::class, 'deleteProduct'], [AdminMiddleware::class]);
 
+// Navigation Menus Management
+$router->get('/admin/menus', [AdminController::class, 'menus'], [AdminMiddleware::class]);
+$router->post('/admin/menus', [AdminController::class, 'storeMenu'], [AdminMiddleware::class]);
+$router->post('/admin/menus/{id:[0-9]+}/toggle', [AdminController::class, 'toggleMenu'], [AdminMiddleware::class]);
+$router->post('/admin/menus/{id:[0-9]+}/delete', [AdminController::class, 'deleteMenu'], [AdminMiddleware::class]);
+
+// Site Settings Management
+$router->get('/admin/settings', [AdminController::class, 'settings'], [AdminMiddleware::class]);
+$router->post('/admin/settings', [AdminController::class, 'updateSettings'], [AdminMiddleware::class]);
+
 // Search Engine Optimization & External Integrations
 $router->get('/sitemap.xml', [SitemapController::class, 'index']);
 $router->get('/api/torob-products', [TorobApiController::class, 'index']);

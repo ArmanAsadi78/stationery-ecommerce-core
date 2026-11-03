@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Core;
 
 use App\Services\CartService;
+use App\Services\MenuService;
+use App\Services\SettingService;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\TwigFunction;
@@ -84,6 +86,8 @@ class View
             'current_path' => $currentPath,
             'current_category' => $currentCategory,
             'current_uri' => $rawUri,
+            'settings' => SettingService::all(),
+            'header_menus' => MenuService::getHeaderMenus(),
         ], $data);
 
         return $twig->render($template, $globalData);

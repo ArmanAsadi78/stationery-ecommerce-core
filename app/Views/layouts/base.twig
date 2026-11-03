@@ -41,6 +41,15 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+    <!-- Top Announcement Strip -->
+    {% if settings.top_announcement_text %}
+        <div class="top-announcement-strip">
+            <div class="container" style="text-align: center;">
+                <span>{{ settings.top_announcement_text }}</span>
+            </div>
+        </div>
+    {% endif %}
+
     <!-- Site Header -->
     <header class="site-header">
         <div class="container">
@@ -215,22 +224,35 @@
                         </div>
                     </li>
 
-                    <li><a href="{{ url('/') }}" class="nav-link {{ current_path == '/' ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">صفحه اصلی</a></li>
-                    <li>
-                        <a href="{{ url('products') }}" class="nav-link {{ (current_path == '/products' and not current_category) ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">
-                            <span class="deals-fire">🔥</span>
-                            <span>تخفیف‌های شگفت‌انگیز</span>
-                        </a>
-                    </li>
-                    <li><a href="{{ url('about-us') }}" class="nav-link {{ current_path == '/about-us' ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">درباره ما</a></li>
-                    <li><a href="{{ url('contact-us') }}" class="nav-link {{ current_path == '/contact-us' ? 'active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">تماس با ما</a></li>
+                    {% if header_menus is not empty %}
+                        {% for menu in header_menus %}
+                            {% set menu_active = (current_path == menu.url or current_path == '/' ~ (menu.url|trim('/')) or (menu.url == '/' and current_path == '/')) %}
+                            <li>
+                                <a href="{{ menu.url starts with 'http' ? menu.url : url(menu.url|trim('/')) }}" 
+                                   class="nav-link {{ menu_active ? 'active is-active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">
+                                    {% if 'تخفیف' in menu.title %}<span class="deals-fire">🔥</span> {% endif %}
+                                    <span>{{ menu.title }}</span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li><a href="{{ url('/') }}" class="nav-link {{ current_path == '/' ? 'active is-active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">صفحه اصلی</a></li>
+                        <li>
+                            <a href="{{ url('products') }}" class="nav-link {{ (current_path == '/products' and not current_category) ? 'active is-active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">
+                                <span class="deals-fire">🔥</span>
+                                <span>تخفیف‌های شگفت‌انگیز</span>
+                            </a>
+                        </li>
+                        <li><a href="{{ url('about-us') }}" class="nav-link {{ current_path == '/about-us' ? 'active is-active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">درباره ما</a></li>
+                        <li><a href="{{ url('contact-us') }}" class="nav-link {{ current_path == '/contact-us' ? 'active is-active text-coral-500 font-bold border-b-2 border-coral-500' : 'text-gray-600' }}">تماس با ما</a></li>
+                    {% endif %}
                 </ul>
 
                 <!-- Top Free Shipping / Fast Delivery Badge -->
                 <div class="nav-deals-wrap">
                     <span class="nav-hot-deals" style="background: #f0fdf4; border-color: #bbf7d0; color: #16a34a; cursor: default;">
                         <span>🚚</span>
-                        <span>ارسال رایگان سفارش‌های بالای ۳۰۰ هزار تومان</span>
+                        <span>{{ settings.top_announcement_text|default('ارسال رایگان سفارش‌های بالای ۳۰۰ هزار تومان') }}</span>
                     </span>
                 </div>
             </div>
@@ -300,8 +322,8 @@
                         تحریرچی، مرجع تخصصی خرید آنلاین زیباترین و باکیفیت‌ترین نوشت‌افزارهای جهان. تضمین ۱۰۰٪ اصالت فیزیکی، بسته‌بندی هاردباکس ایمن و ارسال سریع به سراسر ایران.
                     </p>
                     <div class="footer-contact-snippets">
-                        <span>📞 پشتیبانی: ۰۲۱-۸۸۸۸۴۳۲۱</span>
-                        <span>✉️ ایمیل: support@tahrirchi.com</span>
+                        <span>📞 پشتیبانی: {{ settings.support_phone|default('۰۲۱-۸۸۸۸۴۳۲۱') }}</span>
+                        <span>✉️ ایمیل: {{ settings.support_email|default('support@tahrirchi.com') }}</span>
                     </div>
                 </div>
 
@@ -319,9 +341,9 @@
                     <h4 class="footer-col-heading">خدمات و قوانین</h4>
                     <ul class="footer-links-list">
                         <li><a href="{{ url('faq') }}">سوالات متداول (FAQ)</a></li>
-                        <li><a href="{{ url('terms') }}">قوانین و مقررات خرید</a></li>
-                        <li><a href="{{ url('terms') }}">رویه ضمانت بازگشت ۷ روزه</a></li>
-                        <li><a href="{{ url('terms') }}">سیاست حفظ حریم خصوصی</a></li>
+                        <li><a href="{{ url('terms') }}#rules">قوانین و مقررات خرید</a></li>
+                        <li><a href="{{ url('terms') }}#returns">رویه ضمانت بازگشت ۷ روزه</a></li>
+                        <li><a href="{{ url('terms') }}#privacy">سیاست حفظ حریم خصوصی</a></li>
                         <li><a href="{{ url('contact-us') }}">ثبت شکایات و پیشنهادات</a></li>
                     </ul>
                 </div>
@@ -347,7 +369,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p>© {{ "now"|date("Y") }} تمامی حقوق مادی و معنوی برای <strong>{{ app_name }}</strong> محفوظ است. طراحی شده با Clean Architecture و فریم‌ورک بومی PHP.</p>
+                <p>{{ settings.footer_copyright|default('© ۲۰۲۶ تمامی حقوق مادی و معنوی برای فروشگاه تحریرچی محفوظ است.') }}</p>
             </div>
         </div>
     </footer>

@@ -56,6 +56,14 @@ class AdminTest extends TestCase
         $router->get('/admin/products/{id:[0-9]+}/edit', [AdminController::class, 'editProduct'], [AdminMiddleware::class]);
         $router->post('/admin/products/{id:[0-9]+}', [AdminController::class, 'updateProduct'], [AdminMiddleware::class]);
         $router->post('/admin/products/{id:[0-9]+}/delete', [AdminController::class, 'deleteProduct'], [AdminMiddleware::class]);
+
+        $router->get('/admin/menus', [AdminController::class, 'menus'], [AdminMiddleware::class]);
+        $router->post('/admin/menus', [AdminController::class, 'storeMenu'], [AdminMiddleware::class]);
+        $router->post('/admin/menus/{id:[0-9]+}/toggle', [AdminController::class, 'toggleMenu'], [AdminMiddleware::class]);
+        $router->post('/admin/menus/{id:[0-9]+}/delete', [AdminController::class, 'deleteMenu'], [AdminMiddleware::class]);
+
+        $router->get('/admin/settings', [AdminController::class, 'settings'], [AdminMiddleware::class]);
+        $router->post('/admin/settings', [AdminController::class, 'updateSettings'], [AdminMiddleware::class]);
     }
 
     protected function tearDown(): void
@@ -372,5 +380,106 @@ class AdminTest extends TestCase
         $this->assertTrue($productsJson['success']);
         $this->assertSame('products', $productsJson['active_menu']);
         $this->assertStringContainsString('admin-products-view', $productsJson['html']);
+    }
+
+    public function test_admin_navigation_menus_crud(): void
+    {
+        $adminEmail = 'admin_menus_' . time() . '@example.com';
+        $this->createdUserEmails[] = $adminEmail;
+
+        $hash = password_hash('adm_pass123', PASSWORD_BCRYPT);
+        $this->db->execute(
+            "INSERT INTO `users` (`full_name`, `email`, `password_hash`, `role`, `is_active`, `created_at`) 
+             VALUES ('مدیر منوها', :email, :hash, 'admin', 1, NOW())",
+            [':email' => $adminEmail, ':hash' => $hash]
+        );
+
+        $this->auth->login($adminEmail, 'adm_pass123');
+
+        // 1. View menus page
+        $resView = $this->request('GET', '/admin/menus');
+        $this->assertSame(200, $resView->getStatusCode());
+        $this->assertStringContainsString('مدیریت منوهای ناوبری', $resView->getContent());
+
+        // 2. Add new menu item
+        $csrf = Session::csrfToken();
+        $testTitle = 'لینک تستی ویژه ' . time();
+        $resStore = $this->request('POST', '/admin/menus', [
+            '_csrf_token' => $csrf,
+            'title' => $testTitle,
+            'url' => '/special-deals',
+            'sort_order' => '10',
+            'location' => 'header',
+            'is_active' => '1',
+        ]);
+        $this->assertSame(302, $resStore->getStatusCode());
+
+        /** @var array<string, mixed>|null $created */
+        $created = $this->db->fetch("SELECT * FROM `navigation_menus` WHERE `title` = :t LIMIT 1", [':t' => $testTitle]);
+        $this->assertNotNull($created);
+        $menuId = (int) $created['id'];
+        $this->assertSame('/special-deals', $created['url']);
+        $this->assertSame(1, (int) $created['is_active']);
+
+        // 3. Toggle active status
+        $resToggle = $this->request('POST', "/admin/menus/{$menuId}/toggle", [
+            '_csrf_token' => $csrf,
+        ]);
+        $this->assertSame(302, $resToggle->getStatusCode());
+        /** @var array<string, mixed>|null $toggled */
+        $toggled = $this->db->fetch("SELECT `is_active` FROM `navigation_menus` WHERE `id` = :id", [':id' => $menuId]);
+        $this->assertNotNull($toggled);
+        $this->assertSame(0, (int) $toggled['is_active']);
+
+        // 4. Delete menu item
+        $resDelete = $this->request('POST', "/admin/menus/{$menuId}/delete", [
+            '_csrf_token' => $csrf,
+        ]);
+        $this->assertSame(302, $resDelete->getStatusCode());
+        /** @var array<string, mixed>|null $deleted */
+        $deleted = $this->db->fetch("SELECT `id` FROM `navigation_menus` WHERE `id` = :id", [':id' => $menuId]);
+        $this->assertNull($deleted);
+    }
+
+    public function test_admin_site_settings_management(): void
+    {
+        $adminEmail = 'admin_settings_' . time() . '@example.com';
+        $this->createdUserEmails[] = $adminEmail;
+
+        $hash = password_hash('adm_pass123', PASSWORD_BCRYPT);
+        $this->db->execute(
+            "INSERT INTO `users` (`full_name`, `email`, `password_hash`, `role`, `is_active`, `created_at`) 
+             VALUES ('مدیر تنظیمات', :email, :hash, 'admin', 1, NOW())",
+            [':email' => $adminEmail, ':hash' => $hash]
+        );
+
+        $this->auth->login($adminEmail, 'adm_pass123');
+
+        // 1. View settings page
+        $resView = $this->request('GET', '/admin/settings');
+        $this->assertSame(200, $resView->getStatusCode());
+        $this->assertStringContainsString('تنظیمات عمومی سایت و متون ثابت', $resView->getContent());
+
+        // 2. Update settings
+        $csrf = Session::csrfToken();
+        $testAnnouncement = 'ارسال رایگان برای همه تست‌ها ' . time();
+        $testPhone = '۰۲۱-۵۵۵۵۴۴۳۳';
+        $testCopyright = '© کلیه حقوق تست برای تحریرچی ' . time();
+
+        $resUpdate = $this->request('POST', '/admin/settings', [
+            '_csrf_token' => $csrf,
+            'top_announcement_text' => $testAnnouncement,
+            'support_phone' => $testPhone,
+            'support_email' => 'custom_support@example.com',
+            'store_address' => 'تهران، خیابان تست، پلاک ۱',
+            'working_hours' => '۹ تا ۱۸',
+            'footer_copyright' => $testCopyright,
+        ]);
+        $this->assertSame(302, $resUpdate->getStatusCode());
+
+        // 3. Verify in SettingService
+        $this->assertSame($testAnnouncement, \App\Services\SettingService::get('top_announcement_text'));
+        $this->assertSame($testPhone, \App\Services\SettingService::get('support_phone'));
+        $this->assertSame($testCopyright, \App\Services\SettingService::get('footer_copyright'));
     }
 }

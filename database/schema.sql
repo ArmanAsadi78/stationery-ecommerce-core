@@ -13,6 +13,8 @@ CREATE DATABASE IF NOT EXISTS `stationery_shop`
 USE `stationery_shop`;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `site_settings`;
+DROP TABLE IF EXISTS `navigation_menus`;
 DROP TABLE IF EXISTS `wishlists`;
 DROP TABLE IF EXISTS `user_addresses`;
 DROP TABLE IF EXISTS `contact_messages`;
@@ -356,3 +358,42 @@ CREATE TABLE `wishlists` (
     INDEX `idx_wishlists_user` (`user_id`),
     INDEX `idx_wishlists_product` (`product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- 16. NAVIGATION MENUS TABLE (Dynamic Header & Footer Navigation Links)
+-- ---------------------------------------------------------------------
+CREATE TABLE `navigation_menus` (
+    `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `title` VARCHAR(100) NOT NULL,
+    `url` VARCHAR(255) NOT NULL,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `location` ENUM('header', 'footer') NOT NULL DEFAULT 'header',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_nav_location_active` (`location`, `is_active`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `navigation_menus` (`title`, `url`, `sort_order`, `is_active`, `location`) VALUES
+('صفحه اصلی', '/', 1, 1, 'header'),
+('تخفیف‌های شگفت‌انگیز', '/products', 2, 1, 'header'),
+('درباره ما', '/about-us', 3, 1, 'header'),
+('تماس با ما', '/contact-us', 4, 1, 'header');
+
+-- ---------------------------------------------------------------------
+-- 17. SITE SETTINGS TABLE (Global Key-Value Configuration)
+-- ---------------------------------------------------------------------
+CREATE TABLE `site_settings` (
+    `setting_key` VARCHAR(100) PRIMARY KEY,
+    `setting_value` TEXT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
+('top_announcement_text', 'ارسال سریع و رایگان به سراسر کشور برای خریدهای بالای ۳۰۰ هزار تومان 🚀'),
+('support_phone', '۰۲۱-۸۸۸۸۴۳۲۱'),
+('support_email', 'support@tahrirchi.com'),
+('store_address', 'تهران، میدان انقلاب، خیابان ۱۲ فروردین، پلاک ۴۲'),
+('working_hours', 'شنبه تا پنج‌شنبه: ۹ الی ۱۸'),
+('footer_copyright', '© ۲۰۲۶ تمامی حقوق مادی و معنوی برای فروشگاه تحریرچی محفوظ است.');

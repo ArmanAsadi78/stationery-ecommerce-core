@@ -1,0 +1,109 @@
+{% extends is_pjax ? 'layouts/blank.twig' : 'admin/layout.twig' %}
+
+{% block admin_content %}
+<div class="admin-settings-view">
+    <div class="admin-page-title-row">
+        <div>
+            <h2>تنظیمات عمومی سایت و متون ثابت</h2>
+            <p>متون اعلان‌های سراسری، اطلاعات تماس، آدرس فیزیکی و کپی‌رایت فوتر فروشگاه تحریرچی را ویرایش کنید.</p>
+        </div>
+    </div>
+
+    <form action="{{ url('admin/settings') }}" method="POST" class="admin-settings-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 24px; max-width: 900px;">
+            <!-- Announcement & Header Card -->
+            <div class="admin-panel-card">
+                <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
+                    <span>📢</span>
+                    <span>بنر اعلان و هدر سایت</span>
+                </h3>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: #334155;">
+                        متن اعلان بالای سایت (Announcement Bar)
+                    </label>
+                    <input type="text" name="top_announcement_text" value="{{ settings.top_announcement_text|default('') }}" 
+                           placeholder="مثال: ارسال سریع و رایگان به سراسر کشور برای خریدهای بالای ۳۰۰ هزار تومان 🚀" 
+                           class="admin-input-search" style="width: 100%;">
+                    <small style="display: block; margin-top: 4px; color: #64748b; font-size: 12px;">
+                        این متن در نوار بالای سایت و نشان ارسال رایگان هدر برای کلیه مشتریان نمایش داده می‌شود.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Contact & Support Info Card -->
+            <div class="admin-panel-card">
+                <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
+                    <span>📞</span>
+                    <span>اطلاعات تماس و پشتیبانی مشتریان</span>
+                </h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: #334155;">
+                            شماره تلفن پشتیبانی
+                        </label>
+                        <input type="text" name="support_phone" value="{{ settings.support_phone|default('') }}" 
+                               placeholder="مثال: ۰۲۱-۸۸۸۸۴۳۲۱" 
+                               class="admin-input-search dir-ltr" style="width: 100%;">
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: #334155;">
+                            ایمیل پشتیبانی و مکاتبات
+                        </label>
+                        <input type="email" name="support_email" value="{{ settings.support_email|default('') }}" 
+                               placeholder="مثال: support@tahrirchi.com" 
+                               class="admin-input-search dir-ltr" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: #334155;">
+                        ساعات پاسخگویی و کاری
+                    </label>
+                    <input type="text" name="working_hours" value="{{ settings.working_hours|default('') }}" 
+                           placeholder="مثال: شنبه تا پنج‌شنبه: ۹ الی ۱۸" 
+                           class="admin-input-search" style="width: 100%;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: #334155;">
+                        نشانی پستی فروشگاه و انبار مرکزی
+                    </label>
+                    <textarea name="store_address" rows="2" class="admin-input-search" style="width: 100%; height: auto;" placeholder="تهران، میدان انقلاب، خیابان ۱۲ فروردین...">{{ settings.store_address|default('') }}</textarea>
+                </div>
+            </div>
+
+            <!-- Footer & Legal Info Card -->
+            <div class="admin-panel-card">
+                <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
+                    <span>⚖️</span>
+                    <span>متن کپی‌رایت انتهای فوتر</span>
+                </h3>
+
+                <div>
+                    <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: #334155;">
+                        متن کپی‌رایت و حقوق مالکیت معنوی
+                    </label>
+                    <input type="text" name="footer_copyright" value="{{ settings.footer_copyright|default('') }}" 
+                           placeholder="© ۲۰۲۶ تمامی حقوق مادی و معنوی برای فروشگاه تحریرچی محفوظ است." 
+                           class="admin-input-search" style="width: 100%;">
+                    <small style="display: block; margin-top: 4px; color: #64748b; font-size: 12px;">
+                        این متن در نوار پایانی پایین‌ترین قسمت کلیه صفحات سایت نمایش داده می‌شود.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Submit Button Card -->
+            <div>
+                <button type="submit" class="btn-admin-action" style="padding: 12px 28px; font-size: 14px;">
+                    💾 ذخیره و اعمال کلیه تنظیمات
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

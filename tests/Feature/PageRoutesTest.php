@@ -111,6 +111,9 @@ class PageRoutesTest extends TestCase
         $this->assertStringContainsString('قوانین، رویه‌های بازگشت کالا و حریم خصوصی', $content);
         $this->assertStringContainsString('ضمانت بازگشت ۷ روزه کالا', $content);
         $this->assertStringContainsString('سیاست حفظ حریم خصوصی کاربران', $content);
+        $this->assertStringContainsString('id="rules"', $content);
+        $this->assertStringContainsString('id="returns"', $content);
+        $this->assertStringContainsString('id="privacy"', $content);
     }
 
     public function test_contact_form_submission_requires_csrf(): void
