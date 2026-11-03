@@ -13,6 +13,7 @@ CREATE DATABASE IF NOT EXISTS `stationery_shop`
 USE `stationery_shop`;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `home_sliders`;
 DROP TABLE IF EXISTS `sliders`;
 DROP TABLE IF EXISTS `site_settings`;
 DROP TABLE IF EXISTS `navigation_menus`;
@@ -392,16 +393,35 @@ CREATE TABLE `site_settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
-('top_announcement_text', 'ارسال سریع و رایگان به سراسر کشور برای خریدهای بالای ۳۰۰ هزار تومان 🚀'),
+('top_announcement', '🚚 ارسال رایگان برای سفارش‌های بالای ۳۰۰ هزار تومان'),
+('top_announcement_text', '🚚 ارسال رایگان برای سفارش‌های بالای ۳۰۰ هزار تومان'),
 ('support_phone', '۰۲۱-۸۸۸۸۴۳۲۱'),
 ('support_email', 'support@tahrirchi.com'),
 ('store_address', 'تهران، میدان انقلاب، خیابان ۱۲ فروردین، پلاک ۴۲'),
 ('working_hours', 'شنبه تا پنج‌شنبه: ۹ الی ۱۸'),
-('footer_copyright', '© ۲۰۲۶ تمامی حقوق مادی و معنوی برای فروشگاه تحریرچی محفوظ است.');
+('footer_copyright', '© ۲۰۲۶ تمامی حقوق مادی و معنوی برای فروشگاه لوازم‌التحریر تحریرچی محفوظ است.');
 
 -- ---------------------------------------------------------------------
--- 18. SLIDERS TABLE (Dynamic Homepage Carousel / Banners)
+-- 18. HOME SLIDERS TABLE (Wide Promotional Banners Carousel)
 -- ---------------------------------------------------------------------
+CREATE TABLE `home_sliders` (
+    `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `title` VARCHAR(150) NOT NULL,
+    `image_path` VARCHAR(255) NOT NULL,
+    `target_url` VARCHAR(255) NOT NULL DEFAULT '/',
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_home_sliders_active_sort` (`is_active`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `home_sliders` (`title`, `image_path`, `target_url`, `sort_order`, `is_active`) VALUES
+('جشنواره بهاره نوشت‌افزار فانتزی و ژاپنی', 'images/sliders/banner-1.webp', '/products?category=writing-instruments', 1, 1),
+('کالکشن تخصصی بولت ژورنال و پلنرهای انگیزشی', 'images/sliders/banner-2.webp', '/products?category=notebooks-and-paper', 2, 1),
+('ابزار حرفه‌ای طراحی، معماری و تصویرسازی', 'images/sliders/banner-3.webp', '/products?category=art-and-drawing', 3, 1);
+
+-- Compatibility table for legacy sliders
 CREATE TABLE `sliders` (
     `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `title` VARCHAR(150) NOT NULL,

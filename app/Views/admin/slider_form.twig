@@ -1,0 +1,72 @@
+{% extends is_pjax ? 'layouts/blank.twig' : 'admin/layout.twig' %}
+
+{% block admin_content %}
+<div class="admin-slider-form-view">
+    <div class="admin-page-title-row" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2>افزودن بنر اسلایدر جدید</h2>
+            <p>بارگذاری بنر گرافیکی عریض برای اسلایدر صفحه اصلی (مشابه سایت‌های فروشگاهی برتر با نسبت تصویر استاندارد ۱۲۰۰x۴۲۰ پیکسل).</p>
+        </div>
+        <div>
+            <a href="{{ url('admin/sliders') }}" class="btn-admin-sm" style="padding: 10px 18px; text-decoration: none;">
+                ← بازگشت به لیست بنرها
+            </a>
+        </div>
+    </div>
+
+    <!-- Create Form Card -->
+    <div class="admin-panel-card" style="max-width: 800px; margin: 0 auto 36px auto;">
+        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+            <span>🖼️</span>
+            <span>مشخصات و فایل بنر جدید</span>
+        </h3>
+
+        <form action="{{ url('admin/sliders') }}" method="POST" enctype="multipart/form-data" class="admin-form-block">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+            <div style="display: grid; gap: 18px;">
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #475569;">عنوان یا نام بنر *</label>
+                    <input type="text" name="title" required placeholder="مثال: جشنواره بهاره نوشت‌افزار فانتزی و ژاپنی" class="admin-input-search" style="width: 100%;">
+                    <small style="color: #64748b; font-size: 12px; margin-top: 4px; display: block;">این عنوان جهت مدیریت بنر و همچنین صفت alt تصویر استفاده می‌شود.</small>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #475569;">آدرس مقصد کلیک (Target URL) *</label>
+                    <input type="text" name="target_url" required value="/products" placeholder="مثال: /products یا /products?category=writing-instruments" class="admin-input-search dir-ltr" style="width: 100%;">
+                    <small style="color: #64748b; font-size: 12px; margin-top: 4px; display: block;">کاربر با کلیک روی کل بنر، مستقیماً به این صفحه هدایت خواهد شد.</small>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #475569;">فایل تصویر بنر عریض (۱۲۰۰x۴۲۰ پیکسل) *</label>
+                    <input type="file" name="image" required accept="image/webp,image/png,image/jpeg,image/gif" class="admin-input-search" style="width: 100%; padding: 8px 12px;">
+                    <small style="color: #64748b; font-size: 12px; margin-top: 4px; display: block;">فرمت‌های مجاز: WebP, PNG, JPG - حداکثر ۵ مگابایت. نسبت تصویر استاندارد برای بهترین نمایش عریض ۱۲۰۰ در ۴۲۰ پیکسل است.</small>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center;">
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #475569;">ترتیب نمایش</label>
+                        <input type="number" name="sort_order" value="1" min="0" class="admin-input-search dir-ltr" style="width: 100%;">
+                        <small style="color: #64748b; font-size: 11px;">اعداد کوچکتر اول نمایش داده می‌شوند.</small>
+                    </div>
+
+                    <div style="padding-top: 14px;">
+                        <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                            <input type="checkbox" name="is_active" value="1" checked style="width: 20px; height: 20px;">
+                            <span>وضعیت: فعال و در حال چرخش</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 28px; display: flex; justify-content: flex-end; gap: 12px;">
+                <a href="{{ url('admin/sliders') }}" class="btn-admin-sm" style="padding: 10px 20px; text-decoration: none;">انصراف</a>
+                <button type="submit" class="btn-admin-action" style="padding: 10px 24px;">
+                    <span>➕</span>
+                    <span>ذخیره و انتشار بنر</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

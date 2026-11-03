@@ -63,6 +63,8 @@ class AdminTest extends TestCase
         $router->post('/admin/menus/{id:[0-9]+}/delete', [AdminController::class, 'deleteMenu'], [AdminMiddleware::class]);
 
         $router->get('/admin/sliders', [AdminController::class, 'sliders'], [AdminMiddleware::class]);
+        $router->get('/admin/sliders/create', [AdminController::class, 'createSlider'], [AdminMiddleware::class]);
+        $router->post('/admin/sliders', [AdminController::class, 'storeSlider'], [AdminMiddleware::class]);
         $router->post('/admin/sliders/create', [AdminController::class, 'storeSlider'], [AdminMiddleware::class]);
         $router->post('/admin/sliders/{id:[0-9]+}/toggle', [AdminController::class, 'toggleSlider'], [AdminMiddleware::class]);
         $router->post('/admin/sliders/{id:[0-9]+}/edit', [AdminController::class, 'updateSlider'], [AdminMiddleware::class]);
@@ -461,32 +463,46 @@ class AdminTest extends TestCase
 
         $this->auth->login($adminEmail, 'adm_pass123');
 
-        // 1. View settings page
-        $resView = $this->request('GET', '/admin/settings');
-        $this->assertSame(200, $resView->getStatusCode());
-        $this->assertStringContainsString('تنظیمات عمومی سایت و متون ثابت', $resView->getContent());
+        // Backup existing settings to prevent test pollution
+        $originalSettings = \App\Services\SettingService::all();
 
-        // 2. Update settings
-        $csrf = Session::csrfToken();
-        $testAnnouncement = 'ارسال رایگان برای همه تست‌ها ' . time();
-        $testPhone = '۰۲۱-۵۵۵۵۴۴۳۳';
-        $testCopyright = '© کلیه حقوق تست برای تحریرچی ' . time();
+        try {
+            // 1. View settings page
+            $resView = $this->request('GET', '/admin/settings');
+            $this->assertSame(200, $resView->getStatusCode());
+            $this->assertStringContainsString('تنظیمات عمومی سایت و متون ثابت', $resView->getContent());
 
-        $resUpdate = $this->request('POST', '/admin/settings', [
-            '_csrf_token' => $csrf,
-            'top_announcement_text' => $testAnnouncement,
-            'support_phone' => $testPhone,
-            'support_email' => 'custom_support@example.com',
-            'store_address' => 'تهران، خیابان تست، پلاک ۱',
-            'working_hours' => '۹ تا ۱۸',
-            'footer_copyright' => $testCopyright,
-        ]);
-        $this->assertSame(302, $resUpdate->getStatusCode());
+            // 2. Update settings
+            $csrf = Session::csrfToken();
+            $testAnnouncement = 'ارسال رایگان برای همه تست‌ها ' . time();
+            $testPhone = '۰۲۱-۵۵۵۵۴۴۳۳';
+            $testCopyright = '© کلیه حقوق تست برای تحریرچی ' . time();
 
-        // 3. Verify in SettingService
-        $this->assertSame($testAnnouncement, \App\Services\SettingService::get('top_announcement_text'));
-        $this->assertSame($testPhone, \App\Services\SettingService::get('support_phone'));
-        $this->assertSame($testCopyright, \App\Services\SettingService::get('footer_copyright'));
+            $resUpdate = $this->request('POST', '/admin/settings', [
+                '_csrf_token' => $csrf,
+                'top_announcement_text' => $testAnnouncement,
+                'support_phone' => $testPhone,
+                'support_email' => 'custom_support@example.com',
+                'store_address' => 'تهران، خیابان تست، پلاک ۱',
+                'working_hours' => '۹ تا ۱۸',
+                'footer_copyright' => $testCopyright,
+            ]);
+            $this->assertSame(302, $resUpdate->getStatusCode());
+
+            // 3. Verify in SettingService
+            $this->assertSame($testAnnouncement, \App\Services\SettingService::get('top_announcement_text'));
+            $this->assertSame($testPhone, \App\Services\SettingService::get('support_phone'));
+            $this->assertSame($testCopyright, \App\Services\SettingService::get('footer_copyright'));
+        } finally {
+            // Restore clean production settings so DB is never polluted
+            foreach ($originalSettings as $key => $val) {
+                $this->db->execute(
+                    "UPDATE `site_settings` SET `setting_value` = :v WHERE `setting_key` = :k",
+                    [':v' => $val, ':k' => $key]
+                );
+            }
+            \App\Services\SettingService::flush();
+        }
     }
 
     public function test_admin_sliders_crud(): void
@@ -506,10 +522,14 @@ class AdminTest extends TestCase
         // 1. View Sliders Page
         $resView = $this->request('GET', '/admin/sliders');
         $this->assertSame(200, $resView->getStatusCode());
-        $this->assertStringContainsString('مدیریت اسلایدرهای صفحه اصلی', $resView->getContent());
-        $this->assertStringContainsString('افزودن اسلایدر جدید', $resView->getContent());
+        $this->assertStringContainsString('مدیریت بنرهای اسلایدر صفحه اصلی', $resView->getContent());
 
-        // 1.1 PJAX request
+        // 1.1 View Create Slider Form Page
+        $resCreateForm = $this->request('GET', '/admin/sliders/create');
+        $this->assertSame(200, $resCreateForm->getStatusCode());
+        $this->assertStringContainsString('افزودن بنر اسلایدر جدید', $resCreateForm->getContent());
+
+        // 1.2 PJAX request
         $resPjax = $this->request('GET', '/admin/sliders', [], ['X-PJAX' => 'true']);
         $this->assertSame(200, $resPjax->getStatusCode());
         $pjaxJson = json_decode($resPjax->getContent(), true);
@@ -517,29 +537,27 @@ class AdminTest extends TestCase
         $this->assertTrue($pjaxJson['success'] ?? false);
         $this->assertSame('sliders', $pjaxJson['active_menu'] ?? '');
 
-        // 2. Create New Slider
+        // 2. Create New Slider via POST /admin/sliders
         $csrf = Session::csrfToken();
-        $testTitle = 'اسلایدر آزمایشی ' . time();
-        $testSubtitle = 'توضیحات کوتاه برای اسلایدر تستی';
-        $testLink = '/products?category=writing-instruments';
+        $testTitle = 'بنر اسلایدر آزمایشی ' . time();
+        $testTargetUrl = '/products?category=writing-instruments';
 
-        $resCreate = $this->request('POST', '/admin/sliders/create', [
+        $resCreate = $this->request('POST', '/admin/sliders', [
             '_csrf_token' => $csrf,
             'title' => $testTitle,
-            'subtitle' => $testSubtitle,
-            'link' => $testLink,
-            'image_url' => 'images/sliders/slide-1.webp',
+            'target_url' => $testTargetUrl,
+            'image_path' => 'images/sliders/banner-1.webp',
             'sort_order' => '10',
             'is_active' => '1',
         ]);
         $this->assertSame(302, $resCreate->getStatusCode());
 
         /** @var array<string, mixed>|null $created */
-        $created = $this->db->fetch("SELECT * FROM `sliders` WHERE `title` = :title LIMIT 1", [':title' => $testTitle]);
+        $created = $this->db->fetch("SELECT * FROM `home_sliders` WHERE `title` = :title LIMIT 1", [':title' => $testTitle]);
         $this->assertNotNull($created);
         $sliderId = (int) $created['id'];
         $this->assertSame(1, (int) $created['is_active']);
-        $this->assertSame($testSubtitle, $created['subtitle']);
+        $this->assertSame($testTargetUrl, $created['target_url']);
 
         // 3. Toggle Status
         $resToggle = $this->request('POST', "/admin/sliders/{$sliderId}/toggle", [
@@ -548,7 +566,7 @@ class AdminTest extends TestCase
         $this->assertSame(302, $resToggle->getStatusCode());
 
         /** @var array<string, mixed>|null $toggled */
-        $toggled = $this->db->fetch("SELECT `is_active` FROM `sliders` WHERE `id` = :id", [':id' => $sliderId]);
+        $toggled = $this->db->fetch("SELECT `is_active` FROM `home_sliders` WHERE `id` = :id", [':id' => $sliderId]);
         $this->assertNotNull($toggled);
         $this->assertSame(0, (int) $toggled['is_active']);
 
@@ -556,15 +574,14 @@ class AdminTest extends TestCase
         $resEdit = $this->request('POST', "/admin/sliders/{$sliderId}/edit", [
             '_csrf_token' => $csrf,
             'title' => $testTitle . ' ویرایش‌شده',
-            'subtitle' => 'توضیحات جدید',
-            'link' => '/products',
+            'target_url' => '/products',
             'sort_order' => '5',
             'is_active' => '1',
         ]);
         $this->assertSame(302, $resEdit->getStatusCode());
 
         /** @var array<string, mixed>|null $updated */
-        $updated = $this->db->fetch("SELECT * FROM `sliders` WHERE `id` = :id", [':id' => $sliderId]);
+        $updated = $this->db->fetch("SELECT * FROM `home_sliders` WHERE `id` = :id", [':id' => $sliderId]);
         $this->assertNotNull($updated);
         $this->assertSame($testTitle . ' ویرایش‌شده', $updated['title']);
         $this->assertSame(1, (int) $updated['is_active']);
@@ -576,7 +593,7 @@ class AdminTest extends TestCase
         $this->assertSame(302, $resDelete->getStatusCode());
 
         /** @var array<string, mixed>|null $deleted */
-        $deleted = $this->db->fetch("SELECT `id` FROM `sliders` WHERE `id` = :id", [':id' => $sliderId]);
+        $deleted = $this->db->fetch("SELECT `id` FROM `home_sliders` WHERE `id` = :id", [':id' => $sliderId]);
         $this->assertNull($deleted);
     }
 }

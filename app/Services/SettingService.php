@@ -24,12 +24,13 @@ class SettingService
         }
 
         $defaults = [
-            'top_announcement_text' => 'ارسال سریع و رایگان به سراسر کشور برای خریدهای بالای ۳۰۰ هزار تومان 🚀',
+            'top_announcement' => '🚚 ارسال رایگان برای سفارش‌های بالای ۳۰۰ هزار تومان',
+            'top_announcement_text' => '🚚 ارسال رایگان برای سفارش‌های بالای ۳۰۰ هزار تومان',
             'support_phone' => '۰۲۱-۸۸۸۸۴۳۲۱',
             'support_email' => 'support@tahrirchi.com',
             'store_address' => 'تهران، میدان انقلاب، خیابان ۱۲ فروردین، پلاک ۴۲',
             'working_hours' => 'شنبه تا پنج‌شنبه: ۹ الی ۱۸',
-            'footer_copyright' => '© ۲۰۲۶ تمامی حقوق مادی و معنوی برای فروشگاه تحریرچی محفوظ است.',
+            'footer_copyright' => '© ۲۰۲۶ تمامی حقوق مادی و معنوی برای فروشگاه لوازم‌التحریر تحریرچی محفوظ است.',
         ];
 
         try {
@@ -43,6 +44,13 @@ class SettingService
                     $settings[$key] = (string) ($row['setting_value'] ?? '');
                 }
             }
+
+            if (!empty($settings['top_announcement']) && empty($settings['top_announcement_text'])) {
+                $settings['top_announcement_text'] = $settings['top_announcement'];
+            } elseif (!empty($settings['top_announcement_text']) && empty($settings['top_announcement'])) {
+                $settings['top_announcement'] = $settings['top_announcement_text'];
+            }
+
             self::$cachedSettings = $settings;
             return self::$cachedSettings;
         } catch (Throwable) {

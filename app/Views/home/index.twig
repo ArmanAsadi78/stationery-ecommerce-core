@@ -3,165 +3,45 @@
 {% block content %}
 <div class="container">
     {# ================================================================= #}
-    {# 1. DYNAMIC HERO CAROUSEL WITH 3D TILT EFFECT                     #}
+    {# 1. UNIFIED WIDE BANNER SLIDER (Similar to Hiss / Digikala)        #}
     {# ================================================================= #}
-    <section class="hero-carousel-container" data-aos="fade-up" id="heroCarouselContainer">
-        {# Playful Floating Decorative Stickers #}
-        <div class="deco-floating-sticker theme-pink float-soft" style="top: 20px; left: 40px;">
-            <span>✏️</span>
-            <span>تراش و پاک‌کن فانتزی</span>
-        </div>
-        <div class="deco-floating-sticker theme-lavender float-reverse float-delay-1" style="bottom: 24px; left: 80px;">
-            <span>📎</span>
-            <span>گیره کاغذ پاستلی</span>
-        </div>
+    <section class="hero-banner-section" data-aos="fade-up">
+        <div class="hero-banner-slider" id="heroBannerSlider">
+            <div class="hero-banner-track" id="heroBannerTrack">
+                {% if sliders is defined and sliders|length > 0 %}
+                    {% for slider in sliders %}
+                        <a href="{{ url(slider.target_url|default(slider.link|default('/'))) }}" class="hero-banner-slide {% if loop.first %}active{% endif %}" data-slide-index="{{ loop.index0 }}" aria-label="{{ slider.title }}">
+                            <img src="{{ asset(slider.image_path|default(slider.image_url)) }}" alt="{{ slider.title }}" class="hero-banner-img" width="1200" height="420" loading="{% if loop.first %}eager{% else %}lazy{% endif %}">
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <a href="{{ url('products') }}" class="hero-banner-slide active" data-slide-index="0" aria-label="فروشگاه لوازم‌التحریر تحریرچی">
+                        <img src="{{ asset('images/sliders/banner-1.webp') }}" alt="جشنواره نوشت‌افزار تحریرچی" class="hero-banner-img" width="1200" height="420" loading="eager">
+                    </a>
+                {% endif %}
+            </div>
 
-        {# Slides Track #}
-        <div class="hero-carousel-slides" id="heroSliderSlides">
-            {% if sliders is defined and sliders|length > 0 %}
-                {% for slider in sliders %}
-                    <div class="hero-carousel-slide {% if loop.first %}active{% endif %}" data-slide-index="{{ loop.index0 }}">
-                        <div class="hero-grid">
-                            {# Right Column: Catchy Copy, Badges & Float CTA #}
-                            <div class="hero-text-col" data-aos="fade-left" data-aos-delay="100">
-                                <div class="hero-pill-badge">
-                                    <span class="badge-sparkle">✨</span>
-                                    <span>کالکشن جدید و فانتزی نوشت‌افزار ۱۴۰۵</span>
-                                </div>
+            {% if sliders is defined and sliders|length > 1 %}
+                <!-- Navigation Arrows (Previous is Right, Next is Left in RTL) -->
+                <button type="button" class="hero-slider-arrow hero-arrow-prev" id="heroSliderPrev" aria-label="بنر قبلی" title="قبلی">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+                <button type="button" class="hero-slider-arrow hero-arrow-next" id="heroSliderNext" aria-label="بنر بعدی" title="بعدی">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
 
-                                <h1 class="hero-main-title">
-                                    {{ slider.title }}
-                                </h1>
-
-                                {% if slider.subtitle %}
-                                    <p class="hero-subtitle">
-                                        {{ slider.subtitle }}
-                                    </p>
-                                {% endif %}
-
-                                <div class="hero-cta-group">
-                                    <a href="{{ url(slider.link) }}" class="btn-hero-primary">
-                                        <span>مشاهده و خرید</span>
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                                        </svg>
-                                    </a>
-                                    <a href="{{ url('products') }}" class="btn-hero-secondary">
-                                        <span>کاتالوگ کل محصولات ✏️</span>
-                                    </a>
-                                </div>
-
-                                <div class="hero-trust-badges">
-                                    <div class="trust-badge-item">
-                                        <span class="trust-icon">🚀</span>
-                                        <div>
-                                            <strong>ارسال سریع سراسری</strong>
-                                            <small>پست پیشتاز و تیپاکس</small>
-                                        </div>
-                                    </div>
-                                    <div class="trust-badge-item">
-                                        <span class="trust-icon">💎</span>
-                                        <div>
-                                            <strong>ضمانت ۱۰۰٪ اصالت</strong>
-                                            <small>اورجینال برندهای برتر</small>
-                                        </div>
-                                    </div>
-                                    <div class="trust-badge-item">
-                                        <span class="trust-icon">🎁</span>
-                                        <div>
-                                            <strong>بسته‌بندی ایمن و کادویی</strong>
-                                            <small>هدیه درون هر بسته</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {# Left Column: Visual Showcase Box with 3D Tilt Effect #}
-                            <div class="hero-visual-col" data-aos="zoom-in" data-aos-delay="200">
-                                <div class="hero-glass-showcase hero-tilt-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.2">
-                                    <div class="floating-sticker sticker-top">
-                                        <span>📓</span>
-                                        <span>پلنر و ژورنال فانتزی</span>
-                                    </div>
-
-                                    <div class="showcase-center-art">
-                                        <img src="{{ asset(slider.image_url) }}" alt="{{ slider.title }}" class="hero-composite-img" loading="eager" width="540" height="480">
-                                    </div>
-
-                                    <div class="showcase-rating-card">
-                                        <div class="stars-row">⭐⭐⭐⭐⭐</div>
-                                        <strong>۴.۹ از ۵ رضایت خریداران</strong>
-                                        <span>بیش از ۲،۴۰۰ نظر تاییدشده تحریرچی</span>
-                                    </div>
-
-                                    <div class="floating-sticker sticker-bottom">
-                                        <span>🌸</span>
-                                        <span>بسته‌بندی ویژه و دوست‌داشتنی</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                {# Fallback Static Hero if no sliders defined #}
-                <div class="hero-carousel-slide active" data-slide-index="0">
-                    <div class="hero-grid">
-                        <div class="hero-text-col">
-                            <div class="hero-pill-badge">
-                                <span class="badge-sparkle">✨</span>
-                                <span>کالکشن جدید و فانتزی نوشت‌افزار ۱۴۰۵</span>
-                            </div>
-                            <h1 class="hero-main-title">
-                                دنیای رنگارنگ، کیوت و دوست‌داشتنیِ <span class="gradient-text">لوازم‌التحریر</span>
-                            </h1>
-                            <p class="hero-subtitle">
-                                خاص‌ترین روان‌نویس‌های ژاپنی و آلمانی، اتودهای مهندسی روترینگ، پلنرهای انگیزشی و ماژیک‌های هایلایتر پاستلی با ضمانت ۱۰۰٪ اصالت فیزیکی! 🎀
-                            </p>
-                            <div class="hero-cta-group">
-                                <a href="{{ url('products') }}" class="btn-hero-primary">
-                                    <span>مشاهده کاتالوگ محصولات</span>
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                                    </svg>
-                                </a>
-                                <a href="{{ url('products?category=writing-instruments') }}" class="btn-hero-secondary">
-                                    <span>قلم و روان‌نویس‌ها ✏️</span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="hero-visual-col">
-                            <div class="hero-glass-showcase hero-tilt-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.2">
-                                <div class="showcase-center-art">
-                                    <img src="{{ asset('images/banners/hero-showcase.webp') }}" alt="چیدمان فانتزی لوازم‌التحریر" class="hero-composite-img" width="540" height="480">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Indicator Dots -->
+                <div class="hero-slider-dots" id="heroSliderDots">
+                    {% for slider in sliders %}
+                        <button type="button" class="hero-slider-dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}" aria-label="رفتن به اسلاید {{ loop.index|fa_num }}"></button>
+                    {% endfor %}
                 </div>
             {% endif %}
         </div>
-
-        {% if sliders is defined and sliders|length > 1 %}
-            <!-- Navigation Arrows (Previous is Right, Next is Left in RTL) -->
-            <button type="button" class="hero-nav-arrow hero-prev-btn" id="heroPrevBtn" aria-label="اسلاید قبلی" title="قبلی">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-            </button>
-            <button type="button" class="hero-nav-arrow hero-next-btn" id="heroNextBtn" aria-label="اسلاید بعدی" title="بعدی">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-            </button>
-
-            <!-- Navigation Dots -->
-            <div class="hero-carousel-dots" id="heroDotsWrap">
-                {% for slider in sliders %}
-                    <button type="button" class="hero-dot-btn {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}" aria-label="رفتن به اسلاید {{ loop.index|fa_num }}"></button>
-                {% endfor %}
-            </div>
-        {% endif %}
     </section>
 
     {# ================================================================= #}
@@ -415,11 +295,26 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const slides = document.querySelectorAll('.hero-carousel-slide');
-    const dots = document.querySelectorAll('.hero-dot-btn');
-    const prevBtn = document.getElementById('heroPrevBtn');
-    const nextBtn = document.getElementById('heroNextBtn');
-    const container = document.getElementById('heroCarouselContainer');
+    const sliderContainer = document.querySelector(".hero-banner-slider");
+    if (!sliderContainer) return;
+
+    // 1. Initialize 3D Tilt Effect on Wide Banner Slider
+    if (typeof VanillaTilt !== 'undefined') {
+        VanillaTilt.init(sliderContainer, {
+            max: 8,
+            speed: 600,
+            perspective: 1200,
+            scale: 1.01,
+            glare: true,
+            "max-glare": 0.15
+        });
+    }
+
+    // 2. Slider Carousel Controls (Autoplay 5s, Arrows, Dots, Drag & Swipe)
+    const slides = sliderContainer.querySelectorAll('.hero-banner-slide');
+    const dots = sliderContainer.querySelectorAll('.hero-slider-dot');
+    const prevBtn = document.getElementById('heroSliderPrev');
+    const nextBtn = document.getElementById('heroSliderNext');
 
     if (!slides.length) return;
 
@@ -436,45 +331,29 @@ document.addEventListener('DOMContentLoaded', function() {
         currentIndex = index;
 
         slides.forEach(function(s, idx) {
-            if (idx === currentIndex) {
-                s.classList.add('active');
-            } else {
-                s.classList.remove('active');
-            }
+            s.classList.toggle('active', idx === currentIndex);
         });
 
         dots.forEach(function(d, idx) {
-            if (idx === currentIndex) {
-                d.classList.add('active');
-            } else {
-                d.classList.remove('active');
-            }
+            d.classList.toggle('active', idx === currentIndex);
         });
-
-        // Initialize 3D tilt on slide switch
-        if (typeof VanillaTilt !== 'undefined') {
-            const activeTilt = slides[currentIndex].querySelector('[data-tilt]');
-            if (activeTilt && !activeTilt.vanillaTilt) {
-                VanillaTilt.init(activeTilt, {
-                    max: 15,
-                    speed: 400,
-                    glare: true,
-                    "max-glare": 0.2,
-                    perspective: 1000
-                });
-            }
-        }
     }
 
-    function startAutoSlide() {
+    function nextSlide() {
+        goToSlide(currentIndex + 1);
+    }
+
+    function prevSlide() {
+        goToSlide(currentIndex - 1);
+    }
+
+    function startAutoPlay() {
         if (total <= 1) return;
-        stopAutoSlide();
-        autoTimer = setInterval(function() {
-            goToSlide(currentIndex + 1);
-        }, 5500);
+        stopAutoPlay();
+        autoTimer = setInterval(nextSlide, 5000);
     }
 
-    function stopAutoSlide() {
+    function stopAutoPlay() {
         if (autoTimer) {
             clearInterval(autoTimer);
             autoTimer = null;
@@ -482,61 +361,109 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (prevBtn) {
-        prevBtn.addEventListener('click', function() {
-            goToSlide(currentIndex - 1);
-            startAutoSlide();
+        prevBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            prevSlide();
+            startAutoPlay();
         });
     }
 
     if (nextBtn) {
-        nextBtn.addEventListener('click', function() {
-            goToSlide(currentIndex + 1);
-            startAutoSlide();
+        nextBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            nextSlide();
+            startAutoPlay();
         });
     }
 
     dots.forEach(function(dot, idx) {
-        dot.addEventListener('click', function() {
+        dot.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             goToSlide(idx);
-            startAutoSlide();
+            startAutoPlay();
         });
     });
 
-    if (container) {
-        container.addEventListener('mouseenter', stopAutoSlide);
-        container.addEventListener('mouseleave', startAutoSlide);
+    sliderContainer.addEventListener('mouseenter', stopAutoPlay);
+    sliderContainer.addEventListener('mouseleave', startAutoPlay);
 
-        // Touch swipe support for mobile
-        let startX = 0;
-        let diffX = 0;
+    // Mouse Dragging Support
+    let isMouseDown = false;
+    let mouseStartX = 0;
+    let mouseMoved = false;
 
-        container.addEventListener('touchstart', function(e) {
-            if (e.touches && e.touches[0]) {
-                startX = e.touches[0].clientX;
+    sliderContainer.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        isMouseDown = true;
+        mouseStartX = e.clientX;
+        mouseMoved = false;
+        stopAutoPlay();
+    });
+
+    window.addEventListener('mousemove', function(e) {
+        if (!isMouseDown) return;
+        if (Math.abs(e.clientX - mouseStartX) > 8) {
+            mouseMoved = true;
+        }
+    });
+
+    window.addEventListener('mouseup', function(e) {
+        if (!isMouseDown) return;
+        isMouseDown = false;
+        const diff = e.clientX - mouseStartX;
+        if (mouseMoved && Math.abs(diff) > 40) {
+            if (diff > 0) {
+                prevSlide(); // RTL previous
+            } else {
+                nextSlide(); // RTL next
             }
-            stopAutoSlide();
-        }, { passive: true });
+        }
+        startAutoPlay();
+    });
 
-        container.addEventListener('touchmove', function(e) {
-            if (e.touches && e.touches[0]) {
-                diffX = e.touches[0].clientX - startX;
+    // Prevent link click when dragged
+    sliderContainer.addEventListener('click', function(e) {
+        if (mouseMoved) {
+            e.preventDefault();
+            e.stopPropagation();
+            mouseMoved = false;
+        }
+    }, true);
+
+    // Touch Swipe Support for Mobile
+    let touchStartX = 0;
+    let touchDiff = 0;
+
+    sliderContainer.addEventListener('touchstart', function(e) {
+        if (e.touches && e.touches[0]) {
+            touchStartX = e.touches[0].clientX;
+        }
+        touchDiff = 0;
+        stopAutoPlay();
+    }, { passive: true });
+
+    sliderContainer.addEventListener('touchmove', function(e) {
+        if (e.touches && e.touches[0]) {
+            touchDiff = e.touches[0].clientX - touchStartX;
+        }
+    }, { passive: true });
+
+    sliderContainer.addEventListener('touchend', function() {
+        if (Math.abs(touchDiff) > 40) {
+            if (touchDiff > 0) {
+                prevSlide();
+            } else {
+                nextSlide();
             }
-        }, { passive: true });
+        }
+        touchDiff = 0;
+        startAutoPlay();
+    });
 
-        container.addEventListener('touchend', function() {
-            if (Math.abs(diffX) > 40) {
-                if (diffX > 0) {
-                    goToSlide(currentIndex - 1);
-                } else {
-                    goToSlide(currentIndex + 1);
-                }
-            }
-            diffX = 0;
-            startAutoSlide();
-        });
-    }
-
-    startAutoSlide();
+    startAutoPlay();
 });
 </script>
 {% endblock %}

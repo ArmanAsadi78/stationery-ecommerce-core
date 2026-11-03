@@ -36,10 +36,21 @@ class HomeController
 
         /** @var list<array<string, mixed>> $sliders */
         $sliders = $this->db->fetchAll("
-            SELECT * FROM `sliders` 
+            SELECT `id`, `title`, `image_path`, `image_path` AS `image_url`, `target_url`, `target_url` AS `link`, `sort_order`, `is_active`
+            FROM `home_sliders` 
             WHERE `is_active` = 1 
             ORDER BY `sort_order` ASC, `id` ASC
         ");
+
+        if (empty($sliders)) {
+            /** @var list<array<string, mixed>> $sliders */
+            $sliders = $this->db->fetchAll("
+                SELECT `id`, `title`, `image_url` AS `image_path`, `image_url`, `link` AS `target_url`, `link`, `sort_order`, `is_active`
+                FROM `sliders` 
+                WHERE `is_active` = 1 
+                ORDER BY `sort_order` ASC, `id` ASC
+            ");
+        }
 
         $html = View::render('home/index', [
             'page_title' => 'فروشگاه تخصصی لوازم‌التحریر تحریرچی | خرید روان‌نویس، خودکار، دفتر و نقاشی',

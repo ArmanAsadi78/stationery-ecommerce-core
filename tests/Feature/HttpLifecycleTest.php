@@ -40,8 +40,7 @@ class HttpLifecycleTest extends TestCase
 
         $this->assertStringContainsString('تحریرچی', $body);
         $this->assertStringContainsString('سبد خرید', $body);
-        $this->assertStringContainsString('hero-carousel-container', $body);
-        $this->assertStringContainsString('data-tilt', $body);
+        $this->assertStringContainsString('hero-banner-slider', $body);
         $this->assertStringContainsString('vanilla-tilt', $body);
     }
 

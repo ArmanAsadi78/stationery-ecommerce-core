@@ -1136,11 +1136,12 @@ class AdminController
 
         /** @var list<array<string, mixed>> $sliders */
         $sliders = $this->db->fetchAll("
-            SELECT * FROM `sliders` 
+            SELECT `id`, `title`, `image_path`, `image_path` AS `image_url`, `target_url`, `target_url` AS `link`, `sort_order`, `is_active`, `created_at` 
+            FROM `home_sliders` 
             ORDER BY `sort_order` ASC, `id` ASC
         ");
 
-        $pageTitle = 'مدیریت اسلایدرها | پنل مدیریت';
+        $pageTitle = 'مدیریت بنرهای اسلایدر صفحه اصلی | پنل مدیریت';
         $isPjax = $request->isPjax();
 
         $html = View::render('admin/sliders', [
@@ -1166,8 +1167,41 @@ class AdminController
     }
 
     /**
+     * Show Create Slider Form.
+     * Route: GET /admin/sliders/create
+     * 
+     * @param array<string, string> $vars
+     */
+    public function createSlider(Request $request, array $vars = []): Response
+    {
+        $adminUser = $this->auth->user();
+        $pageTitle = 'افزودن بنر اسلایدر جدید | پنل مدیریت';
+        $isPjax = $request->isPjax();
+
+        $html = View::render('admin/slider_form', [
+            'page_title' => $pageTitle,
+            'admin_user' => $adminUser,
+            'active_menu' => 'sliders',
+            'is_pjax' => $isPjax,
+            'flash_success' => Session::getFlash('success'),
+            'flash_error' => Session::getFlash('error'),
+        ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'sliders',
+            ]);
+        }
+
+        return Response::html($html);
+    }
+
+    /**
      * Store Newly Created Slider.
-     * Route: POST /admin/sliders/create
+     * Route: POST /admin/sliders & POST /admin/sliders/create
      * 
      * @param array<string, string> $vars
      */
@@ -1188,40 +1222,38 @@ class AdminController
         }
 
         $title = trim((string) $request->input('title', ''));
-        $subtitle = trim((string) $request->input('subtitle', ''));
-        $link = trim((string) $request->input('link', '/'));
+        $targetUrl = trim((string) ($request->input('target_url') ?? $request->input('link') ?? '/'));
         $sortOrder = (int) $request->input('sort_order', 0);
         $isActive = $request->input('is_active') !== null ? 1 : 0;
 
         if ($title === '') {
             Session::setFlash('error', 'عنوان اسلایدر الزامی است.');
-            return Response::redirect(url('admin/sliders'));
+            return Response::redirect(url('admin/sliders/create'));
         }
 
-        if ($link === '') {
-            $link = '/';
+        if ($targetUrl === '') {
+            $targetUrl = '/';
         }
 
         $imagePath = $this->handleSliderImageUpload($request);
         if ($imagePath === null) {
             // Check if existing image path was provided manually
-            $manualImage = trim((string) $request->input('image_url', ''));
+            $manualImage = trim((string) ($request->input('image_path') ?? $request->input('image_url') ?? ''));
             if ($manualImage !== '') {
                 $imagePath = $manualImage;
             } else {
-                Session::setFlash('error', 'بارگذاری تصویر معتبر (WebP, JPG, PNG حداکثر ۵ مگابایت) الزامی است.');
-                return Response::redirect(url('admin/sliders'));
+                Session::setFlash('error', 'بارگذاری تصویر بنر معتبر (WebP, JPG, PNG حداکثر ۵ مگابایت) الزامی است.');
+                return Response::redirect(url('admin/sliders/create'));
             }
         }
 
         $this->db->execute("
-            INSERT INTO `sliders` (`title`, `subtitle`, `image_url`, `link`, `sort_order`, `is_active`)
-            VALUES (:title, :subtitle, :image_url, :link, :sort_order, :is_active)
+            INSERT INTO `home_sliders` (`title`, `image_path`, `target_url`, `sort_order`, `is_active`)
+            VALUES (:title, :image_path, :target_url, :sort_order, :is_active)
         ", [
             ':title' => $title,
-            ':subtitle' => $subtitle !== '' ? $subtitle : null,
-            ':image_url' => $imagePath,
-            ':link' => $link,
+            ':image_path' => $imagePath,
+            ':target_url' => $targetUrl,
             ':sort_order' => $sortOrder,
             ':is_active' => $isActive,
         ]);
@@ -1229,10 +1261,10 @@ class AdminController
         CacheService::flushTwig();
 
         if ($request->isAjax()) {
-            return Response::json(['success' => true, 'message' => "اسلایدر «{$title}» با موفقیت افزوده شد."]);
+            return Response::json(['success' => true, 'message' => "بنر اسلایدر «{$title}» با موفقیت افزوده شد."]);
         }
 
-        Session::setFlash('success', "اسلایدر «{$title}» با موفقیت افزوده شد.");
+        Session::setFlash('success', "بنر اسلایدر «{$title}» با موفقیت افزوده شد.");
         return Response::redirect(url('admin/sliders'));
     }
 
@@ -1259,15 +1291,14 @@ class AdminController
         }
 
         $id = (int) ($vars['id'] ?? 0);
-        $slider = $this->db->fetch("SELECT * FROM `sliders` WHERE `id` = :id LIMIT 1", [':id' => $id]);
+        $slider = $this->db->fetch("SELECT * FROM `home_sliders` WHERE `id` = :id LIMIT 1", [':id' => $id]);
         if (!$slider) {
             Session::setFlash('error', 'اسلایدر مورد نظر یافت نشد.');
             return Response::redirect(url('admin/sliders'));
         }
 
         $title = trim((string) $request->input('title', ''));
-        $subtitle = trim((string) $request->input('subtitle', ''));
-        $link = trim((string) $request->input('link', '/'));
+        $targetUrl = trim((string) ($request->input('target_url') ?? $request->input('link') ?? '/'));
         $sortOrder = (int) $request->input('sort_order', 0);
         $isActive = $request->input('is_active') !== null ? 1 : 0;
 
@@ -1276,28 +1307,26 @@ class AdminController
             return Response::redirect(url('admin/sliders'));
         }
 
-        if ($link === '') {
-            $link = '/';
+        if ($targetUrl === '') {
+            $targetUrl = '/';
         }
 
         $newImage = $this->handleSliderImageUpload($request);
-        $manualImage = trim((string) $request->input('image_url', ''));
-        $imageUrl = $newImage ?? ($manualImage !== '' ? $manualImage : (string) $slider['image_url']);
+        $manualImage = trim((string) ($request->input('image_path') ?? $request->input('image_url') ?? ''));
+        $imagePath = $newImage ?? ($manualImage !== '' ? $manualImage : (string) $slider['image_path']);
 
         $this->db->execute("
-            UPDATE `sliders`
+            UPDATE `home_sliders`
             SET `title` = :title,
-                `subtitle` = :subtitle,
-                `image_url` = :image_url,
-                `link` = :link,
+                `image_path` = :image_path,
+                `target_url` = :target_url,
                 `sort_order` = :sort_order,
                 `is_active` = :is_active
             WHERE `id` = :id
         ", [
             ':title' => $title,
-            ':subtitle' => $subtitle !== '' ? $subtitle : null,
-            ':image_url' => $imageUrl,
-            ':link' => $link,
+            ':image_path' => $imagePath,
+            ':target_url' => $targetUrl,
             ':sort_order' => $sortOrder,
             ':is_active' => $isActive,
             ':id' => $id,
@@ -1306,10 +1335,10 @@ class AdminController
         CacheService::flushTwig();
 
         if ($request->isAjax()) {
-            return Response::json(['success' => true, 'message' => "اسلایدر «{$title}» با موفقیت به‌روزرسانی شد."]);
+            return Response::json(['success' => true, 'message' => "بنر اسلایدر «{$title}» با موفقیت به‌روزرسانی شد."]);
         }
 
-        Session::setFlash('success', "اسلایدر «{$title}» با موفقیت به‌روزرسانی شد.");
+        Session::setFlash('success', "بنر اسلایدر «{$title}» با موفقیت به‌روزرسانی شد.");
         return Response::redirect(url('admin/sliders'));
     }
 
@@ -1337,7 +1366,7 @@ class AdminController
 
         $id = (int) ($vars['id'] ?? 0);
         $this->db->execute("
-            UPDATE `sliders` 
+            UPDATE `home_sliders` 
             SET `is_active` = 1 - `is_active` 
             WHERE `id` = :id
         ", [':id' => $id]);
@@ -1375,7 +1404,7 @@ class AdminController
         }
 
         $id = (int) ($vars['id'] ?? 0);
-        $this->db->execute("DELETE FROM `sliders` WHERE `id` = :id", [':id' => $id]);
+        $this->db->execute("DELETE FROM `home_sliders` WHERE `id` = :id", [':id' => $id]);
 
         CacheService::flushTwig();
 
