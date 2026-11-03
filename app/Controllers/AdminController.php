@@ -1125,6 +1125,320 @@ class AdminController
     }
 
     /**
+     * Homepage Sliders Management.
+     * Route: GET /admin/sliders
+     * 
+     * @param array<string, string> $vars
+     */
+    public function sliders(Request $request, array $vars = []): Response
+    {
+        $adminUser = $this->auth->user();
+
+        /** @var list<array<string, mixed>> $sliders */
+        $sliders = $this->db->fetchAll("
+            SELECT * FROM `sliders` 
+            ORDER BY `sort_order` ASC, `id` ASC
+        ");
+
+        $pageTitle = 'مدیریت اسلایدرها | پنل مدیریت';
+        $isPjax = $request->isPjax();
+
+        $html = View::render('admin/sliders', [
+            'page_title' => $pageTitle,
+            'admin_user' => $adminUser,
+            'active_menu' => 'sliders',
+            'is_pjax' => $isPjax,
+            'sliders' => $sliders,
+            'flash_success' => Session::getFlash('success'),
+            'flash_error' => Session::getFlash('error'),
+        ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'sliders',
+            ]);
+        }
+
+        return Response::html($html);
+    }
+
+    /**
+     * Store Newly Created Slider.
+     * Route: POST /admin/sliders/create
+     * 
+     * @param array<string, string> $vars
+     */
+    public function storeSlider(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            if ($request->isAjax()) {
+                return Response::json(['success' => false, 'message' => 'توکن امنیتی نامعتبر است.'], 403);
+            }
+            Session::setFlash('error', 'توکن امنیتی نامعتبر است.');
+            return Response::redirect(url('admin/sliders'));
+        }
+
+        $title = trim((string) $request->input('title', ''));
+        $subtitle = trim((string) $request->input('subtitle', ''));
+        $link = trim((string) $request->input('link', '/'));
+        $sortOrder = (int) $request->input('sort_order', 0);
+        $isActive = $request->input('is_active') !== null ? 1 : 0;
+
+        if ($title === '') {
+            Session::setFlash('error', 'عنوان اسلایدر الزامی است.');
+            return Response::redirect(url('admin/sliders'));
+        }
+
+        if ($link === '') {
+            $link = '/';
+        }
+
+        $imagePath = $this->handleSliderImageUpload($request);
+        if ($imagePath === null) {
+            // Check if existing image path was provided manually
+            $manualImage = trim((string) $request->input('image_url', ''));
+            if ($manualImage !== '') {
+                $imagePath = $manualImage;
+            } else {
+                Session::setFlash('error', 'بارگذاری تصویر معتبر (WebP, JPG, PNG حداکثر ۵ مگابایت) الزامی است.');
+                return Response::redirect(url('admin/sliders'));
+            }
+        }
+
+        $this->db->execute("
+            INSERT INTO `sliders` (`title`, `subtitle`, `image_url`, `link`, `sort_order`, `is_active`)
+            VALUES (:title, :subtitle, :image_url, :link, :sort_order, :is_active)
+        ", [
+            ':title' => $title,
+            ':subtitle' => $subtitle !== '' ? $subtitle : null,
+            ':image_url' => $imagePath,
+            ':link' => $link,
+            ':sort_order' => $sortOrder,
+            ':is_active' => $isActive,
+        ]);
+
+        CacheService::flushTwig();
+
+        if ($request->isAjax()) {
+            return Response::json(['success' => true, 'message' => "اسلایدر «{$title}» با موفقیت افزوده شد."]);
+        }
+
+        Session::setFlash('success', "اسلایدر «{$title}» با موفقیت افزوده شد.");
+        return Response::redirect(url('admin/sliders'));
+    }
+
+    /**
+     * Update Slider.
+     * Route: POST /admin/sliders/{id}/edit
+     * 
+     * @param array<string, string> $vars
+     */
+    public function updateSlider(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            if ($request->isAjax()) {
+                return Response::json(['success' => false, 'message' => 'توکن امنیتی نامعتبر است.'], 403);
+            }
+            Session::setFlash('error', 'توکن امنیتی نامعتبر است.');
+            return Response::redirect(url('admin/sliders'));
+        }
+
+        $id = (int) ($vars['id'] ?? 0);
+        $slider = $this->db->fetch("SELECT * FROM `sliders` WHERE `id` = :id LIMIT 1", [':id' => $id]);
+        if (!$slider) {
+            Session::setFlash('error', 'اسلایدر مورد نظر یافت نشد.');
+            return Response::redirect(url('admin/sliders'));
+        }
+
+        $title = trim((string) $request->input('title', ''));
+        $subtitle = trim((string) $request->input('subtitle', ''));
+        $link = trim((string) $request->input('link', '/'));
+        $sortOrder = (int) $request->input('sort_order', 0);
+        $isActive = $request->input('is_active') !== null ? 1 : 0;
+
+        if ($title === '') {
+            Session::setFlash('error', 'عنوان اسلایدر الزامی است.');
+            return Response::redirect(url('admin/sliders'));
+        }
+
+        if ($link === '') {
+            $link = '/';
+        }
+
+        $newImage = $this->handleSliderImageUpload($request);
+        $manualImage = trim((string) $request->input('image_url', ''));
+        $imageUrl = $newImage ?? ($manualImage !== '' ? $manualImage : (string) $slider['image_url']);
+
+        $this->db->execute("
+            UPDATE `sliders`
+            SET `title` = :title,
+                `subtitle` = :subtitle,
+                `image_url` = :image_url,
+                `link` = :link,
+                `sort_order` = :sort_order,
+                `is_active` = :is_active
+            WHERE `id` = :id
+        ", [
+            ':title' => $title,
+            ':subtitle' => $subtitle !== '' ? $subtitle : null,
+            ':image_url' => $imageUrl,
+            ':link' => $link,
+            ':sort_order' => $sortOrder,
+            ':is_active' => $isActive,
+            ':id' => $id,
+        ]);
+
+        CacheService::flushTwig();
+
+        if ($request->isAjax()) {
+            return Response::json(['success' => true, 'message' => "اسلایدر «{$title}» با موفقیت به‌روزرسانی شد."]);
+        }
+
+        Session::setFlash('success', "اسلایدر «{$title}» با موفقیت به‌روزرسانی شد.");
+        return Response::redirect(url('admin/sliders'));
+    }
+
+    /**
+     * Toggle Slider Active Status.
+     * Route: POST /admin/sliders/{id}/toggle
+     * 
+     * @param array<string, string> $vars
+     */
+    public function toggleSlider(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            if ($request->isAjax()) {
+                return Response::json(['success' => false, 'message' => 'توکن امنیتی نامعتبر است.'], 403);
+            }
+            Session::setFlash('error', 'توکن امنیتی نامعتبر است.');
+            return Response::redirect(url('admin/sliders'));
+        }
+
+        $id = (int) ($vars['id'] ?? 0);
+        $this->db->execute("
+            UPDATE `sliders` 
+            SET `is_active` = 1 - `is_active` 
+            WHERE `id` = :id
+        ", [':id' => $id]);
+
+        CacheService::flushTwig();
+
+        if ($request->isAjax()) {
+            return Response::json(['success' => true, 'message' => 'وضعیت اسلایدر تغییر یافت.']);
+        }
+
+        Session::setFlash('success', 'وضعیت اسلایدر با موفقیت به‌روزرسانی شد.');
+        return Response::redirect(url('admin/sliders'));
+    }
+
+    /**
+     * Delete Slider.
+     * Route: POST /admin/sliders/{id}/delete
+     * 
+     * @param array<string, string> $vars
+     */
+    public function deleteSlider(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            if ($request->isAjax()) {
+                return Response::json(['success' => false, 'message' => 'توکن امنیتی نامعتبر است.'], 403);
+            }
+            Session::setFlash('error', 'توکن امنیتی نامعتبر است.');
+            return Response::redirect(url('admin/sliders'));
+        }
+
+        $id = (int) ($vars['id'] ?? 0);
+        $this->db->execute("DELETE FROM `sliders` WHERE `id` = :id", [':id' => $id]);
+
+        CacheService::flushTwig();
+
+        if ($request->isAjax()) {
+            return Response::json(['success' => true, 'message' => 'اسلایدر با موفقیت حذف گردید.']);
+        }
+
+        Session::setFlash('success', 'اسلایدر با موفقیت حذف گردید.');
+        return Response::redirect(url('admin/sliders'));
+    }
+
+    /**
+     * Securely handle slider image uploads to public/assets/images/sliders/
+     */
+    private function handleSliderImageUpload(Request $request): ?string
+    {
+        /** @var array<string, mixed>|null $file */
+        $file = $request->getFile('image') ?? $request->getFile('slider_image');
+        if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+            return null;
+        }
+
+        $size = (int) ($file['size'] ?? 0);
+        if ($size > 5 * 1024 * 1024) { // 5 MB max
+            return null;
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($tmpName);
+
+        $allowedMimes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            'image/gif' => 'gif',
+        ];
+
+        if (!isset($allowedMimes[$mime])) {
+            return null;
+        }
+
+        $ext = $allowedMimes[$mime];
+        $targetDir = public_path('assets' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR . 'sliders');
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $fileName = 'slide-' . time() . '-' . mt_rand(100, 999) . '.' . $ext;
+        $destination = $targetDir . DIRECTORY_SEPARATOR . $fileName;
+
+        if (move_uploaded_file($tmpName, $destination)) {
+            return 'images/sliders/' . $fileName;
+        }
+
+        return null;
+    }
+
+    /**
      * General Site Settings.
      * Route: GET /admin/settings
      * 

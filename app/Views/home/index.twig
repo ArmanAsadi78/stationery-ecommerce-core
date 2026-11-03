@@ -3,9 +3,9 @@
 {% block content %}
 <div class="container">
     {# ================================================================= #}
-    {# 1. TWO-COLUMN HERO SECTION (Cute Pastel Aesthetic & Glassmorphism)#}
+    {# 1. DYNAMIC HERO CAROUSEL WITH 3D TILT EFFECT                     #}
     {# ================================================================= #}
-    <section class="hero-banner-modern" data-aos="fade-up">
+    <section class="hero-carousel-container" data-aos="fade-up" id="heroCarouselContainer">
         {# Playful Floating Decorative Stickers #}
         <div class="deco-floating-sticker theme-pink float-soft" style="top: 20px; left: 40px;">
             <span>✏️</span>
@@ -16,84 +16,152 @@
             <span>گیره کاغذ پاستلی</span>
         </div>
 
-        <div class="hero-grid">
-            {# Right Column: Catchy Copy, Badges & Float CTA #}
-            <div class="hero-text-col" data-aos="fade-left" data-aos-delay="100">
-                <div class="hero-pill-badge">
-                    <span class="badge-sparkle">✨</span>
-                    <span>کالکشن جدید و فانتزی نوشت‌افزار ۱۴۰۵</span>
-                </div>
+        {# Slides Track #}
+        <div class="hero-carousel-slides" id="heroSliderSlides">
+            {% if sliders is defined and sliders|length > 0 %}
+                {% for slider in sliders %}
+                    <div class="hero-carousel-slide {% if loop.first %}active{% endif %}" data-slide-index="{{ loop.index0 }}">
+                        <div class="hero-grid">
+                            {# Right Column: Catchy Copy, Badges & Float CTA #}
+                            <div class="hero-text-col" data-aos="fade-left" data-aos-delay="100">
+                                <div class="hero-pill-badge">
+                                    <span class="badge-sparkle">✨</span>
+                                    <span>کالکشن جدید و فانتزی نوشت‌افزار ۱۴۰۵</span>
+                                </div>
 
-                <h1 class="hero-main-title">
-                    دنیای رنگارنگ، کیوت و دوست‌داشتنیِ <span class="gradient-text">لوازم‌التحریر</span>
-                </h1>
+                                <h1 class="hero-main-title">
+                                    {{ slider.title }}
+                                </h1>
 
-                <p class="hero-subtitle">
-                    خاص‌ترین روان‌نویس‌های ژاپنی و آلمانی، اتودهای مهندسی روترینگ، پلنرهای انگیزشی و ماژیک‌های هایلایتر پاستلی با ضمانت ۱۰۰٪ اصالت فیزیکی و بسته‌بندی پر از عشق و حس خوب! 🎀
-                </p>
+                                {% if slider.subtitle %}
+                                    <p class="hero-subtitle">
+                                        {{ slider.subtitle }}
+                                    </p>
+                                {% endif %}
 
-                <div class="hero-cta-group">
-                    <a href="{{ url('products') }}" class="btn-hero-primary">
-                        <span>مشاهده کاتالوگ محصولات</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                        </svg>
-                    </a>
-                    <a href="{{ url('products?category=writing-instruments') }}" class="btn-hero-secondary">
-                        <span>قلم و روان‌نویس‌ها ✏️</span>
-                    </a>
-                </div>
+                                <div class="hero-cta-group">
+                                    <a href="{{ url(slider.link) }}" class="btn-hero-primary">
+                                        <span>مشاهده و خرید</span>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                                        </svg>
+                                    </a>
+                                    <a href="{{ url('products') }}" class="btn-hero-secondary">
+                                        <span>کاتالوگ کل محصولات ✏️</span>
+                                    </a>
+                                </div>
 
-                <div class="hero-trust-badges">
-                    <div class="trust-badge-item">
-                        <span class="trust-icon">🚀</span>
-                        <div>
-                            <strong>ارسال سریع سراسری</strong>
-                            <small>پست پیشتاز و تیپاکس</small>
+                                <div class="hero-trust-badges">
+                                    <div class="trust-badge-item">
+                                        <span class="trust-icon">🚀</span>
+                                        <div>
+                                            <strong>ارسال سریع سراسری</strong>
+                                            <small>پست پیشتاز و تیپاکس</small>
+                                        </div>
+                                    </div>
+                                    <div class="trust-badge-item">
+                                        <span class="trust-icon">💎</span>
+                                        <div>
+                                            <strong>ضمانت ۱۰۰٪ اصالت</strong>
+                                            <small>اورجینال برندهای برتر</small>
+                                        </div>
+                                    </div>
+                                    <div class="trust-badge-item">
+                                        <span class="trust-icon">🎁</span>
+                                        <div>
+                                            <strong>بسته‌بندی ایمن و کادویی</strong>
+                                            <small>هدیه درون هر بسته</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Left Column: Visual Showcase Box with 3D Tilt Effect #}
+                            <div class="hero-visual-col" data-aos="zoom-in" data-aos-delay="200">
+                                <div class="hero-glass-showcase hero-tilt-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.2">
+                                    <div class="floating-sticker sticker-top">
+                                        <span>📓</span>
+                                        <span>پلنر و ژورنال فانتزی</span>
+                                    </div>
+
+                                    <div class="showcase-center-art">
+                                        <img src="{{ asset(slider.image_url) }}" alt="{{ slider.title }}" class="hero-composite-img" loading="eager" width="540" height="480">
+                                    </div>
+
+                                    <div class="showcase-rating-card">
+                                        <div class="stars-row">⭐⭐⭐⭐⭐</div>
+                                        <strong>۴.۹ از ۵ رضایت خریداران</strong>
+                                        <span>بیش از ۲،۴۰۰ نظر تاییدشده تحریرچی</span>
+                                    </div>
+
+                                    <div class="floating-sticker sticker-bottom">
+                                        <span>🌸</span>
+                                        <span>بسته‌بندی ویژه و دوست‌داشتنی</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="trust-badge-item">
-                        <span class="trust-icon">💎</span>
-                        <div>
-                            <strong>ضمانت ۱۰۰٪ اصالت</strong>
-                            <small>اورجینال برندهای برتر</small>
+                {% endfor %}
+            {% else %}
+                {# Fallback Static Hero if no sliders defined #}
+                <div class="hero-carousel-slide active" data-slide-index="0">
+                    <div class="hero-grid">
+                        <div class="hero-text-col">
+                            <div class="hero-pill-badge">
+                                <span class="badge-sparkle">✨</span>
+                                <span>کالکشن جدید و فانتزی نوشت‌افزار ۱۴۰۵</span>
+                            </div>
+                            <h1 class="hero-main-title">
+                                دنیای رنگارنگ، کیوت و دوست‌داشتنیِ <span class="gradient-text">لوازم‌التحریر</span>
+                            </h1>
+                            <p class="hero-subtitle">
+                                خاص‌ترین روان‌نویس‌های ژاپنی و آلمانی، اتودهای مهندسی روترینگ، پلنرهای انگیزشی و ماژیک‌های هایلایتر پاستلی با ضمانت ۱۰۰٪ اصالت فیزیکی! 🎀
+                            </p>
+                            <div class="hero-cta-group">
+                                <a href="{{ url('products') }}" class="btn-hero-primary">
+                                    <span>مشاهده کاتالوگ محصولات</span>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                                    </svg>
+                                </a>
+                                <a href="{{ url('products?category=writing-instruments') }}" class="btn-hero-secondary">
+                                    <span>قلم و روان‌نویس‌ها ✏️</span>
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="trust-badge-item">
-                        <span class="trust-icon">🎁</span>
-                        <div>
-                            <strong>بسته‌بندی ایمن و کادویی</strong>
-                            <small>هدیه درون هر بسته</small>
+                        <div class="hero-visual-col">
+                            <div class="hero-glass-showcase hero-tilt-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.2">
+                                <div class="showcase-center-art">
+                                    <img src="{{ asset('images/banners/hero-showcase.webp') }}" alt="چیدمان فانتزی لوازم‌التحریر" class="hero-composite-img" width="540" height="480">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {# Left Column: Visual Showcase Box with Commercial Composite Image #}
-            <div class="hero-visual-col" data-aos="zoom-in" data-aos-delay="200">
-                <div class="hero-glass-showcase">
-                    <div class="floating-sticker sticker-top">
-                        <span>📓</span>
-                        <span>پلنر و ژورنال فانتزی</span>
-                    </div>
-
-                    <div class="showcase-center-art">
-                        <img src="{{ asset('images/banners/hero-showcase.webp') }}" alt="چیدمان فانتزی لوازم‌التحریر تحریرچی" class="hero-composite-img" loading="eager" width="540" height="480">
-                    </div>
-
-                    <div class="showcase-rating-card">
-                        <div class="stars-row">⭐⭐⭐⭐⭐</div>
-                        <strong>۴.۹ از ۵ رضایت خریداران</strong>
-                        <span>بیش از ۲،۴۰۰ نظر تاییدشده تحریرچی</span>
-                    </div>
-
-                    <div class="floating-sticker sticker-bottom">
-                        <span>🌸</span>
-                        <span>بسته‌بندی ویژه و دوست‌داشتنی</span>
-                    </div>
-                </div>
-            </div>
+            {% endif %}
         </div>
+
+        {% if sliders is defined and sliders|length > 1 %}
+            <!-- Navigation Arrows (Previous is Right, Next is Left in RTL) -->
+            <button type="button" class="hero-nav-arrow hero-prev-btn" id="heroPrevBtn" aria-label="اسلاید قبلی" title="قبلی">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <button type="button" class="hero-nav-arrow hero-next-btn" id="heroNextBtn" aria-label="اسلاید بعدی" title="بعدی">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+
+            <!-- Navigation Dots -->
+            <div class="hero-carousel-dots" id="heroDotsWrap">
+                {% for slider in sliders %}
+                    <button type="button" class="hero-dot-btn {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}" aria-label="رفتن به اسلاید {{ loop.index|fa_num }}"></button>
+                {% endfor %}
+            </div>
+        {% endif %}
     </section>
 
     {# ================================================================= #}
@@ -170,7 +238,7 @@
     {# ================================================================= #}
     <section class="promo-tiles-section" data-aos="fade-up">
         <div class="promo-grid">
-            <div class="promo-tile promo-tile-peach" data-aos="zoom-in" data-aos-delay="100">
+            <div class="promo-tile promo-tile-peach" data-tilt data-tilt-max="12" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.15" data-aos="zoom-in" data-aos-delay="100">
                 <div class="promo-content">
                     <span class="promo-badge">🎀 کالکشن کیوت بولت ژورنال</span>
                     <h3 class="promo-title">پک‌های هدیه و دفترهای نقطه‌ای</h3>
@@ -182,7 +250,7 @@
                 </div>
             </div>
 
-            <div class="promo-tile promo-tile-lavender" data-aos="zoom-in" data-aos-delay="200">
+            <div class="promo-tile promo-tile-lavender" data-tilt data-tilt-max="12" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.15" data-aos="zoom-in" data-aos-delay="200">
                 <div class="promo-content">
                     <span class="promo-badge">📐 نوشت‌افزار تکنیکال و دقیق</span>
                     <h3 class="promo-title">روترینگ و فابرکاستل آلمان</h3>
@@ -333,7 +401,7 @@
     {# ================================================================= #}
     {# 5. PASTEL PROMO BANNER STRIP (Highlighter & Marker World)         #}
     {# ================================================================= #}
-    <section class="promo-strip-card" data-aos="zoom-in">
+    <section class="promo-strip-card" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.1" data-aos="zoom-in">
         <div class="strip-content">
             <span class="strip-badge">🖍️ دنیای هایلایترهای پاستلی</span>
             <h3>رنگ‌های ملایم، بدون پس دادن جوهر روی کاغذ</h3>
@@ -342,4 +410,133 @@
         <a href="{{ url('products') }}" class="btn-strip-cta">کشف هایلایترها ✨</a>
     </section>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.hero-carousel-slide');
+    const dots = document.querySelectorAll('.hero-dot-btn');
+    const prevBtn = document.getElementById('heroPrevBtn');
+    const nextBtn = document.getElementById('heroNextBtn');
+    const container = document.getElementById('heroCarouselContainer');
+
+    if (!slides.length) return;
+
+    let currentIndex = 0;
+    let autoTimer = null;
+    const total = slides.length;
+
+    function goToSlide(index) {
+        if (index < 0) {
+            index = total - 1;
+        } else if (index >= total) {
+            index = 0;
+        }
+        currentIndex = index;
+
+        slides.forEach(function(s, idx) {
+            if (idx === currentIndex) {
+                s.classList.add('active');
+            } else {
+                s.classList.remove('active');
+            }
+        });
+
+        dots.forEach(function(d, idx) {
+            if (idx === currentIndex) {
+                d.classList.add('active');
+            } else {
+                d.classList.remove('active');
+            }
+        });
+
+        // Initialize 3D tilt on slide switch
+        if (typeof VanillaTilt !== 'undefined') {
+            const activeTilt = slides[currentIndex].querySelector('[data-tilt]');
+            if (activeTilt && !activeTilt.vanillaTilt) {
+                VanillaTilt.init(activeTilt, {
+                    max: 15,
+                    speed: 400,
+                    glare: true,
+                    "max-glare": 0.2,
+                    perspective: 1000
+                });
+            }
+        }
+    }
+
+    function startAutoSlide() {
+        if (total <= 1) return;
+        stopAutoSlide();
+        autoTimer = setInterval(function() {
+            goToSlide(currentIndex + 1);
+        }, 5500);
+    }
+
+    function stopAutoSlide() {
+        if (autoTimer) {
+            clearInterval(autoTimer);
+            autoTimer = null;
+        }
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            goToSlide(currentIndex - 1);
+            startAutoSlide();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            goToSlide(currentIndex + 1);
+            startAutoSlide();
+        });
+    }
+
+    dots.forEach(function(dot, idx) {
+        dot.addEventListener('click', function() {
+            goToSlide(idx);
+            startAutoSlide();
+        });
+    });
+
+    if (container) {
+        container.addEventListener('mouseenter', stopAutoSlide);
+        container.addEventListener('mouseleave', startAutoSlide);
+
+        // Touch swipe support for mobile
+        let startX = 0;
+        let diffX = 0;
+
+        container.addEventListener('touchstart', function(e) {
+            if (e.touches && e.touches[0]) {
+                startX = e.touches[0].clientX;
+            }
+            stopAutoSlide();
+        }, { passive: true });
+
+        container.addEventListener('touchmove', function(e) {
+            if (e.touches && e.touches[0]) {
+                diffX = e.touches[0].clientX - startX;
+            }
+        }, { passive: true });
+
+        container.addEventListener('touchend', function() {
+            if (Math.abs(diffX) > 40) {
+                if (diffX > 0) {
+                    goToSlide(currentIndex - 1);
+                } else {
+                    goToSlide(currentIndex + 1);
+                }
+            }
+            diffX = 0;
+            startAutoSlide();
+        });
+    }
+
+    startAutoSlide();
+});
+</script>
 {% endblock %}

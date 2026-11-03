@@ -62,6 +62,12 @@ class AdminTest extends TestCase
         $router->post('/admin/menus/{id:[0-9]+}/toggle', [AdminController::class, 'toggleMenu'], [AdminMiddleware::class]);
         $router->post('/admin/menus/{id:[0-9]+}/delete', [AdminController::class, 'deleteMenu'], [AdminMiddleware::class]);
 
+        $router->get('/admin/sliders', [AdminController::class, 'sliders'], [AdminMiddleware::class]);
+        $router->post('/admin/sliders/create', [AdminController::class, 'storeSlider'], [AdminMiddleware::class]);
+        $router->post('/admin/sliders/{id:[0-9]+}/toggle', [AdminController::class, 'toggleSlider'], [AdminMiddleware::class]);
+        $router->post('/admin/sliders/{id:[0-9]+}/edit', [AdminController::class, 'updateSlider'], [AdminMiddleware::class]);
+        $router->post('/admin/sliders/{id:[0-9]+}/delete', [AdminController::class, 'deleteSlider'], [AdminMiddleware::class]);
+
         $router->get('/admin/settings', [AdminController::class, 'settings'], [AdminMiddleware::class]);
         $router->post('/admin/settings', [AdminController::class, 'updateSettings'], [AdminMiddleware::class]);
     }
@@ -481,5 +487,96 @@ class AdminTest extends TestCase
         $this->assertSame($testAnnouncement, \App\Services\SettingService::get('top_announcement_text'));
         $this->assertSame($testPhone, \App\Services\SettingService::get('support_phone'));
         $this->assertSame($testCopyright, \App\Services\SettingService::get('footer_copyright'));
+    }
+
+    public function test_admin_sliders_crud(): void
+    {
+        $adminEmail = 'admin_sliders_' . time() . '@example.com';
+        $this->createdUserEmails[] = $adminEmail;
+
+        $hash = password_hash('adm_pass123', PASSWORD_BCRYPT);
+        $this->db->execute(
+            "INSERT INTO `users` (`full_name`, `email`, `password_hash`, `role`, `is_active`, `created_at`) 
+             VALUES ('مدیر اسلایدر', :email, :hash, 'admin', 1, NOW())",
+            [':email' => $adminEmail, ':hash' => $hash]
+        );
+
+        $this->auth->login($adminEmail, 'adm_pass123');
+
+        // 1. View Sliders Page
+        $resView = $this->request('GET', '/admin/sliders');
+        $this->assertSame(200, $resView->getStatusCode());
+        $this->assertStringContainsString('مدیریت اسلایدرهای صفحه اصلی', $resView->getContent());
+        $this->assertStringContainsString('افزودن اسلایدر جدید', $resView->getContent());
+
+        // 1.1 PJAX request
+        $resPjax = $this->request('GET', '/admin/sliders', [], ['X-PJAX' => 'true']);
+        $this->assertSame(200, $resPjax->getStatusCode());
+        $pjaxJson = json_decode($resPjax->getContent(), true);
+        $this->assertIsArray($pjaxJson);
+        $this->assertTrue($pjaxJson['success'] ?? false);
+        $this->assertSame('sliders', $pjaxJson['active_menu'] ?? '');
+
+        // 2. Create New Slider
+        $csrf = Session::csrfToken();
+        $testTitle = 'اسلایدر آزمایشی ' . time();
+        $testSubtitle = 'توضیحات کوتاه برای اسلایدر تستی';
+        $testLink = '/products?category=writing-instruments';
+
+        $resCreate = $this->request('POST', '/admin/sliders/create', [
+            '_csrf_token' => $csrf,
+            'title' => $testTitle,
+            'subtitle' => $testSubtitle,
+            'link' => $testLink,
+            'image_url' => 'images/sliders/slide-1.webp',
+            'sort_order' => '10',
+            'is_active' => '1',
+        ]);
+        $this->assertSame(302, $resCreate->getStatusCode());
+
+        /** @var array<string, mixed>|null $created */
+        $created = $this->db->fetch("SELECT * FROM `sliders` WHERE `title` = :title LIMIT 1", [':title' => $testTitle]);
+        $this->assertNotNull($created);
+        $sliderId = (int) $created['id'];
+        $this->assertSame(1, (int) $created['is_active']);
+        $this->assertSame($testSubtitle, $created['subtitle']);
+
+        // 3. Toggle Status
+        $resToggle = $this->request('POST', "/admin/sliders/{$sliderId}/toggle", [
+            '_csrf_token' => $csrf,
+        ]);
+        $this->assertSame(302, $resToggle->getStatusCode());
+
+        /** @var array<string, mixed>|null $toggled */
+        $toggled = $this->db->fetch("SELECT `is_active` FROM `sliders` WHERE `id` = :id", [':id' => $sliderId]);
+        $this->assertNotNull($toggled);
+        $this->assertSame(0, (int) $toggled['is_active']);
+
+        // 4. Update Slider
+        $resEdit = $this->request('POST', "/admin/sliders/{$sliderId}/edit", [
+            '_csrf_token' => $csrf,
+            'title' => $testTitle . ' ویرایش‌شده',
+            'subtitle' => 'توضیحات جدید',
+            'link' => '/products',
+            'sort_order' => '5',
+            'is_active' => '1',
+        ]);
+        $this->assertSame(302, $resEdit->getStatusCode());
+
+        /** @var array<string, mixed>|null $updated */
+        $updated = $this->db->fetch("SELECT * FROM `sliders` WHERE `id` = :id", [':id' => $sliderId]);
+        $this->assertNotNull($updated);
+        $this->assertSame($testTitle . ' ویرایش‌شده', $updated['title']);
+        $this->assertSame(1, (int) $updated['is_active']);
+
+        // 5. Delete Slider
+        $resDelete = $this->request('POST', "/admin/sliders/{$sliderId}/delete", [
+            '_csrf_token' => $csrf,
+        ]);
+        $this->assertSame(302, $resDelete->getStatusCode());
+
+        /** @var array<string, mixed>|null $deleted */
+        $deleted = $this->db->fetch("SELECT `id` FROM `sliders` WHERE `id` = :id", [':id' => $sliderId]);
+        $this->assertNull($deleted);
     }
 }

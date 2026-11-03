@@ -13,6 +13,7 @@ CREATE DATABASE IF NOT EXISTS `stationery_shop`
 USE `stationery_shop`;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `sliders`;
 DROP TABLE IF EXISTS `site_settings`;
 DROP TABLE IF EXISTS `navigation_menus`;
 DROP TABLE IF EXISTS `wishlists`;
@@ -397,3 +398,24 @@ INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
 ('store_address', 'تهران، میدان انقلاب، خیابان ۱۲ فروردین، پلاک ۴۲'),
 ('working_hours', 'شنبه تا پنج‌شنبه: ۹ الی ۱۸'),
 ('footer_copyright', '© ۲۰۲۶ تمامی حقوق مادی و معنوی برای فروشگاه تحریرچی محفوظ است.');
+
+-- ---------------------------------------------------------------------
+-- 18. SLIDERS TABLE (Dynamic Homepage Carousel / Banners)
+-- ---------------------------------------------------------------------
+CREATE TABLE `sliders` (
+    `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `title` VARCHAR(150) NOT NULL,
+    `subtitle` VARCHAR(255) NULL,
+    `image_url` VARCHAR(255) NOT NULL,
+    `link` VARCHAR(255) NOT NULL DEFAULT '/',
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_sliders_active_sort` (`is_active`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `sliders` (`title`, `subtitle`, `image_url`, `link`, `sort_order`, `is_active`) VALUES
+('جشنواره بهاره نوشت‌افزار فانتزی و ژاپنی', 'خاص‌ترین روان‌نویس‌های زبرا و ساکورا، اتودهای مهندسی و ماژیک‌های هایلایتر پاستلی با ضمانت اصالت', 'images/sliders/slide-1.webp', '/products?category=writing-instruments', 1, 1),
+('کالکشن تخصصی بولت ژورنال و پلنرهای انگیزشی', 'دفاتر برنامه‌ریزی روزانه، استیکی نوت و کلاسورهای مینیمال با کاغذ کره‌ای ضد لک', 'images/sliders/slide-2.webp', '/products?category=notebooks-and-paper', 2, 1),
+('ابزار حرفه‌ای طراحی، معماری و تصویرسازی', 'راپیدهای مهندسی روترینگ، مدادرنگی‌های تخصصی پلی‌کروم و آبرنگ‌های هنری اصیل', 'images/sliders/slide-3.webp', '/products?category=art-and-drawing', 3, 1);

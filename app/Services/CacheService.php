@@ -43,6 +43,30 @@ class CacheService
         return self::sitemap()->flush();
     }
 
+    public static function flushTwig(): bool
+    {
+        $twigCacheDir = storage_path('cache' . DIRECTORY_SEPARATOR . 'twig');
+        if (!is_dir($twigCacheDir)) {
+            return true;
+        }
+
+        try {
+            $it = new \RecursiveDirectoryIterator($twigCacheDir, \FilesystemIterator::SKIP_DOTS);
+            $files = new \RecursiveIteratorIterator($it, \RecursiveIteratorIterator::CHILD_FIRST);
+            foreach ($files as $file) {
+                if ($file->isDir()) {
+                    @rmdir($file->getRealPath());
+                } else {
+                    @unlink($file->getRealPath());
+                }
+            }
+        } catch (\Throwable $e) {
+            // Silently continue if permission or access restriction occurs
+        }
+
+        return true;
+    }
+
     /**
      * Retrieve an item from cache.
      */

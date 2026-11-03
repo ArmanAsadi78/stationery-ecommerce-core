@@ -386,6 +386,22 @@
         }
     });
     </script>
+
+    <!-- VanillaTilt.js (3D Interactive Tilt & Glare Effect) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof VanillaTilt !== 'undefined') {
+            VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+                max: 15,
+                speed: 400,
+                glare: true,
+                "max-glare": 0.2,
+                perspective: 1000
+            });
+        }
+    });
+    </script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const userBtn = document.getElementById('userMenuBtn');

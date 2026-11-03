@@ -90,6 +90,13 @@ $router->post('/admin/menus', [AdminController::class, 'storeMenu'], [AdminMiddl
 $router->post('/admin/menus/{id:[0-9]+}/toggle', [AdminController::class, 'toggleMenu'], [AdminMiddleware::class]);
 $router->post('/admin/menus/{id:[0-9]+}/delete', [AdminController::class, 'deleteMenu'], [AdminMiddleware::class]);
 
+// Sliders Management
+$router->get('/admin/sliders', [AdminController::class, 'sliders'], [AdminMiddleware::class]);
+$router->post('/admin/sliders/create', [AdminController::class, 'storeSlider'], [AdminMiddleware::class]);
+$router->post('/admin/sliders/{id:[0-9]+}/toggle', [AdminController::class, 'toggleSlider'], [AdminMiddleware::class]);
+$router->post('/admin/sliders/{id:[0-9]+}/edit', [AdminController::class, 'updateSlider'], [AdminMiddleware::class]);
+$router->post('/admin/sliders/{id:[0-9]+}/delete', [AdminController::class, 'deleteSlider'], [AdminMiddleware::class]);
+
 // Site Settings Management
 $router->get('/admin/settings', [AdminController::class, 'settings'], [AdminMiddleware::class]);
 $router->post('/admin/settings', [AdminController::class, 'updateSettings'], [AdminMiddleware::class]);

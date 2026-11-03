@@ -583,7 +583,8 @@ button, input, select {
 /* =====================================================================
    HERO BANNER (Clean & Premium Two-Column Card)
    ===================================================================== */
-.hero-banner-modern {
+.hero-banner-modern,
+.hero-carousel-container {
   background: #ffffff;
   border-radius: 28px;
   padding: 48px 52px;
@@ -594,7 +595,8 @@ button, input, select {
   overflow: hidden;
 }
 
-.hero-banner-modern::before {
+.hero-banner-modern::before,
+.hero-carousel-container::before {
   content: '';
   position: absolute;
   top: -120px;
@@ -604,6 +606,118 @@ button, input, select {
   background: radial-gradient(circle, rgba(254, 226, 226, 0.4) 0%, rgba(254, 243, 199, 0.2) 50%, transparent 70%);
   pointer-events: none;
   z-index: 1;
+}
+
+.hero-carousel-slides {
+  position: relative;
+  width: 100%;
+  min-height: 440px;
+}
+
+.hero-carousel-slide {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+  transform: translateY(6px);
+}
+
+.hero-carousel-slide.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hero Carousel Navigation Arrows */
+.hero-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 12;
+}
+
+.hero-nav-arrow:hover {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+}
+
+.hero-prev-btn {
+  right: 14px;
+}
+
+.hero-next-btn {
+  left: 14px;
+}
+
+/* Hero Carousel Navigation Dots */
+.hero-carousel-dots {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 12;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.hero-dot-btn {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: #cbd5e1;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+}
+
+.hero-dot-btn:hover {
+  background: #94a3b8;
+}
+
+.hero-dot-btn.active {
+  background: #f43f5e;
+  width: 26px;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.35);
+}
+
+/* 3D Tilt Perspective & Glare Support */
+[data-tilt] {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.hero-tilt-card {
+  transform-style: preserve-3d;
+}
+
+.hero-tilt-card .floating-sticker,
+.hero-tilt-card .showcase-rating-card,
+.hero-tilt-card .hero-composite-img {
+  transform: translateZ(26px);
+  transition: transform 0.3s ease;
 }
 
 .hero-grid {
@@ -2422,9 +2536,23 @@ button, input, select {
   .nav-item-mega .mega-trigger .chevron-icon {
     display: none;
   }
-  .hero-banner-modern {
-    padding: 32px 20px;
+  .hero-banner-modern,
+  .hero-carousel-container {
+    padding: 32px 18px;
     margin: 16px 0 36px 0;
+  }
+  .hero-carousel-slides {
+    min-height: auto;
+  }
+  .hero-nav-arrow {
+    width: 36px;
+    height: 36px;
+  }
+  .hero-prev-btn {
+    right: 8px;
+  }
+  .hero-next-btn {
+    left: 8px;
   }
   .hero-main-title {
     font-size: 26px;
