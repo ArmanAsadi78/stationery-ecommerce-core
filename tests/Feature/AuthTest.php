@@ -412,23 +412,32 @@ class AuthTest extends TestCase
         // Authenticate user
         $this->auth->login($email, 'ValidPass123!');
         $this->assertTrue(Session::has('user'));
-        $this->assertArrayHasKey('last_activity', $_SESSION);
+        $this->assertArrayHasKey('user_last_activity', $_SESSION);
 
-        // Case 1: Active session within 2 hours refreshes last_activity
-        $recentTime = time() - 300;
-        $_SESSION['last_activity'] = $recentTime;
-        Session::checkInactivityTimeout(7200);
+        // Case 1: Active session within 3 days refreshes user_last_activity
+        $recentTime = time() - 3600;
+        $_SESSION['user_last_activity'] = $recentTime;
+        $active = Session::checkCustomerInactivityTimeout();
 
+        $this->assertTrue($active);
         $this->assertTrue(Session::has('user'));
-        $this->assertGreaterThanOrEqual($recentTime, (int) $_SESSION['last_activity']);
+        $this->assertGreaterThanOrEqual($recentTime, (int) $_SESSION['user_last_activity']);
 
-        // Case 2: Inactive session beyond 2 hours invalidates user session
-        $_SESSION['last_activity'] = time() - 7205;
-        Session::checkInactivityTimeout(7200);
+        // Case 2: Inactive session beyond 3 days (259200s) invalidates user session
+        $_SESSION['user_last_activity'] = time() - 259205;
+        $timeoutResult = Session::checkCustomerInactivityTimeout();
 
+        $this->assertFalse($timeoutResult);
         $this->assertFalse(Session::has('user'));
         $this->assertTrue(Session::hasFlash('error'));
         $flashMsg = Session::getFlash('error');
-        $this->assertStringContainsString('۲ ساعت', (string) $flashMsg);
+        $this->assertStringContainsString('۳ روز', (string) $flashMsg);
+
+        // Case 3: Middleware redirection when timed out
+        $this->auth->login($email, 'ValidPass123!');
+        $_SESSION['user_last_activity'] = time() - 259205;
+        $response = $this->request('GET', '/account/dashboard');
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertStringContainsString('login', $response->getHeader('Location') ?? '');
     }
 }

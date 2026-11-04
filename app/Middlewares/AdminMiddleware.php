@@ -62,6 +62,13 @@ class AdminMiddleware
             return Response::html($html, 403);
         }
 
+        // Role-based Sliding Inactivity check for admin (12 hours / 43,200s)
+        if (!Session::checkAdminInactivityTimeout(Session::ADMIN_TIMEOUT)) {
+            $path = $request->getPath();
+            Session::set('intended_url', $path);
+            return Response::redirect(url('admin/login'));
+        }
+
         return null;
     }
 }

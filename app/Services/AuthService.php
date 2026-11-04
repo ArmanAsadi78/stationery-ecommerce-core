@@ -279,6 +279,8 @@ class AuthService
     {
         Session::remove('user');
         Session::remove('last_activity');
+        Session::remove('admin_last_activity');
+        Session::remove('user_last_activity');
         Session::regenerate(true);
         Session::regenerateCsrfToken();
     }

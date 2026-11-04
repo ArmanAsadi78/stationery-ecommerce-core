@@ -739,4 +739,37 @@ class AdminTest extends TestCase
             ':id' => $bannerId,
         ]);
     }
+
+    public function testAdminSessionInactivityTimeout(): void
+    {
+        $this->createAndLoginAdmin();
+        $this->assertTrue($this->auth->check());
+        $this->assertArrayHasKey('admin_last_activity', $_SESSION);
+
+        // Case 1: Active admin within 12 hours refreshes admin_last_activity
+        $recentTime = time() - 3600;
+        $_SESSION['admin_last_activity'] = $recentTime;
+        $active = Session::checkAdminInactivityTimeout();
+
+        $this->assertTrue($active);
+        $this->assertTrue(Session::has('user'));
+        $this->assertGreaterThanOrEqual($recentTime, (int) $_SESSION['admin_last_activity']);
+
+        // Case 2: Inactive admin beyond 12 hours (43200s) invalidates session
+        $_SESSION['admin_last_activity'] = time() - 43205;
+        $timeoutResult = Session::checkAdminInactivityTimeout();
+
+        $this->assertFalse($timeoutResult);
+        $this->assertFalse(Session::has('user'));
+        $this->assertTrue(Session::hasFlash('error'));
+        $flashMsg = Session::getFlash('error');
+        $this->assertStringContainsString('۱۲ ساعت', (string) $flashMsg);
+
+        // Case 3: AdminMiddleware redirects to /admin/login when session timed out
+        $this->createAndLoginAdmin();
+        $_SESSION['admin_last_activity'] = time() - 43205;
+        $response = $this->request('GET', '/admin/dashboard');
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertStringContainsString('admin/login', $response->getHeader('Location') ?? '');
+    }
 }

@@ -32,6 +32,13 @@ class AuthMiddleware
             return Response::redirect(url('login'));
         }
 
+        // Role-based Sliding Inactivity check for customer (3 days / 259,200s)
+        if (!Session::checkCustomerInactivityTimeout(Session::CUSTOMER_TIMEOUT)) {
+            $path = $request->getPath();
+            Session::set('intended_url', $path);
+            return Response::redirect(url('login'));
+        }
+
         return null;
     }
 }
