@@ -1298,25 +1298,33 @@ button, input, select {
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: #ffffff;
-  border: 1.5px solid #f1f5f9;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+  background: transparent;
+  border: none;
+  box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.25s ease;
   position: relative;
 }
 
-/* Inner Colorful Pastel Badge */
+/* Inner Colorful Pastel Badge (Fallback for emojis) */
 .story-inner-badge {
-  width: 76px;
-  height: 76px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.25s ease;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.story-inner-badge:has(.story-emoji) {
+  width: 76px;
+  height: 76px;
 }
 
 .story-inner-badge.badge-pink { background: #ffe4e6; }
@@ -1325,6 +1333,9 @@ button, input, select {
 .story-inner-badge.badge-butter { background: #fef9c3; }
 .story-inner-badge.badge-sky { background: #e0f2fe; }
 .story-inner-badge.badge-peach { background: #ffedd5; }
+.story-inner-badge:has(img) {
+  background: transparent !important;
+}
 
 .story-emoji {
   font-size: 32px;
@@ -1333,23 +1344,25 @@ button, input, select {
 
 .story-icon-img,
 .category-bubble img {
-  width: 72%;
-  height: 72%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  transition: transform 0.25s ease;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+  display: block;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.06));
 }
 
 .story-cat-item:hover .story-circle,
 .story-cat-item:hover .category-bubble,
 .category-bubble:hover {
   transform: translateY(-5px);
-  box-shadow: 0 14px 28px rgba(244, 63, 94, 0.18), 0 4px 12px rgba(251, 113, 133, 0.12);
-  border-color: #fecdd3;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .story-cat-item:hover .story-inner-badge {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
 .story-cat-item:hover .story-emoji {
@@ -1358,7 +1371,8 @@ button, input, select {
 
 .story-cat-item:hover .story-icon-img,
 .category-bubble:hover img {
-  transform: scale(1.12);
+  transform: scale(1.10);
+  filter: drop-shadow(0 12px 24px rgba(244, 63, 94, 0.22));
 }
 
 .story-label {
