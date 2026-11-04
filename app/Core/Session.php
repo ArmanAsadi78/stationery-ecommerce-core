@@ -202,6 +202,11 @@ class Session
     public static function setFlash(string $key, string $message): void
     {
         self::start();
+        /** @var array<string, list<string>> $allFlashes */
+        $allFlashes = self::get('_flashes', []);
+        $allFlashes[$key][] = $message;
+        self::set('_flashes', $allFlashes);
+
         /** @var array<string, string> $flashes */
         $flashes = self::get('_flash', []);
         $flashes[$key] = $message;
@@ -211,6 +216,21 @@ class Session
     public static function getFlash(string $key): ?string
     {
         self::start();
+        /** @var array<string, list<string>> $allFlashes */
+        $allFlashes = self::get('_flashes', []);
+        if (isset($allFlashes[$key]) && !empty($allFlashes[$key])) {
+            $list = $allFlashes[$key];
+            unset($allFlashes[$key]);
+            self::set('_flashes', $allFlashes);
+
+            /** @var array<string, string> $flashes */
+            $flashes = self::get('_flash', []);
+            unset($flashes[$key]);
+            self::set('_flash', $flashes);
+
+            return implode("\n", $list);
+        }
+
         /** @var array<string, string> $flashes */
         $flashes = self::get('_flash', []);
         if (isset($flashes[$key])) {
@@ -223,9 +243,50 @@ class Session
         return null;
     }
 
+    /**
+     * Get list of all flash messages for a key.
+     * 
+     * @return list<string>
+     */
+    public static function getFlashes(string $key): array
+    {
+        self::start();
+        /** @var array<string, list<string>> $allFlashes */
+        $allFlashes = self::get('_flashes', []);
+        if (isset($allFlashes[$key]) && !empty($allFlashes[$key])) {
+            $list = $allFlashes[$key];
+            unset($allFlashes[$key]);
+            self::set('_flashes', $allFlashes);
+
+            /** @var array<string, string> $flashes */
+            $flashes = self::get('_flash', []);
+            unset($flashes[$key]);
+            self::set('_flash', $flashes);
+
+            return $list;
+        }
+
+        /** @var array<string, string> $flashes */
+        $flashes = self::get('_flash', []);
+        if (isset($flashes[$key])) {
+            $msg = $flashes[$key];
+            unset($flashes[$key]);
+            self::set('_flash', $flashes);
+            return [$msg];
+        }
+
+        return [];
+    }
+
     public static function hasFlash(string $key): bool
     {
         self::start();
+        /** @var array<string, list<string>> $allFlashes */
+        $allFlashes = self::get('_flashes', []);
+        if (isset($allFlashes[$key]) && !empty($allFlashes[$key])) {
+            return true;
+        }
+
         /** @var array<string, string> $flashes */
         $flashes = self::get('_flash', []);
         return isset($flashes[$key]);

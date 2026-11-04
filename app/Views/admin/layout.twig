@@ -104,15 +104,50 @@
 
             <!-- Content Area -->
             <main class="admin-content-area">
+                {# Consolidated floating notifications / toasts #}
+                {% set success_msgs = [] %}
                 {% if flash_success %}
-                    <div class="auth-alert success" style="margin-bottom: 24px;">
-                        <span>✓ {{ flash_success }}</span>
-                    </div>
+                    {% if flash_success is iterable %}
+                        {% set success_msgs = flash_success %}
+                    {% else %}
+                        {% set success_msgs = flash_success|split("\n") %}
+                    {% endif %}
                 {% endif %}
 
+                {% set error_msgs = [] %}
                 {% if flash_error %}
-                    <div class="auth-alert error" style="margin-bottom: 24px;">
-                        <span>✕ {{ flash_error }}</span>
+                    {% if flash_error is iterable %}
+                        {% set error_msgs = flash_error %}
+                    {% else %}
+                        {% set error_msgs = flash_error|split("\n") %}
+                    {% endif %}
+                {% endif %}
+
+                {% if success_msgs is not empty or error_msgs is not empty %}
+                    <div class="admin-toast-container" id="adminToastContainer" aria-live="polite">
+                        {% for msg in success_msgs %}
+                            {% if msg|trim %}
+                                <div class="admin-toast admin-toast-success" role="alert">
+                                    <div class="admin-toast-icon">✓</div>
+                                    <div class="admin-toast-body">
+                                        <span class="admin-toast-text">{{ msg|trim }}</span>
+                                    </div>
+                                    <button type="button" class="admin-toast-close" onclick="this.closest('.admin-toast').remove()" aria-label="بستن">✕</button>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% for msg in error_msgs %}
+                            {% if msg|trim %}
+                                <div class="admin-toast admin-toast-error" role="alert">
+                                    <div class="admin-toast-icon">✕</div>
+                                    <div class="admin-toast-body">
+                                        <span class="admin-toast-text">{{ msg|trim }}</span>
+                                    </div>
+                                    <button type="button" class="admin-toast-close" onclick="this.closest('.admin-toast').remove()" aria-label="بستن">✕</button>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 {% endif %}
 
@@ -124,6 +159,19 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const contentArea = document.querySelector('.admin-content-area');
+
+        function initAdminToasts() {
+            document.querySelectorAll('.admin-toast:not([data-initialized])').forEach(function(toast, index) {
+                toast.setAttribute('data-initialized', 'true');
+                setTimeout(function() {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-12px) scale(0.96)';
+                    setTimeout(function() { toast.remove(); }, 350);
+                }, 4500 + (index * 400));
+            });
+        }
+        initAdminToasts();
+
         if (!contentArea) return;
 
         async function loadAdminPage(url, push = true) {
@@ -174,6 +222,7 @@
                         history.pushState({ pjax: true, url: url }, '', url);
                     }
 
+                    initAdminToasts();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     window.location.href = url;

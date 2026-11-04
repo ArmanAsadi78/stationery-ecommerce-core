@@ -820,11 +820,12 @@ class AdminController
             ':id' => $productId,
         ]);
 
-        // Invalidate Torob API & Sitemap Cache
+        // Invalidate Torob API, Sitemap & Twig Cache
         CacheService::flushTorob();
         CacheService::flushSitemap();
+        CacheService::flushTwig();
 
-        Session::setFlash('success', "محصول «{$title}» با موفقیت ویرایش شد و کش ترب و نقشه سایت بروزرسانی گردید.");
+        Session::setFlash('success', 'تغییرات محصول با موفقیت ذخیره شد و کش سیستم بروزرسانی گردید.');
         return Response::redirect(url('admin/products'));
     }
 

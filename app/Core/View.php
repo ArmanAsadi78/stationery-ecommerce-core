@@ -125,6 +125,10 @@ class View
             return Session::getFlash($type);
         }));
 
+        $twig->addFunction(new TwigFunction('flashes', function (string $type): array {
+            return Session::getFlashes($type);
+        }));
+
         $twig->addFunction(new TwigFunction('has_flash', function (string $type): bool {
             return Session::hasFlash($type);
         }));

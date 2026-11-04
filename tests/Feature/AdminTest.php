@@ -346,6 +346,8 @@ class AdminTest extends TestCase
         ]);
         $this->assertSame(302, $resUpdate->getStatusCode());
         $this->assertFalse(CacheService::torob()->has('torob_test_key_2'));
+        $this->assertTrue(Session::hasFlash('success'));
+        $this->assertSame('تغییرات محصول با موفقیت ذخیره شد و کش سیستم بروزرسانی گردید.', Session::getFlash('success'));
 
         $updatedProduct = $this->db->fetch("SELECT `price`, `stock_quantity` FROM `products` WHERE `id` = :id", [':id' => $prodId]);
         $this->assertSame('135000', (string) $updatedProduct['price']);
@@ -771,5 +773,24 @@ class AdminTest extends TestCase
         $response = $this->request('GET', '/admin/dashboard');
         $this->assertSame(302, $response->getStatusCode());
         $this->assertStringContainsString('admin/login', $response->getHeader('Location') ?? '');
+    }
+
+    public function testMultipleFlashesRenderAsSeparateToastItems(): void
+    {
+        $this->createAndLoginAdmin();
+        Session::setFlash('success', 'اعلان اول با موفقیت ثبت شد.');
+        Session::setFlash('success', 'اعلان دوم نیز با موفقیت ثبت شد.');
+        Session::setFlash('error', 'یک خطای نمونه برای تست.');
+
+        $res = $this->request('GET', '/admin/dashboard');
+        $this->assertSame(200, $res->getStatusCode());
+        $html = $res->getContent();
+
+        $this->assertStringContainsString('admin-toast-container', $html);
+        $this->assertStringContainsString('admin-toast-success', $html);
+        $this->assertStringContainsString('admin-toast-error', $html);
+        $this->assertStringContainsString('اعلان اول با موفقیت ثبت شد.', $html);
+        $this->assertStringContainsString('اعلان دوم نیز با موفقیت ثبت شد.', $html);
+        $this->assertStringContainsString('یک خطای نمونه برای تست.', $html);
     }
 }
