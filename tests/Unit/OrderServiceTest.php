@@ -51,7 +51,7 @@ class OrderServiceTest extends TestCase
             (`category_id`, `title`, `slug`, `sku`, `price`, `stock_quantity`, `is_active`)
             VALUES 
             (:cat_id, 'محصول تستی جهت بررسی قفل انبار', 'test-pessimistic-locking-product', 'TEST-SKU-LOCK-01', 120000, 15, 1)
-            ON DUPLICATE KEY UPDATE `stock_quantity` = 15, `is_active` = 1
+            ON DUPLICATE KEY UPDATE `title` = VALUES(`title`), `price` = 120000, `stock_quantity` = 15, `is_active` = 1
         ", [':cat_id' => $catId]);
 
         $prod = $this->db->fetch(

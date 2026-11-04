@@ -1293,9 +1293,10 @@ button, input, select {
 }
 
 /* Pure White Outer Circle with Soft Neumorphic Elevation */
-.story-circle {
-  width: 84px;
-  height: 84px;
+.story-circle,
+.category-bubble {
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   background: #ffffff;
   border: 1.5px solid #f1f5f9;
@@ -1303,19 +1304,19 @@ button, input, select {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-bounce);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   position: relative;
 }
 
 /* Inner Colorful Pastel Badge */
 .story-inner-badge {
-  width: 54px;
-  height: 54px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-bounce);
+  transition: transform 0.25s ease;
 }
 
 .story-inner-badge.badge-pink { background: #ffe4e6; }
@@ -1326,42 +1327,46 @@ button, input, select {
 .story-inner-badge.badge-peach { background: #ffedd5; }
 
 .story-emoji {
-  font-size: 28px;
-  transition: var(--transition-bounce);
+  font-size: 32px;
+  transition: transform 0.25s ease;
 }
 
-.story-icon-img {
-  width: 36px;
-  height: 36px;
+.story-icon-img,
+.category-bubble img {
+  width: 72%;
+  height: 72%;
   object-fit: contain;
-  transition: var(--transition-bounce);
+  transition: transform 0.25s ease;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
 }
 
-.story-cat-item:hover .story-circle {
+.story-cat-item:hover .story-circle,
+.story-cat-item:hover .category-bubble,
+.category-bubble:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-  border-color: #cbd5e1;
+  box-shadow: 0 14px 28px rgba(244, 63, 94, 0.18), 0 4px 12px rgba(251, 113, 133, 0.12);
+  border-color: #fecdd3;
 }
 
 .story-cat-item:hover .story-inner-badge {
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 
 .story-cat-item:hover .story-emoji {
-  transform: scale(1.15) rotate(6deg);
+  transform: scale(1.12);
 }
 
-.story-cat-item:hover .story-icon-img {
-  transform: scale(1.15) rotate(4deg);
+.story-cat-item:hover .story-icon-img,
+.category-bubble:hover img {
+  transform: scale(1.12);
 }
 
 .story-label {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   color: #1e293b;
   text-align: center;
-  max-width: 95px;
+  max-width: 104px;
   line-height: 1.4;
   transition: var(--transition-smooth);
 }
@@ -6669,11 +6674,11 @@ button, input, select {
    ===================================================================== */
 .admin-toast-container {
   position: fixed;
-  top: 24px;
+  bottom: 24px;
   left: 24px;
   z-index: 99999;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: 10px;
   max-width: 440px;
   width: calc(100% - 48px);
@@ -6697,7 +6702,7 @@ button, input, select {
 @keyframes toastSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-16px) scale(0.96);
+    transform: translateY(16px) scale(0.96);
   }
   to {
     opacity: 1;

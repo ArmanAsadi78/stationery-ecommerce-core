@@ -13,12 +13,6 @@
         <a href="{{ url('admin/products') }}" class="btn-clear-search">انصراف و بازگشت</a>
     </div>
 
-    {% if flash_error %}
-        <div class="auth-alert error mb-4">
-            <span>✕ {{ flash_error }}</span>
-        </div>
-    {% endif %}
-
     <form action="{{ is_edit ? url('admin/products/' ~ product.id) : url('admin/products') }}" 
           method="POST" 
           enctype="multipart/form-data" 

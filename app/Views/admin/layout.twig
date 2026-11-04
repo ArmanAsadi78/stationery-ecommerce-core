@@ -132,7 +132,7 @@
                                     <div class="admin-toast-body">
                                         <span class="admin-toast-text">{{ msg|trim }}</span>
                                     </div>
-                                    <button type="button" class="admin-toast-close" onclick="this.closest('.admin-toast').remove()" aria-label="بستن">✕</button>
+                                    <button type="button" class="admin-toast-close" onclick="dismissAdminToast(this)" aria-label="بستن">✕</button>
                                 </div>
                             {% endif %}
                         {% endfor %}
@@ -144,7 +144,7 @@
                                     <div class="admin-toast-body">
                                         <span class="admin-toast-text">{{ msg|trim }}</span>
                                     </div>
-                                    <button type="button" class="admin-toast-close" onclick="this.closest('.admin-toast').remove()" aria-label="بستن">✕</button>
+                                    <button type="button" class="admin-toast-close" onclick="dismissAdminToast(this)" aria-label="بستن">✕</button>
                                 </div>
                             {% endif %}
                         {% endfor %}
@@ -157,6 +157,14 @@
     </div>
 
     <script>
+    window.dismissAdminToast = function(btn) {
+        const toast = btn.closest('.admin-toast');
+        if (!toast) return;
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(12px) scale(0.96)';
+        setTimeout(function() { toast.remove(); }, 320);
+    };
+
     document.addEventListener('DOMContentLoaded', function() {
         const contentArea = document.querySelector('.admin-content-area');
 
@@ -165,9 +173,9 @@
                 toast.setAttribute('data-initialized', 'true');
                 setTimeout(function() {
                     toast.style.opacity = '0';
-                    toast.style.transform = 'translateY(-12px) scale(0.96)';
-                    setTimeout(function() { toast.remove(); }, 350);
-                }, 4500 + (index * 400));
+                    toast.style.transform = 'translateY(12px) scale(0.96)';
+                    setTimeout(function() { toast.remove(); }, 320);
+                }, 4000 + (index * 400));
             });
         }
         initAdminToasts();

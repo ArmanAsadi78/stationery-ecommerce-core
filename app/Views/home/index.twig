@@ -61,10 +61,10 @@
                 {% set badgeClasses = ['badge-pink', 'badge-lavender', 'badge-mint', 'badge-butter', 'badge-sky', 'badge-peach'] %}
                 {% set badgeClass = badgeClasses[loop.index0 % 6] %}
                 <a href="{{ url('products?category=' ~ cat.slug) }}" class="story-cat-item" data-aos="zoom-in" data-aos-delay="{{ loop.index * 50 }}">
-                    <div class="story-circle">
+                    <div class="story-circle category-bubble">
                         <div class="story-inner-badge {{ badgeClass }}">
                             {% if cat.icon_image %}
-                                <img src="{{ asset(cat.icon_image) }}" alt="{{ cat.title }}" class="story-icon-img" width="36" height="36" loading="lazy">
+                                <img src="{{ asset(cat.icon_image) }}" alt="{{ cat.title }}" class="story-icon-img" width="64" height="64" loading="lazy">
                             {% else %}
                                 <span class="story-emoji">📁</span>
                             {% endif %}
@@ -74,7 +74,7 @@
                 </a>
             {% else %}
                 <a href="{{ url('products') }}" class="story-cat-item">
-                    <div class="story-circle">
+                    <div class="story-circle category-bubble">
                         <div class="story-inner-badge badge-pink">
                             <span class="story-emoji">✏️</span>
                         </div>

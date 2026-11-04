@@ -67,7 +67,7 @@ try {
     ");
 
     $categories = [
-        ['parent' => null, 'title' => 'نوشت‌افزار', 'slug' => 'writing-instruments', 'desc' => 'انواع خودکار، روان‌نویس، مداد و اتودهای مهندسی', 'sort' => 1],
+        ['parent' => null, 'title' => 'جامدادی و کیف', 'slug' => 'writing-instruments', 'desc' => 'انواع جامدادی رومیزی، فانتزی و کیف‌های لوازم‌تحریر', 'sort' => 1],
         ['parent' => null, 'title' => 'کاغذ و دفتر', 'slug' => 'notebooks-and-paper', 'desc' => 'دفترهای یادداشت، مشق، کاغذ A4 و پلنر', 'sort' => 2],
         ['parent' => null, 'title' => 'لوازم اداری و بایگانی', 'slug' => 'office-supplies', 'desc' => 'زونکن، کلربوک، پوشه و چسب و قیچی', 'sort' => 3],
         ['parent' => null, 'title' => 'طراحی و نقاشی', 'slug' => 'art-and-drawing', 'desc' => 'مدادرنگی‌های تخصصی، آبرنگ و ماژیک راندو', 'sort' => 4],
