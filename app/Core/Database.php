@@ -29,6 +29,10 @@ class Database
             PDO::ATTR_EMULATE_PREPARES => false,
         ]);
 
+        if ($password === '[رمز_شما_در_پنل]') {
+            throw new RuntimeException("لطفاً رمز عبور دیتابیس هاست (vPanel Password) را در فایل config/database.php یا متغیر DB_PROD_PASSWORD تنظیم نمایید.");
+        }
+
         $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset={$charset}";
 
         try {
