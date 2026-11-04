@@ -99,8 +99,8 @@
                         <p class="promo-desc">{{ rBanner.description }}</p>
                         <a href="{{ url(rBanner.target_url) }}" class="promo-btn">{{ rBanner.button_text }}</a>
                     </div>
-                    <div class="promo-art-box">
-                        <img src="{{ asset(rBanner.image_path) }}" alt="{{ rBanner.title }}" class="promo-composite-img" loading="lazy" width="360" height="320">
+                    <div class="promo-banner-media promo-art-box">
+                        <img src="{{ asset(rBanner.image_path) }}" alt="{{ rBanner.title }}" class="promo-banner-img promo-composite-img" loading="lazy" width="500" height="350">
                     </div>
                 </div>
             {% endif %}
@@ -114,8 +114,8 @@
                         <p class="promo-desc">{{ lBanner.description }}</p>
                         <a href="{{ url(lBanner.target_url) }}" class="promo-btn">{{ lBanner.button_text }}</a>
                     </div>
-                    <div class="promo-art-box">
-                        <img src="{{ asset(lBanner.image_path) }}" alt="{{ lBanner.title }}" class="promo-composite-img" loading="lazy" width="360" height="320">
+                    <div class="promo-banner-media promo-art-box">
+                        <img src="{{ asset(lBanner.image_path) }}" alt="{{ lBanner.title }}" class="promo-banner-img promo-composite-img" loading="lazy" width="500" height="350">
                     </div>
                 </div>
             {% endif %}
