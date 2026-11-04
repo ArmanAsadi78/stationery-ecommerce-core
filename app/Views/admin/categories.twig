@@ -1,0 +1,168 @@
+{% extends is_pjax ? 'layouts/blank.twig' : 'admin/layout.twig' %}
+
+{% block admin_content %}
+<div class="admin-categories-view">
+    <div class="admin-page-title-row" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2>مدیریت دسته‌بندی‌ها و آیکون‌های ویترین</h2>
+            <p>دسته‌بندی‌های کاتالوگ فروشگاه را مشاهده، مرتب‌سازی و آیکون‌های گرافیکی سکشن دوم صفحه اصلی را آپلود و مدیریت کنید.</p>
+        </div>
+    </div>
+
+    <!-- Categories List Card -->
+    <div class="admin-panel-card">
+        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+            <span>📂</span>
+            <span>لیست دسته‌بندی‌های کاتالوگ ({{ categories|length|fa_num }} دسته)</span>
+        </h3>
+
+        {% if categories is empty %}
+            <div style="text-align: center; padding: 48px 20px; color: #94a3b8;">
+                <p style="font-size: 15px;">هیچ دسته‌بندی‌ای یافت نشد.</p>
+            </div>
+        {% else %}
+            <div class="admin-table-responsive">
+                <table class="admin-table admin-categories-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">ردیف</th>
+                            <th style="width: 90px; text-align: center;">آیکون</th>
+                            <th>عنوان دسته‌بندی</th>
+                            <th>نامک (Slug)</th>
+                            <th style="width: 90px;">ترتیب نمایش</th>
+                            <th style="width: 90px;">وضعیت</th>
+                            <th style="width: 140px;">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in categories %}
+                            <tr>
+                                <td>{{ loop.index|fa_num }}</td>
+                                <td style="text-align: center;">
+                                    <div style="width: 48px; height: 48px; border-radius: 50%; background: #ffffff; border: 1.5px solid #e2e8f0; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); overflow: hidden;">
+                                        {% if cat.icon_image %}
+                                            <img src="{{ asset(cat.icon_image) }}" alt="{{ cat.title }}" style="width: 32px; height: 32px; object-fit: contain;">
+                                        {% else %}
+                                            <span style="font-size: 20px;">📁</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong style="display: block; font-size: 14px; color: #1e293b;">{{ cat.title }}</strong>
+                                    {% if cat.parent_id %}
+                                        <small style="color: #64748b; font-size: 11px;">زیردسته سطح ۲</small>
+                                    {% else %}
+                                        <small style="color: #0284c7; font-size: 11px; font-weight: 600;">دسته والد اصلی</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url('products?category=' ~ cat.slug) }}" target="_blank" class="dir-ltr text-rose font-mono" style="font-size: 12px; text-decoration: underline;" title="مشاهده در فروشگاه">
+                                        {{ cat.slug }} ↗
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="font-bold">{{ cat.sort_order|fa_num }}</span>
+                                </td>
+                                <td>
+                                    {% if cat.is_active == 1 %}
+                                        <span class="admin-badge badge-green">فعال</span>
+                                    {% else %}
+                                        <span class="admin-badge badge-red">غیرفعال</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <!-- Toggle Status Form -->
+                                        <form action="{{ url('admin/categories/' ~ cat.id ~ '/toggle') }}" method="POST" style="display: inline;">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn-admin-sm" title="تغییر وضعیت فعال/غیرفعال" style="cursor: pointer;">
+                                                {% if cat.is_active == 1 %}
+                                                    ⏸️
+                                                {% else %}
+                                                    ▶️
+                                                {% endif %}
+                                            </button>
+                                        </form>
+
+                                        <!-- Edit Modal Trigger -->
+                                        <button type="button" class="btn-admin-sm" onclick="openCategoryEditModal({{ cat.id }})" style="cursor: pointer;" title="ویرایش و تغییر آیکون">
+                                            ✏️ ویرایش
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden Edit Dialog/Modal for this category -->
+                                    <dialog id="categoryEditModal-{{ cat.id }}" style="padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.15); max-width: 520px; width: 90%; background: #ffffff; margin: auto;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                            <h4 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 0;">ویرایش دسته‌بندی «{{ cat.title }}»</h4>
+                                            <button type="button" onclick="closeCategoryEditModal({{ cat.id }})" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #64748b;">✕</button>
+                                        </div>
+
+                                        <form action="{{ url('admin/categories/' ~ cat.id) }}" method="POST" enctype="multipart/form-data">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                                            <div style="display: grid; gap: 14px; margin-bottom: 20px;">
+                                                <div>
+                                                    <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: #475569;">عنوان دسته‌بندی *</label>
+                                                    <input type="text" name="title" value="{{ cat.title }}" required class="admin-input-search" style="width: 100%;">
+                                                </div>
+
+                                                <div style="display: flex; align-items: center; gap: 14px; background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                                    <div style="width: 50px; height: 50px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; flex-shrink: 0;">
+                                                        {% if cat.icon_image %}
+                                                            <img src="{{ asset(cat.icon_image) }}" alt="{{ cat.title }}" style="width: 34px; height: 34px; object-fit: contain;">
+                                                        {% else %}
+                                                            <span style="font-size: 22px;">📁</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div style="flex-grow: 1;">
+                                                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: #475569;">آپلود آیکون جدید (PNG, WebP, SVG)</label>
+                                                        <input type="file" name="icon_image" accept="image/webp,image/png,image/jpeg,image/svg+xml" class="admin-input-search" style="width: 100%; padding: 4px 8px; font-size: 12px;">
+                                                        <small style="color: #64748b; font-size: 11px;">ابعاد بهینه ۱۶۰x۱۶۰ پیکسل با پس‌زمینه شفاف یا گرد</small>
+                                                    </div>
+                                                </div>
+
+                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
+                                                    <div>
+                                                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: #475569;">ترتیب نمایش</label>
+                                                        <input type="number" name="sort_order" value="{{ cat.sort_order }}" min="0" class="admin-input-search dir-ltr" style="width: 100%;">
+                                                    </div>
+                                                    <div style="padding-top: 18px;">
+                                                        <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                                                            <input type="checkbox" name="is_active" value="1" {% if cat.is_active == 1 %}checked{% endif %} style="width: 18px; height: 18px;">
+                                                            <span>فعال باشد</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                                                <button type="button" onclick="closeCategoryEditModal({{ cat.id }})" class="btn-admin-sm" style="padding: 8px 16px;">انصراف</button>
+                                                <button type="submit" class="btn-admin-action" style="padding: 8px 20px;">ذخیره تغییرات</button>
+                                            </div>
+                                        </form>
+                                    </dialog>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function openCategoryEditModal(id) {
+    const modal = document.getElementById('categoryEditModal-' + id);
+    if (modal && typeof modal.showModal === 'function') {
+        modal.showModal();
+    }
+}
+function closeCategoryEditModal(id) {
+    const modal = document.getElementById('categoryEditModal-' + id);
+    if (modal && typeof modal.close === 'function') {
+        modal.close();
+    }
+}
+</script>
+{% endblock %}

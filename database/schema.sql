@@ -13,6 +13,7 @@ CREATE DATABASE IF NOT EXISTS `stationery_shop`
 USE `stationery_shop`;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `promo_banners`;
 DROP TABLE IF EXISTS `home_sliders`;
 DROP TABLE IF EXISTS `sliders`;
 DROP TABLE IF EXISTS `site_settings`;
@@ -63,6 +64,7 @@ CREATE TABLE `categories` (
     `slug` VARCHAR(191) NOT NULL UNIQUE,
     `description` TEXT NULL,
     `image_url` VARCHAR(255) NULL,
+    `icon_image` VARCHAR(255) NULL,
     `sort_order` INT UNSIGNED NOT NULL DEFAULT 0,
     `is_active` TINYINT(1) NOT NULL DEFAULT 1,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -439,3 +441,26 @@ INSERT INTO `sliders` (`title`, `subtitle`, `image_url`, `link`, `sort_order`, `
 ('جشنواره بهاره نوشت‌افزار فانتزی و ژاپنی', 'خاص‌ترین روان‌نویس‌های زبرا و ساکورا، اتودهای مهندسی و ماژیک‌های هایلایتر پاستلی با ضمانت اصالت', 'images/sliders/slide-1.webp', '/products?category=writing-instruments', 1, 1),
 ('کالکشن تخصصی بولت ژورنال و پلنرهای انگیزشی', 'دفاتر برنامه‌ریزی روزانه، استیکی نوت و کلاسورهای مینیمال با کاغذ کره‌ای ضد لک', 'images/sliders/slide-2.webp', '/products?category=notebooks-and-paper', 2, 1),
 ('ابزار حرفه‌ای طراحی، معماری و تصویرسازی', 'راپیدهای مهندسی روترینگ، مدادرنگی‌های تخصصی پلی‌کروم و آبرنگ‌های هنری اصیل', 'images/sliders/slide-3.webp', '/products?category=art-and-drawing', 3, 1);
+
+-- ---------------------------------------------------------------------
+-- 19. PROMO BANNERS TABLE (Middle Promotional Split Banners)
+-- ---------------------------------------------------------------------
+CREATE TABLE `promo_banners` (
+    `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `badge_text` VARCHAR(150) NOT NULL,
+    `title` VARCHAR(255) NOT NULL,
+    `description` TEXT NOT NULL,
+    `button_text` VARCHAR(100) NOT NULL,
+    `target_url` VARCHAR(255) NOT NULL,
+    `image_path` VARCHAR(255) NOT NULL,
+    `position` ENUM('banner_right', 'banner_left') NOT NULL UNIQUE,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_promo_banners_active` (`is_active`, `position`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `promo_banners` (`badge_text`, `title`, `description`, `button_text`, `target_url`, `image_path`, `position`, `is_active`) VALUES
+('🎀 کالکشن کیوت بولت ژورنال', 'پک‌های هدیه و دفترهای نقطه‌ای', 'شامل دفترهای جلدسخت، استیکرهای ژورنال و چسب‌های واشی با تخفیف هیجان‌انگیز', 'مشاهده کالکشن ژورنال ←', '/products?category=notebooks-and-paper', 'images/banners/promo-journal.webp', 'banner_right', 1),
+('📐 نوشت‌افزار تکنیکال و دقیق', 'روترینگ و فابرکاستل آلمان', 'ضمانت اصالت فیزیکی تمامی اتودها، نوک‌ها و مدادرنگی‌های تخصصی با بسته‌بندی هاردباکس', 'خرید محصولات مهندسی ←', '/products?category=writing-instruments', 'images/banners/promo-technical.webp', 'banner_left', 1);
+

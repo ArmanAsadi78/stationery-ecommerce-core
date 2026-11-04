@@ -39,6 +39,10 @@
                     <span class="admin-nav-icon">🏷️</span>
                     <span>مدیریت محصولات</span>
                 </a>
+                <a href="{{ url('admin/categories') }}" class="admin-nav-item {% if active_menu == 'categories' %}active{% endif %}">
+                    <span class="admin-nav-icon">📂</span>
+                    <span>مدیریت دسته‌بندی‌ها</span>
+                </a>
                 <a href="{{ url('admin/menus') }}" class="admin-nav-item {% if active_menu == 'menus' %}active{% endif %}">
                     <span class="admin-nav-icon">🧭</span>
                     <span>مدیریت منوها</span>
@@ -46,6 +50,10 @@
                 <a href="{{ url('admin/sliders') }}" class="admin-nav-item {% if active_menu == 'sliders' %}active{% endif %}">
                     <span class="admin-nav-icon">🖼️</span>
                     <span>مدیریت اسلایدرها</span>
+                </a>
+                <a href="{{ url('admin/banners') }}" class="admin-nav-item {% if active_menu == 'banners' %}active{% endif %}">
+                    <span class="admin-nav-icon">🎨</span>
+                    <span>بنرهای تبلیغاتی میانی</span>
                 </a>
                 <a href="{{ url('admin/settings') }}" class="admin-nav-item {% if active_menu == 'settings' %}active{% endif %}">
                     <span class="admin-nav-icon">⚙️</span>

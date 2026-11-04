@@ -394,4 +394,41 @@ class AuthTest extends TestCase
         $this->assertTrue($profJson['success']);
         $this->assertSame('profile', $profJson['active_tab']);
     }
+
+    public function testSessionInactivitySlidingTimeout(): void
+    {
+        $email = 'timeout_test_' . time() . mt_rand(100, 999) . '@example.com';
+        $this->createdUserEmails[] = $email;
+
+        $res = $this->auth->register([
+            'full_name' => 'کاربر تست سشن',
+            'email' => $email,
+            'phone' => '0912999' . mt_rand(1000, 9999),
+            'password' => 'ValidPass123!',
+            'password_confirmation' => 'ValidPass123!',
+        ]);
+        $this->assertTrue($res['success']);
+
+        // Authenticate user
+        $this->auth->login($email, 'ValidPass123!');
+        $this->assertTrue(Session::has('user'));
+        $this->assertArrayHasKey('last_activity', $_SESSION);
+
+        // Case 1: Active session within 2 hours refreshes last_activity
+        $recentTime = time() - 300;
+        $_SESSION['last_activity'] = $recentTime;
+        Session::checkInactivityTimeout(7200);
+
+        $this->assertTrue(Session::has('user'));
+        $this->assertGreaterThanOrEqual($recentTime, (int) $_SESSION['last_activity']);
+
+        // Case 2: Inactive session beyond 2 hours invalidates user session
+        $_SESSION['last_activity'] = time() - 7205;
+        Session::checkInactivityTimeout(7200);
+
+        $this->assertFalse(Session::has('user'));
+        $this->assertTrue(Session::hasFlash('error'));
+        $flashMsg = Session::getFlash('error');
+        $this->assertStringContainsString('۲ ساعت', (string) $flashMsg);
+    }
 }

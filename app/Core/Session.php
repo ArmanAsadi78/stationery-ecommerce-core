@@ -15,13 +15,21 @@ class Session
     {
         if (self::$started || session_status() === PHP_SESSION_ACTIVE) {
             self::$started = true;
+            self::checkInactivityTimeout();
             return;
         }
 
-        $lifetime = (int) env('SESSION_LIFETIME', 7200);
-        $secure = (bool) env('SESSION_SECURE_COOKIE', false);
-        $samesite = (string) env('SESSION_COOKIE_SAMESITE', 'Strict');
+        $savePath = storage_path('sessions');
+        if (!is_dir($savePath)) {
+            mkdir($savePath, 0777, true);
+        }
+        session_save_path($savePath);
 
+        $lifetime = (int) env('SESSION_LIFETIME', 7200);
+        $secure = (bool) env('SESSION_SECURE_COOKIE', (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'));
+        $samesite = (string) env('SESSION_COOKIE_SAMESITE', 'Lax');
+
+        ini_set('session.gc_maxlifetime', (string) $lifetime);
         ini_set('session.use_only_cookies', '1');
         ini_set('session.use_strict_mode', '1');
 
@@ -41,12 +49,37 @@ class Session
         if (!isset($_SESSION['_csrf_token'])) {
             self::regenerateCsrfToken();
         }
+
+        // Check sliding inactivity timeout
+        self::checkInactivityTimeout($lifetime);
+    }
+
+    /**
+     * Handle sliding inactivity timeout for authenticated sessions.
+     */
+    public static function checkInactivityTimeout(int $timeout = 7200): void
+    {
+        if (isset($_SESSION['user'])) {
+            if (isset($_SESSION['last_activity']) && is_numeric($_SESSION['last_activity'])) {
+                $elapsed = time() - (int) $_SESSION['last_activity'];
+                if ($elapsed > $timeout) {
+                    unset($_SESSION['user']);
+                    unset($_SESSION['last_activity']);
+                    self::setFlash('error', 'نشست کاربری شما به دلیل عدم فعالیت بیش از ۲ ساعت منقضی شد. لطفاً مجدداً وارد شوید.');
+                    return;
+                }
+            }
+            $_SESSION['last_activity'] = time();
+        }
     }
 
     public static function set(string $key, mixed $value): void
     {
         self::start();
         $_SESSION[$key] = $value;
+        if ($key === 'user' && !empty($value)) {
+            $_SESSION['last_activity'] = time();
+        }
     }
 
     public static function get(string $key, mixed $default = null): mixed

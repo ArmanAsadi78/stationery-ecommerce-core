@@ -1539,4 +1539,394 @@ class AdminController
         Session::setFlash('success', 'تنظیمات عمومی سایت با موفقیت به‌روزرسانی شد.');
         return Response::redirect(url('admin/settings'));
     }
+
+    /**
+     * Categories Management.
+     * Route: GET /admin/categories
+     * 
+     * @param array<string, string> $vars
+     */
+    public function categories(Request $request, array $vars = []): Response
+    {
+        $adminUser = $this->auth->user();
+
+        /** @var list<array<string, mixed>> $categories */
+        $categories = $this->db->fetchAll("
+            SELECT `id`, `parent_id`, `title`, `slug`, `icon_image`, `image_url`, `sort_order`, `is_active`, `created_at`
+            FROM `categories`
+            ORDER BY `sort_order` ASC, `id` ASC
+        ");
+
+        $pageTitle = 'مدیریت دسته‌بندی‌ها و آیکون‌ها | پنل مدیریت';
+        $isPjax = $request->isPjax();
+
+        $html = View::render('admin/categories', [
+            'page_title' => $pageTitle,
+            'admin_user' => $adminUser,
+            'active_menu' => 'categories',
+            'is_pjax' => $isPjax,
+            'categories' => $categories,
+            'flash_success' => Session::getFlash('success'),
+            'flash_error' => Session::getFlash('error'),
+        ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'categories',
+            ]);
+        }
+
+        return Response::html($html);
+    }
+
+    /**
+     * Update Category (title, sort_order, is_active, icon_image).
+     * Route: POST /admin/categories/{id}
+     * 
+     * @param array<string, string> $vars
+     */
+    public function updateCategory(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            Session::setFlash('error', 'اعتبار نشست کاربری منقضی شده است. لطفاً مجدداً تلاش کنید.');
+            return Response::redirect(url('admin/categories'));
+        }
+
+        $id = (int) ($vars['id'] ?? 0);
+        if ($id <= 0) {
+            Session::setFlash('error', 'شناسه دسته‌بندی نامعتبر است.');
+            return Response::redirect(url('admin/categories'));
+        }
+
+        $title = trim((string) $request->input('title', ''));
+        if ($title === '') {
+            Session::setFlash('error', 'عنوان دسته‌بندی نمی‌تواند خالی باشد.');
+            return Response::redirect(url('admin/categories'));
+        }
+
+        $sortOrder = (int) $request->input('sort_order', 0);
+        $isActive = $request->input('is_active') ? 1 : 0;
+
+        $newIcon = $this->handleCategoryIconUpload($request);
+
+        if ($newIcon !== null) {
+            $this->db->execute("
+                UPDATE `categories`
+                SET `title` = :title,
+                    `sort_order` = :sort_order,
+                    `is_active` = :is_active,
+                    `icon_image` = :icon_image
+                WHERE `id` = :id
+            ", [
+                ':title' => $title,
+                ':sort_order' => $sortOrder,
+                ':is_active' => $isActive,
+                ':icon_image' => $newIcon,
+                ':id' => $id,
+            ]);
+        } else {
+            $this->db->execute("
+                UPDATE `categories`
+                SET `title` = :title,
+                    `sort_order` = :sort_order,
+                    `is_active` = :is_active
+                WHERE `id` = :id
+            ", [
+                ':title' => $title,
+                ':sort_order' => $sortOrder,
+                ':is_active' => $isActive,
+                ':id' => $id,
+            ]);
+        }
+
+        CacheService::flushTwig();
+
+        if ($request->isAjax()) {
+            return Response::json(['success' => true, 'message' => 'دسته‌بندی با موفقیت به‌روزرسانی شد.']);
+        }
+
+        Session::setFlash('success', 'دسته‌بندی با موفقیت به‌روزرسانی شد.');
+        return Response::redirect(url('admin/categories'));
+    }
+
+    /**
+     * Toggle Category active status.
+     * Route: POST /admin/categories/{id}/toggle
+     * 
+     * @param array<string, string> $vars
+     */
+    public function toggleCategory(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            Session::setFlash('error', 'توکن امنیتی معتبر نیست.');
+            return Response::redirect(url('admin/categories'));
+        }
+
+        $id = (int) ($vars['id'] ?? 0);
+        $this->db->execute("
+            UPDATE `categories` 
+            SET `is_active` = 1 - `is_active` 
+            WHERE `id` = :id
+        ", [':id' => $id]);
+
+        CacheService::flushTwig();
+
+        if ($request->isAjax()) {
+            return Response::json(['success' => true, 'message' => 'وضعیت دسته‌بندی با موفقیت تغییر یافت.']);
+        }
+
+        Session::setFlash('success', 'وضعیت دسته‌بندی با موفقیت تغییر یافت.');
+        return Response::redirect(url('admin/categories'));
+    }
+
+    /**
+     * Securely handle category icon uploads to public/assets/images/categories/
+     */
+    private function handleCategoryIconUpload(Request $request): ?string
+    {
+        /** @var array<string, mixed>|null $file */
+        $file = $request->getFile('icon_image') ?? $request->getFile('icon');
+        if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        $size = (int) ($file['size'] ?? 0);
+
+        if (!is_uploaded_file($tmpName) || $size <= 0 || $size > 5 * 1024 * 1024) {
+            return null;
+        }
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        if (!$finfo) {
+            return null;
+        }
+        $mime = finfo_file($finfo, $tmpName);
+        finfo_close($finfo);
+
+        $allowedMimes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            'image/svg+xml' => 'svg',
+        ];
+
+        if (!isset($allowedMimes[$mime])) {
+            return null;
+        }
+
+        $ext = $allowedMimes[$mime];
+        $targetDir = public_path('assets' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR . 'categories');
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $fileName = 'cat-icon-' . time() . '-' . mt_rand(100, 999) . '.' . $ext;
+        $destination = $targetDir . DIRECTORY_SEPARATOR . $fileName;
+
+        if (move_uploaded_file($tmpName, $destination)) {
+            return 'images/categories/' . $fileName;
+        }
+
+        return null;
+    }
+
+    /**
+     * Promotional Split Banners Management.
+     * Route: GET /admin/banners
+     * 
+     * @param array<string, string> $vars
+     */
+    public function promoBanners(Request $request, array $vars = []): Response
+    {
+        $adminUser = $this->auth->user();
+
+        /** @var list<array<string, mixed>> $banners */
+        $banners = $this->db->fetchAll("
+            SELECT `id`, `badge_text`, `title`, `description`, `button_text`, `target_url`, `image_path`, `position`, `is_active`, `created_at`, `updated_at`
+            FROM `promo_banners`
+            ORDER BY `id` ASC
+        ");
+
+        $pageTitle = 'مدیریت بنرهای تبلیغاتی میانی | پنل مدیریت';
+        $isPjax = $request->isPjax();
+
+        $html = View::render('admin/banners', [
+            'page_title' => $pageTitle,
+            'admin_user' => $adminUser,
+            'active_menu' => 'banners',
+            'is_pjax' => $isPjax,
+            'banners' => $banners,
+            'flash_success' => Session::getFlash('success'),
+            'flash_error' => Session::getFlash('error'),
+        ]);
+
+        if ($isPjax) {
+            return Response::json([
+                'success' => true,
+                'html' => $html,
+                'title' => $pageTitle,
+                'active_menu' => 'banners',
+            ]);
+        }
+
+        return Response::html($html);
+    }
+
+    /**
+     * Update Promotional Split Banner.
+     * Route: POST /admin/banners/{id}
+     * 
+     * @param array<string, string> $vars
+     */
+    public function updatePromoBanner(Request $request, array $vars = []): Response
+    {
+        $csrfToken = (string) (
+            $request->input('_csrf_token') 
+            ?? $request->input('csrf_token') 
+            ?? $request->getHeader('X-CSRF-Token')
+        );
+
+        if (!Session::validateCsrf($csrfToken)) {
+            Session::setFlash('error', 'اعتبار نشست کاربری منقضی شده است. لطفاً مجدداً تلاش کنید.');
+            return Response::redirect(url('admin/banners'));
+        }
+
+        $id = (int) ($vars['id'] ?? 0);
+        if ($id <= 0) {
+            Session::setFlash('error', 'شناسه بنر نامعتبر است.');
+            return Response::redirect(url('admin/banners'));
+        }
+
+        $title = trim((string) $request->input('title', ''));
+        $badgeText = trim((string) $request->input('badge_text', ''));
+        $description = trim((string) $request->input('description', ''));
+        $buttonText = trim((string) $request->input('button_text', ''));
+        $targetUrl = trim((string) $request->input('target_url', '/'));
+        $isActive = $request->input('is_active') ? 1 : 0;
+
+        if ($title === '' || $targetUrl === '') {
+            Session::setFlash('error', 'عنوان بنر و آدرس مقصد الزامی هستند.');
+            return Response::redirect(url('admin/banners'));
+        }
+
+        $newImage = $this->handleBannerImageUpload($request);
+
+        if ($newImage !== null) {
+            $this->db->execute("
+                UPDATE `promo_banners`
+                SET `badge_text` = :badge_text,
+                    `title` = :title,
+                    `description` = :description,
+                    `button_text` = :button_text,
+                    `target_url` = :target_url,
+                    `image_path` = :image_path,
+                    `is_active` = :is_active
+                WHERE `id` = :id
+            ", [
+                ':badge_text' => $badgeText,
+                ':title' => $title,
+                ':description' => $description,
+                ':button_text' => $buttonText,
+                ':target_url' => $targetUrl,
+                ':image_path' => $newImage,
+                ':is_active' => $isActive,
+                ':id' => $id,
+            ]);
+        } else {
+            $this->db->execute("
+                UPDATE `promo_banners`
+                SET `badge_text` = :badge_text,
+                    `title` = :title,
+                    `description` = :description,
+                    `button_text` = :button_text,
+                    `target_url` = :target_url,
+                    `is_active` = :is_active
+                WHERE `id` = :id
+            ", [
+                ':badge_text' => $badgeText,
+                ':title' => $title,
+                ':description' => $description,
+                ':button_text' => $buttonText,
+                ':target_url' => $targetUrl,
+                ':is_active' => $isActive,
+                ':id' => $id,
+            ]);
+        }
+
+        CacheService::flushTwig();
+
+        if ($request->isAjax()) {
+            return Response::json(['success' => true, 'message' => 'بنر تبلیغاتی با موفقیت به‌روزرسانی شد.']);
+        }
+
+        Session::setFlash('success', 'بنر تبلیغاتی با موفقیت به‌روزرسانی شد.');
+        return Response::redirect(url('admin/banners'));
+    }
+
+    /**
+     * Securely handle promo banner image uploads to public/assets/images/banners/
+     */
+    private function handleBannerImageUpload(Request $request): ?string
+    {
+        /** @var array<string, mixed>|null $file */
+        $file = $request->getFile('image') ?? $request->getFile('banner_image');
+        if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        $size = (int) ($file['size'] ?? 0);
+
+        if (!is_uploaded_file($tmpName) || $size <= 0 || $size > 5 * 1024 * 1024) {
+            return null;
+        }
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        if (!$finfo) {
+            return null;
+        }
+        $mime = finfo_file($finfo, $tmpName);
+        finfo_close($finfo);
+
+        $allowedMimes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+        ];
+
+        if (!isset($allowedMimes[$mime])) {
+            return null;
+        }
+
+        $ext = $allowedMimes[$mime];
+        $targetDir = public_path('assets' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR . 'banners');
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $fileName = 'promo-' . time() . '-' . mt_rand(100, 999) . '.' . $ext;
+        $destination = $targetDir . DIRECTORY_SEPARATOR . $fileName;
+
+        if (move_uploaded_file($tmpName, $destination)) {
+            return 'images/banners/' . $fileName;
+        }
+
+        return null;
+    }
 }

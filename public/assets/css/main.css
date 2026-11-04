@@ -1330,6 +1330,14 @@ button, input, select {
   transition: var(--transition-bounce);
 }
 
+.story-icon-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  transition: var(--transition-bounce);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+}
+
 .story-cat-item:hover .story-circle {
   transform: translateY(-5px);
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
@@ -1342,6 +1350,10 @@ button, input, select {
 
 .story-cat-item:hover .story-emoji {
   transform: scale(1.15) rotate(6deg);
+}
+
+.story-cat-item:hover .story-icon-img {
+  transform: scale(1.15) rotate(4deg);
 }
 
 .story-label {

@@ -42,6 +42,10 @@ class HttpLifecycleTest extends TestCase
         $this->assertStringContainsString('سبد خرید', $body);
         $this->assertStringContainsString('hero-banner-slider', $body);
         $this->assertStringContainsString('vanilla-tilt', $body);
+        $this->assertStringContainsString('story-categories-section', $body);
+        $this->assertStringContainsString('story-icon-img', $body);
+        $this->assertStringContainsString('promo-tiles-section', $body);
+        $this->assertStringContainsString('promo-composite-img', $body);
     }
 
     public function test_catalog_page_renders_with_categories(): void

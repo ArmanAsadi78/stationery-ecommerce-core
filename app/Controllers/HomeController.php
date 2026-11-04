@@ -52,11 +52,35 @@ class HomeController
             ");
         }
 
+        /** @var list<array<string, mixed>> $popularCategories */
+        $popularCategories = $this->db->fetchAll("
+            SELECT `id`, `parent_id`, `title`, `slug`, `icon_image`, `sort_order`
+            FROM `categories`
+            WHERE `is_active` = 1
+            ORDER BY `sort_order` ASC, `id` ASC
+            LIMIT 6
+        ");
+
+        /** @var list<array<string, mixed>> $rawPromoBanners */
+        $rawPromoBanners = $this->db->fetchAll("
+            SELECT `id`, `badge_text`, `title`, `description`, `button_text`, `target_url`, `image_path`, `position`, `is_active`
+            FROM `promo_banners`
+            WHERE `is_active` = 1
+        ");
+
+        /** @var array<string, array<string, mixed>> $promoBanners */
+        $promoBanners = [];
+        foreach ($rawPromoBanners as $banner) {
+            $promoBanners[(string) $banner['position']] = $banner;
+        }
+
         $html = View::render('home/index', [
             'page_title' => 'فروشگاه تخصصی لوازم‌التحریر تحریرچی | خرید روان‌نویس، خودکار، دفتر و نقاشی',
             'meta_description' => 'بزرگترین فروشگاه آنلاین نوشت‌افزار، لوازم اداری، طراحی و دفتر با بهترین قیمت، اصالت کالا و ارسال سریع به سراسر ایران.',
             'featured_products' => $featuredProducts,
             'categories' => $categories,
+            'popular_categories' => $popularCategories,
+            'promo_banners' => $promoBanners,
             'sliders' => $sliders,
         ]);
 

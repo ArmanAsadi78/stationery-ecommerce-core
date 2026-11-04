@@ -72,6 +72,13 @@ class AdminTest extends TestCase
 
         $router->get('/admin/settings', [AdminController::class, 'settings'], [AdminMiddleware::class]);
         $router->post('/admin/settings', [AdminController::class, 'updateSettings'], [AdminMiddleware::class]);
+
+        $router->get('/admin/categories', [AdminController::class, 'categories'], [AdminMiddleware::class]);
+        $router->post('/admin/categories/{id:[0-9]+}', [AdminController::class, 'updateCategory'], [AdminMiddleware::class]);
+        $router->post('/admin/categories/{id:[0-9]+}/toggle', [AdminController::class, 'toggleCategory'], [AdminMiddleware::class]);
+
+        $router->get('/admin/banners', [AdminController::class, 'promoBanners'], [AdminMiddleware::class]);
+        $router->post('/admin/banners/{id:[0-9]+}', [AdminController::class, 'updatePromoBanner'], [AdminMiddleware::class]);
     }
 
     protected function tearDown(): void
@@ -102,6 +109,21 @@ class AdminTest extends TestCase
 
         $request = new Request([], $post, $server, [], []);
         return $this->app->handle($request);
+    }
+
+    private function createAndLoginAdmin(): string
+    {
+        $adminEmail = 'adm_test_' . time() . mt_rand(1000, 9999) . '@example.com';
+        $this->createdUserEmails[] = $adminEmail;
+        $this->db->execute("
+            INSERT INTO `users` (`full_name`, `email`, `password_hash`, `role`, `is_active`)
+            VALUES ('مدیر تست', :email, :hash, 'admin', 1)
+        ", [
+            ':email' => $adminEmail,
+            ':hash' => password_hash('adm_pass123', PASSWORD_DEFAULT),
+        ]);
+        $this->auth->login($adminEmail, 'adm_pass123');
+        return $adminEmail;
     }
 
     public function test_admin_login_page_renders_successfully(): void
@@ -595,5 +617,126 @@ class AdminTest extends TestCase
         /** @var array<string, mixed>|null $deleted */
         $deleted = $this->db->fetch("SELECT `id` FROM `home_sliders` WHERE `id` = :id", [':id' => $sliderId]);
         $this->assertNull($deleted);
+    }
+
+    public function testAdminCategoriesCrud(): void
+    {
+        $this->createAndLoginAdmin();
+        $csrf = Session::csrfToken();
+
+        // 1. Get Categories List
+        $resList = $this->request('GET', '/admin/categories');
+        $this->assertSame(200, $resList->getStatusCode());
+        $this->assertStringContainsString('مدیریت دسته‌بندی‌ها', $resList->getContent());
+
+        // 2. Fetch an existing category to test update and toggle
+        /** @var array<string, mixed>|null $cat */
+        $cat = $this->db->fetch("SELECT * FROM `categories` ORDER BY `id` ASC LIMIT 1");
+        $this->assertNotNull($cat);
+        $catId = (int) $cat['id'];
+        $originalTitle = (string) $cat['title'];
+        $originalSort = (int) $cat['sort_order'];
+        $originalActive = (int) $cat['is_active'];
+
+        // 3. Update Category Title and Sort Order
+        $resUpdate = $this->request('POST', "/admin/categories/{$catId}", [
+            '_csrf_token' => $csrf,
+            'title' => $originalTitle . ' ویرایش تستی',
+            'sort_order' => (string) ($originalSort + 10),
+            'is_active' => '1',
+        ]);
+        $this->assertSame(302, $resUpdate->getStatusCode());
+
+        /** @var array<string, mixed>|null $updated */
+        $updated = $this->db->fetch("SELECT * FROM `categories` WHERE `id` = :id", [':id' => $catId]);
+        $this->assertNotNull($updated);
+        $this->assertSame($originalTitle . ' ویرایش تستی', $updated['title']);
+        $this->assertSame($originalSort + 10, (int) $updated['sort_order']);
+
+        // 4. Toggle Category Status
+        $resToggle = $this->request('POST', "/admin/categories/{$catId}/toggle", [
+            '_csrf_token' => $csrf,
+        ]);
+        $this->assertSame(302, $resToggle->getStatusCode());
+
+        /** @var array<string, mixed>|null $toggled */
+        $toggled = $this->db->fetch("SELECT `is_active` FROM `categories` WHERE `id` = :id", [':id' => $catId]);
+        $this->assertNotNull($toggled);
+        $this->assertSame(0, (int) $toggled['is_active']);
+
+        // 5. Clean up / Restore original category values
+        $this->db->execute("
+            UPDATE `categories`
+            SET `title` = :title, `sort_order` = :sort, `is_active` = :active
+            WHERE `id` = :id
+        ", [
+            ':title' => $originalTitle,
+            ':sort' => $originalSort,
+            ':active' => $originalActive,
+            ':id' => $catId,
+        ]);
+    }
+
+    public function testAdminPromoBannersCrud(): void
+    {
+        $this->createAndLoginAdmin();
+        $csrf = Session::csrfToken();
+
+        // 1. Get Promo Banners List
+        $resList = $this->request('GET', '/admin/banners');
+        $this->assertSame(200, $resList->getStatusCode());
+        $this->assertStringContainsString('مدیریت بنرهای تبلیغاتی میانی', $resList->getContent());
+        $this->assertStringContainsString('banner_right', $resList->getContent());
+        $this->assertStringContainsString('banner_left', $resList->getContent());
+
+        // 2. Fetch banner_right
+        /** @var array<string, mixed>|null $banner */
+        $banner = $this->db->fetch("SELECT * FROM `promo_banners` WHERE `position` = 'banner_right' LIMIT 1");
+        $this->assertNotNull($banner);
+        $bannerId = (int) $banner['id'];
+        $origTitle = (string) $banner['title'];
+        $origBadge = (string) $banner['badge_text'];
+        $origDesc = (string) $banner['description'];
+        $origBtn = (string) $banner['button_text'];
+        $origUrl = (string) $banner['target_url'];
+
+        // 3. Update Promo Banner
+        $resUpdate = $this->request('POST', "/admin/banners/{$bannerId}", [
+            '_csrf_token' => $csrf,
+            'badge_text' => '✨ تخفیف ویژه تستی',
+            'title' => 'پک‌های هیجان‌انگیز تستی',
+            'description' => 'توضیحات تست بنر پروموشن',
+            'button_text' => 'خرید آنلاین ←',
+            'target_url' => '/products?category=test',
+            'is_active' => '1',
+        ]);
+        $this->assertSame(302, $resUpdate->getStatusCode());
+
+        /** @var array<string, mixed>|null $updated */
+        $updated = $this->db->fetch("SELECT * FROM `promo_banners` WHERE `id` = :id", [':id' => $bannerId]);
+        $this->assertNotNull($updated);
+        $this->assertSame('✨ تخفیف ویژه تستی', $updated['badge_text']);
+        $this->assertSame('پک‌های هیجان‌انگیز تستی', $updated['title']);
+        $this->assertSame('توضیحات تست بنر پروموشن', $updated['description']);
+        $this->assertSame('خرید آنلاین ←', $updated['button_text']);
+        $this->assertSame('/products?category=test', $updated['target_url']);
+
+        // 4. Restore original banner values
+        $this->db->execute("
+            UPDATE `promo_banners`
+            SET `badge_text` = :badge,
+                `title` = :title,
+                `description` = :desc,
+                `button_text` = :btn,
+                `target_url` = :url
+            WHERE `id` = :id
+        ", [
+            ':badge' => $origBadge,
+            ':title' => $origTitle,
+            ':desc' => $origDesc,
+            ':btn' => $origBtn,
+            ':url' => $origUrl,
+            ':id' => $bannerId,
+        ]);
     }
 }

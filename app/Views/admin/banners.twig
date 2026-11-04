@@ -1,0 +1,100 @@
+{% extends is_pjax ? 'layouts/blank.twig' : 'admin/layout.twig' %}
+
+{% block admin_content %}
+<div class="admin-banners-view">
+    <div class="admin-page-title-row" style="margin-bottom: 24px;">
+        <h2>مدیریت بنرهای تبلیغاتی میانی صفحه اصلی</h2>
+        <p>دو بنر پروموشن ویترینی (سمت راست و سمت چپ) در سکشن ۳ صفحه نخست سایت را شخصی‌سازی، ویرایش محتوا و تصویرسازی کنید.</p>
+    </div>
+
+    <!-- Grid of Two Distinct Promo Banner Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px; align-items: start;">
+        {% for banner in banners %}
+            <div class="admin-panel-card" style="border-top: 4px solid {% if banner.position == 'banner_right' %}#f43f5e{% else %}#8b5cf6{% endif %};">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">
+                            {% if banner.position == 'banner_right' %}🎀{% else %}📐{% endif %}
+                        </span>
+                        <div>
+                            <h3 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 0;">
+                                {% if banner.position == 'banner_right' %}
+                                    بنر سمت راست (ویترین اول)
+                                {% else %}
+                                    بنر سمت چپ (ویترین دوم)
+                                {% endif %}
+                            </h3>
+                            <small class="dir-ltr font-mono" style="color: #64748b; font-size: 11px;">موقعیت: {{ banner.position }}</small>
+                        </div>
+                    </div>
+                    <div>
+                        {% if banner.is_active == 1 %}
+                            <span class="admin-badge badge-green">فعال و در حال نمایش</span>
+                        {% else %}
+                            <span class="admin-badge badge-red">غیرفعال</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Current Banner Image Box -->
+                <div style="margin-bottom: 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; text-align: center;">
+                    <span style="display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 8px;">تصویر فعلی بنر:</span>
+                    <div style="max-height: 180px; overflow: hidden; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; background: #ffffff; border: 1px solid #e2e8f0;">
+                        <img src="{{ asset(banner.image_path) }}" alt="{{ banner.title }}" style="max-width: 100%; max-height: 170px; object-fit: contain;">
+                    </div>
+                </div>
+
+                <!-- Banner Edit Form -->
+                <form action="{{ url('admin/banners/' ~ banner.id) }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                    <div style="display: grid; gap: 14px;">
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; color: #334155;">برچسب بالای بنر (Badge Text) *</label>
+                            <input type="text" name="badge_text" value="{{ banner.badge_text }}" required class="admin-input-search" style="width: 100%;" placeholder="مثال: 🎀 کالکشن کیوت بولت ژورنال">
+                        </div>
+
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; color: #334155;">تیتر اصلی بنر (Title) *</label>
+                            <input type="text" name="title" value="{{ banner.title }}" required class="admin-input-search" style="width: 100%; font-weight: 700;" placeholder="عنوان بنر">
+                        </div>
+
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; color: #334155;">متن توضیحات بنر *</label>
+                            <textarea name="description" rows="3" required class="admin-input-search" style="width: 100%; resize: vertical; line-height: 1.6;" placeholder="توضیحات کوتاه و ترغیب‌کننده">{{ banner.description }}</textarea>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #334155;">متن دکمه (Button Text) *</label>
+                                <input type="text" name="button_text" value="{{ banner.button_text }}" required class="admin-input-search" style="width: 100%;" placeholder="مثال: مشاهده کالکشن ←">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #334155;">لینک مقصد کلیک (Target URL) *</label>
+                                <input type="text" name="target_url" value="{{ banner.target_url }}" required class="admin-input-search dir-ltr" style="width: 100%;" placeholder="/products?category=...">
+                            </div>
+                        </div>
+
+                        <div style="background: #fdf2f8; padding: 12px; border-radius: 10px; border: 1px dashed #f472b6;">
+                            <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: #831843;">جایگزینی تصویر جدید بنر</label>
+                            <input type="file" name="image" accept="image/webp,image/png,image/jpeg" class="admin-input-search" style="width: 100%; background: #ffffff; padding: 6px 10px;">
+                            <small style="color: #9d174d; font-size: 11px;">فرمت WebP یا PNG با پس‌زمینه شفاف، ترجیحاً ابعاد ۴۰۰x۳۵۰ پیکسل</small>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px;">
+                            <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                                <input type="checkbox" name="is_active" value="1" {% if banner.is_active == 1 %}checked{% endif %} style="width: 18px; height: 18px;">
+                                <span>نمایش این بنر در صفحه اصلی</span>
+                            </label>
+
+                            <button type="submit" class="btn-admin-action" style="padding: 10px 24px;">
+                                ذخیره تغییرات بنر
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

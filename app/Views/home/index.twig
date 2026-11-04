@@ -57,59 +57,31 @@
         </div>
 
         <div class="story-categories-track">
-            <a href="{{ url('products?category=writing-instruments') }}" class="story-cat-item" data-aos="zoom-in" data-aos-delay="50">
-                <div class="story-circle">
-                    <div class="story-inner-badge badge-pink">
-                        <span class="story-emoji">✏️</span>
+            {% for cat in popular_categories %}
+                {% set badgeClasses = ['badge-pink', 'badge-lavender', 'badge-mint', 'badge-butter', 'badge-sky', 'badge-peach'] %}
+                {% set badgeClass = badgeClasses[loop.index0 % 6] %}
+                <a href="{{ url('products?category=' ~ cat.slug) }}" class="story-cat-item" data-aos="zoom-in" data-aos-delay="{{ loop.index * 50 }}">
+                    <div class="story-circle">
+                        <div class="story-inner-badge {{ badgeClass }}">
+                            {% if cat.icon_image %}
+                                <img src="{{ asset(cat.icon_image) }}" alt="{{ cat.title }}" class="story-icon-img" width="36" height="36" loading="lazy">
+                            {% else %}
+                                <span class="story-emoji">📁</span>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-                <span class="story-label">نوشت‌افزار و قلم</span>
-            </a>
-
-            <a href="{{ url('products?category=notebooks-and-paper') }}" class="story-cat-item" data-aos="zoom-in" data-aos-delay="100">
-                <div class="story-circle">
-                    <div class="story-inner-badge badge-lavender">
-                        <span class="story-emoji">📓</span>
+                    <span class="story-label">{{ cat.title }}</span>
+                </a>
+            {% else %}
+                <a href="{{ url('products') }}" class="story-cat-item">
+                    <div class="story-circle">
+                        <div class="story-inner-badge badge-pink">
+                            <span class="story-emoji">✏️</span>
+                        </div>
                     </div>
-                </div>
-                <span class="story-label">دفتر و پلنر انگیزشی</span>
-            </a>
-
-            <a href="{{ url('products?category=art-and-drawing') }}" class="story-cat-item" data-aos="zoom-in" data-aos-delay="150">
-                <div class="story-circle">
-                    <div class="story-inner-badge badge-mint">
-                        <span class="story-emoji">🎨</span>
-                    </div>
-                </div>
-                <span class="story-label">نقاشی و مدادرنگی</span>
-            </a>
-
-            <a href="{{ url('products?category=office-supplies') }}" class="story-cat-item" data-aos="zoom-in" data-aos-delay="200">
-                <div class="story-circle">
-                    <div class="story-inner-badge badge-butter">
-                        <span class="story-emoji">📎</span>
-                    </div>
-                </div>
-                <span class="story-label">لوازم اداری و میز</span>
-            </a>
-
-            <a href="{{ url('products?category=mechanical-pencils') }}" class="story-cat-item" data-aos="zoom-in" data-aos-delay="250">
-                <div class="story-circle">
-                    <div class="story-inner-badge badge-sky">
-                        <span class="story-emoji">📐</span>
-                    </div>
-                </div>
-                <span class="story-label">اتود و خط‌کش مهندسی</span>
-            </a>
-
-            <a href="{{ url('products?category=rollerball-pens') }}" class="story-cat-item" data-aos="zoom-in" data-aos-delay="300">
-                <div class="story-circle">
-                    <div class="story-inner-badge badge-peach">
-                        <span class="story-emoji">🖊️</span>
-                    </div>
-                </div>
-                <span class="story-label">روان‌نویس و خودنویس</span>
-            </a>
+                    <span class="story-label">همه محصولات</span>
+                </a>
+            {% endfor %}
         </div>
     </section>
 
@@ -118,29 +90,35 @@
     {# ================================================================= #}
     <section class="promo-tiles-section" data-aos="fade-up">
         <div class="promo-grid">
-            <div class="promo-tile promo-tile-peach" data-tilt data-tilt-max="12" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.15" data-aos="zoom-in" data-aos-delay="100">
-                <div class="promo-content">
-                    <span class="promo-badge">🎀 کالکشن کیوت بولت ژورنال</span>
-                    <h3 class="promo-title">پک‌های هدیه و دفترهای نقطه‌ای</h3>
-                    <p class="promo-desc">شامل دفترهای جلدسخت، استیکرهای ژورنال و چسب‌های واشی با تخفیف هیجان‌انگیز</p>
-                    <a href="{{ url('products?category=notebooks-and-paper') }}" class="promo-btn">مشاهده کالکشن ژورنال ←</a>
+            {% set rBanner = promo_banners.banner_right|default(null) %}
+            {% if rBanner and rBanner.is_active %}
+                <div class="promo-tile promo-tile-peach" data-tilt data-tilt-max="12" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.15" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="promo-content">
+                        <span class="promo-badge">{{ rBanner.badge_text }}</span>
+                        <h3 class="promo-title">{{ rBanner.title }}</h3>
+                        <p class="promo-desc">{{ rBanner.description }}</p>
+                        <a href="{{ url(rBanner.target_url) }}" class="promo-btn">{{ rBanner.button_text }}</a>
+                    </div>
+                    <div class="promo-art-box">
+                        <img src="{{ asset(rBanner.image_path) }}" alt="{{ rBanner.title }}" class="promo-composite-img" loading="lazy" width="360" height="320">
+                    </div>
                 </div>
-                <div class="promo-art-box">
-                    <img src="{{ asset('images/banners/promo-journal.webp') }}" alt="کالکشن بولت ژورنال و دفترهای فانتزی" class="promo-composite-img" loading="lazy" width="360" height="320">
-                </div>
-            </div>
+            {% endif %}
 
-            <div class="promo-tile promo-tile-lavender" data-tilt data-tilt-max="12" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.15" data-aos="zoom-in" data-aos-delay="200">
-                <div class="promo-content">
-                    <span class="promo-badge">📐 نوشت‌افزار تکنیکال و دقیق</span>
-                    <h3 class="promo-title">روترینگ و فابرکاستل آلمان</h3>
-                    <p class="promo-desc">ضمانت اصالت فیزیکی تمامی اتودها، نوک‌ها و مدادرنگی‌های تخصصی با بسته‌بندی هاردباکس</p>
-                    <a href="{{ url('products?category=writing-instruments') }}" class="promo-btn">خرید محصولات مهندسی ←</a>
+            {% set lBanner = promo_banners.banner_left|default(null) %}
+            {% if lBanner and lBanner.is_active %}
+                <div class="promo-tile promo-tile-lavender" data-tilt data-tilt-max="12" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.15" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="promo-content">
+                        <span class="promo-badge">{{ lBanner.badge_text }}</span>
+                        <h3 class="promo-title">{{ lBanner.title }}</h3>
+                        <p class="promo-desc">{{ lBanner.description }}</p>
+                        <a href="{{ url(lBanner.target_url) }}" class="promo-btn">{{ lBanner.button_text }}</a>
+                    </div>
+                    <div class="promo-art-box">
+                        <img src="{{ asset(lBanner.image_path) }}" alt="{{ lBanner.title }}" class="promo-composite-img" loading="lazy" width="360" height="320">
+                    </div>
                 </div>
-                <div class="promo-art-box">
-                    <img src="{{ asset('images/banners/promo-technical.webp') }}" alt="ابزارهای تخصصی طراحی و مهندسی روترینگ" class="promo-composite-img" loading="lazy" width="360" height="320">
-                </div>
-            </div>
+            {% endif %}
         </div>
     </section>
 

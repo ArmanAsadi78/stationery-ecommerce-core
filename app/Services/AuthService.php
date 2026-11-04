@@ -278,6 +278,7 @@ class AuthService
     public function logout(): void
     {
         Session::remove('user');
+        Session::remove('last_activity');
         Session::regenerate(true);
         Session::regenerateCsrfToken();
     }

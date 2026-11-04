@@ -16,6 +16,8 @@ composer.phar
 !/storage/logs/.gitkeep
 /storage/uploads/*
 !/storage/uploads/.gitkeep
+/storage/sessions/*
+!/storage/sessions/.gitkeep
 
 # IDEs & System files
 .idea/
